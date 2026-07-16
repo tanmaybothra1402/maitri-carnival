@@ -28,6 +28,7 @@ async function fetchAll(
 }
 
 const CUSTOMER_DOMAIN = "accounts.maitricarnival.app";
+const STAFF_DOMAIN = "staff.maitricarnival.app";
 
 function normalizePhone(value: unknown): string {
   let digits = clean(value).replace(/\D/g, "");
@@ -45,6 +46,148 @@ function generatePassword(): string {
   const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
+const ALL_PERMISSIONS: Record<string, boolean> = {
+  "reception.view": true,
+  "reception.checkin": true,
+  "reception.register": true,
+  "reception.password_reset": true,
+  "reception.customer_control": true,
+  "dashboard.view": true,
+  "dashboard.export": true,
+  "sale.view": true,
+  "sale.write": true,
+  "sale.previous": true,
+  "sale.pdf": true,
+  "sale.lock": true,
+  "products.view": true,
+  "products.edit": true,
+  "products.mapping": true,
+  "products.lookups": true,
+  "admin.slots": true,
+  "admin.bookings": true,
+  "admin.staff": true,
+  "admin.settings": true,
+};
+
+const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
+  sales: { "sale.view": true, "sale.write": true, "sale.previous": true, "sale.pdf": true, "reception.view": true },
+  reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
+  products: { "products.view": true, "products.edit": true, "products.mapping": true, "products.lookups": true },
+  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings"].includes(key))),
+  administrator: { ...ALL_PERMISSIONS },
+  custom: {},
+};
+
+type StaffContext = {
+  authUserId: string;
+  staffId: string;
+  staffName: string;
+  preset: string;
+  permissions: Record<string, boolean>;
+  defaultSection: string;
+  active: boolean;
+  legacyAdmin: boolean;
+};
+
+function normalizeStaffId(value: unknown): string {
+  const staffId = clean(value).toLowerCase();
+  if (!/^[a-z0-9][a-z0-9._-]{1,39}$/.test(staffId)) {
+    throw new Error("Staff ID must be 2-40 characters using letters, numbers, dot, underscore or dash");
+  }
+  return staffId;
+}
+
+function staffEmail(staffId: string): string {
+  return `${staffId}@${STAFF_DOMAIN}`;
+}
+
+function normalizePermissions(value: unknown, preset: string): Record<string, boolean> {
+  const source = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : PRESET_PERMISSIONS[preset] ?? {};
+  const output: Record<string, boolean> = {};
+  for (const key of Object.keys(ALL_PERMISSIONS)) output[key] = Boolean(source[key]);
+  return output;
+}
+
+async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffContext> {
+  const role = clean(user.app_metadata?.role);
+  const { data: profile, error } = await db
+    .from("staff_profiles")
+    .select("auth_user_id,staff_id,staff_name,preset,permissions,default_section,active")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+  if (error) throw error;
+  if (profile) {
+    return {
+      authUserId: profile.auth_user_id,
+      staffId: profile.staff_id,
+      staffName: profile.staff_name,
+      preset: profile.preset,
+      permissions: normalizePermissions(profile.permissions, profile.preset),
+      defaultSection: profile.default_section,
+      active: profile.active !== false,
+      legacyAdmin: role === "admin",
+    };
+  }
+  if (role === "admin") {
+    return {
+      authUserId: user.id,
+      staffId: clean(user.email).split("@")[0] || "admin",
+      staffName: clean(user.user_metadata?.name) || clean(user.email).split("@")[0] || "Administrator",
+      preset: "administrator",
+      permissions: { ...ALL_PERMISSIONS },
+      defaultSection: "dashboard",
+      active: true,
+      legacyAdmin: true,
+    };
+  }
+  throw new Error("STAFF_PROFILE_NOT_FOUND");
+}
+
+const ACTION_PERMISSIONS: Record<string, string[]> = {
+  dashboard: ["dashboard.view"],
+  listDesigns: ["products.view", "products.mapping"],
+  listMappings: ["products.mapping"],
+  mapBarcode: ["products.mapping"],
+  mapBatch: ["products.mapping"],
+  deactivateBarcode: ["products.mapping"],
+  resetPassword: ["reception.password_reset"],
+  setCustomerActive: ["reception.customer_control"],
+  setOrderLocked: ["sale.lock"],
+  directory: ["reception.view", "sale.view", "sale.write"],
+  getProductDetail: ["products.view"],
+  updateProduct: ["products.edit"],
+  checkIn: ["reception.checkin"],
+  revokeEntry: ["reception.checkin"],
+  listSlots: ["admin.slots", "admin.bookings", "reception.view"],
+  upsertSlot: ["admin.slots"],
+  deleteSlot: ["admin.slots"],
+  listBookings: ["admin.bookings", "reception.view"],
+  updateBooking: ["admin.bookings"],
+  assistedRegister: ["reception.register"],
+  assistedSaveOrder: ["sale.write"],
+  recentOrders: ["sale.previous", "sale.write"],
+  getCustomerOrders: ["dashboard.view", "sale.previous", "sale.write"],
+  createStaff: ["admin.staff"],
+  listStaff: ["admin.staff"],
+  updateStaff: ["admin.staff"],
+  resetStaffPassword: ["admin.staff"],
+  getSettings: ["admin.settings"],
+  updateSettings: ["admin.settings"],
+  listLookupsAdmin: ["products.lookups"],
+  upsertLookup: ["products.lookups"],
+  deleteLookup: ["products.lookups"],
+};
+
+function requireActionPermission(context: StaffContext, action: string) {
+  if (!context.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+  const alternatives = ACTION_PERMISSIONS[action] ?? [];
+  if (alternatives.length && !alternatives.some((key) => context.permissions[key])) {
+    throw new Error("PERMISSION_DENIED");
+  }
 }
 
 function groupSum<T>(rows: T[], keyFn: (row: T) => string, valueFn: (row: T) => number) {
@@ -252,10 +395,24 @@ Deno.serve(async (request: Request) => {
     const db = serviceClient();
     const body = await request.json().catch(() => ({}));
     const action = clean(body.action);
+    const staff = await loadStaffContext(db, admin);
 
     if (action === "whoami") {
-      return jsonResponse(request, { ok: true, data: { id: admin.id, email: admin.email, role: "admin" } });
+      if (!staff.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+      return jsonResponse(request, { ok: true, data: {
+        id: admin.id,
+        email: admin.email,
+        role: clean(admin.app_metadata?.role) || "staff",
+        staffId: staff.staffId,
+        staffName: staff.staffName,
+        preset: staff.preset,
+        permissions: staff.permissions,
+        defaultSection: staff.defaultSection,
+        active: staff.active,
+      } });
     }
+
+    requireActionPermission(staff, action);
 
     if (action === "dashboard") {
       return jsonResponse(request, { ok: true, data: await dashboard(db) });
@@ -361,14 +518,14 @@ Deno.serve(async (request: Request) => {
       const q = clean(body.query);
       let query = db
         .from("customers")
-        .select("id,phone_e164,company_name,contact_name,city,state,gstin,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
+        .select("id,phone_e164,company_name,contact_name,city,state,gstin,agent,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
         .order("created_at", { ascending: false })
         .limit(400);
       if (q) {
         const like = `%${q}%`;
         // Search across every customer field.
         query = query.or(
-          `phone_e164.ilike.${like},company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like},gstin.ilike.${like}`,
+          `phone_e164.ilike.${like},company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like},gstin.ilike.${like},agent.ilike.${like}`,
         );
       }
       const { data, error } = await query;
@@ -402,6 +559,7 @@ Deno.serve(async (request: Request) => {
           city: r.city,
           state: r.state,
           gstin: r.gstin,
+          agent: r.agent,
           active: r.active,
           checkedInAt: r.checked_in_at,
           orderingStartedAt: r.ordering_started_at,
@@ -562,6 +720,78 @@ Deno.serve(async (request: Request) => {
       });
     }
 
+    if (action === "updateBooking") {
+      const id = clean(body.id);
+      const patch: Record<string, unknown> = {};
+      if (body.slotId !== undefined) patch.slot_id = clean(body.slotId);
+      if (body.partySize !== undefined) patch.party_size = Math.max(1, Math.min(99, Math.round(Number(body.partySize) || 1)));
+      if (body.note !== undefined) patch.note = clean(body.note);
+      if (body.status !== undefined) patch.status = clean(body.status) === "Cancelled" ? "Cancelled" : "Booked";
+      const { data, error } = await db.from("bookings").update(patch).eq("id", id).select("id,status,slot_id,party_size,note").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "getSettings") {
+      const { data, error } = await db.from("system_settings")
+        .select("event_name,event_start_date,event_end_date,registration_enabled,edit_window_hours,registration_access_code_hash")
+        .eq("singleton", true).single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: {
+        eventName: data.event_name,
+        eventStartDate: data.event_start_date,
+        eventEndDate: data.event_end_date,
+        registrationEnabled: data.registration_enabled,
+        editWindowHours: data.edit_window_hours,
+        accessCodeEnabled: !!data.registration_access_code_hash,
+      } });
+    }
+
+    if (action === "updateSettings") {
+      const patch: Record<string, unknown> = {
+        event_name: clean(body.eventName),
+        event_start_date: clean(body.eventStartDate),
+        event_end_date: clean(body.eventEndDate),
+        registration_enabled: Boolean(body.registrationEnabled),
+        edit_window_hours: Math.max(1, Math.min(168, Math.round(Number(body.editWindowHours) || 24))),
+      };
+      if (Boolean(body.clearAccessCode)) patch.registration_access_code_hash = null;
+      else if (clean(body.accessCode)) {
+        const bytes = new TextEncoder().encode(clean(body.accessCode));
+        const digest = await crypto.subtle.digest("SHA-256", bytes);
+        patch.registration_access_code_hash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2,"0")).join("");
+      }
+      const { data, error } = await db.from("system_settings").update(patch).eq("singleton", true)
+        .select("event_name,event_start_date,event_end_date,registration_enabled,edit_window_hours,registration_access_code_hash").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "listLookupsAdmin") {
+      const { data, error } = await db.from("lookup_values").select("kind,value,created_at").order("kind").order("value");
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "upsertLookup") {
+      const kind = clean(body.kind).toLowerCase();
+      const value = clean(body.value);
+      if (!["city","agent","category","style","fabric"].includes(kind)) throw new Error("Invalid lookup type");
+      if (!value) throw new Error("Lookup value is required");
+      const { data, error } = await db.from("lookup_values")
+        .upsert({ kind, value }, { onConflict: "kind,value" })
+        .select("kind,value").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "deleteLookup") {
+      const { error } = await db.from("lookup_values").delete()
+        .eq("kind", clean(body.kind).toLowerCase()).eq("value", clean(body.value));
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: { deleted: true } });
+    }
+
     // ---- Assisted registration & ordering -----------------------------
     if (action === "assistedRegister") {
       const phone = normalizePhone(body.phone);
@@ -595,19 +825,78 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "createStaff") {
-      const email = clean(body.email).toLowerCase();
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Enter a valid email address");
-      if (email.endsWith(CUSTOMER_DOMAIN)) throw new Error("Use a normal email, not the customer domain");
+      const staffId = normalizeStaffId(body.staffId);
+      const staffName = clean(body.staffName);
+      if (staffName.length < 2) throw new Error("Staff name is required");
+      const preset = ["sales","reception","products","manager","administrator","custom"].includes(clean(body.preset)) ? clean(body.preset) : "custom";
+      const permissions = normalizePermissions(body.permissions, preset);
+      const allowedSections = ["reception","dashboard","sale","products","admin"];
+      const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
+      const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", admin:"admin.slots" };
+      if (!permissions[modulePermission[defaultSection]] && defaultSection !== "admin") throw new Error("Default section must be permitted");
+      if (defaultSection === "admin" && !Object.keys(permissions).some((key) => key.startsWith("admin.") && permissions[key])) throw new Error("Default section must be permitted");
       const password = clean(body.password) || generatePassword();
       if (password.length < 8) throw new Error("Password must be at least 8 characters");
+      const email = staffEmail(staffId);
       const { data: created, error } = await db.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
-        app_metadata: { role: "admin" },
+        app_metadata: { role: "staff" },
+        user_metadata: { name: staffName, staff_id: staffId },
       });
       if (error) throw error;
-      return jsonResponse(request, { ok: true, data: { id: created.user?.id, email, password } });
+      const userId = created.user?.id;
+      if (!userId) throw new Error("STAFF_USER_NOT_CREATED");
+      const { error: profileError } = await db.from("staff_profiles").insert({
+        auth_user_id: userId,
+        staff_id: staffId,
+        staff_name: staffName,
+        preset,
+        permissions,
+        default_section: defaultSection,
+        active: true,
+      });
+      if (profileError) {
+        await db.auth.admin.deleteUser(userId).catch(() => undefined);
+        throw profileError;
+      }
+      return jsonResponse(request, { ok: true, data: { id: userId, staffId, staffName, email, password, preset, permissions, defaultSection } });
+    }
+
+    if (action === "listStaff") {
+      const { data, error } = await db.from("staff_profiles")
+        .select("auth_user_id,staff_id,staff_name,preset,permissions,default_section,active,created_at,updated_at")
+        .order("staff_name", { ascending: true });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: (data ?? []).map((row: any) => ({
+        authUserId: row.auth_user_id, staffId: row.staff_id, staffName: row.staff_name,
+        preset: row.preset, permissions: normalizePermissions(row.permissions,row.preset),
+        defaultSection: row.default_section, active: row.active, createdAt: row.created_at, updatedAt: row.updated_at,
+      })) });
+    }
+
+    if (action === "updateStaff") {
+      const authUserId = clean(body.authUserId);
+      const preset = ["sales","reception","products","manager","administrator","custom"].includes(clean(body.preset)) ? clean(body.preset) : "custom";
+      const permissions = normalizePermissions(body.permissions,preset);
+      const defaultSection = ["reception","dashboard","sale","products","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
+      const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
+      if (body.staffName !== undefined) row.staff_name = clean(body.staffName);
+      if (body.active !== undefined) row.active = Boolean(body.active);
+      const { data, error } = await db.from("staff_profiles").update(row).eq("auth_user_id",authUserId)
+        .select("auth_user_id,staff_id,staff_name,preset,permissions,default_section,active").single();
+      if (error) throw error;
+      return jsonResponse(request,{ok:true,data});
+    }
+
+    if (action === "resetStaffPassword") {
+      const authUserId = clean(body.authUserId);
+      const password = clean(body.password) || generatePassword();
+      if (password.length < 8) throw new Error("Password must be at least 8 characters");
+      const { error } = await db.auth.admin.updateUserById(authUserId,{password});
+      if (error) throw error;
+      return jsonResponse(request,{ok:true,data:{password}});
     }
 
     if (action === "assistedSaveOrder") {
@@ -619,7 +908,43 @@ Deno.serve(async (request: Request) => {
         p_request_id: crypto.randomUUID(),
       });
       if (error) throw error;
+      const orderId = clean((data as any)?.order?.id);
+      const touched = items.filter((item: any) => !item?._delete && !item?.delete).map((item: any) => clean(item.designNo || item.design_no)).filter(Boolean);
+      if (orderId && touched.length) {
+        const { data: rows } = await db.from("order_items").select("id,created_by_type").eq("order_id",orderId).in("design_no",touched);
+        for (const row of rows ?? []) {
+          const patch: Record<string,unknown> = { last_modified_by_user_id: admin.id, last_modified_by_type: "staff" };
+          if (!row.created_by_type || row.created_by_type === "unknown") {
+            patch.created_by_user_id = admin.id;
+            patch.created_by_type = "staff";
+          }
+          await db.from("order_items").update(patch).eq("id",row.id);
+        }
+      }
       return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "recentOrders") {
+      const q = clean(body.query);
+      let query = db.from("orders")
+        .select("id,customer_id,firm,status,total_designs,total_sets,total_pieces,updated_at,customers(company_name,contact_name,phone_e164,city,state,agent)")
+        .order("updated_at", { ascending: false }).limit(200);
+      if (q) {
+        const { data: customers, error: cErr } = await db.from("customers")
+          .select("id").or(`company_name.ilike.%${q}%,contact_name.ilike.%${q}%,phone_e164.ilike.%${q}%`).limit(300);
+        if (cErr) throw cErr;
+        const ids = (customers ?? []).map((row) => row.id);
+        if (!ids.length) return jsonResponse(request,{ok:true,data:[]});
+        query = query.in("customer_id",ids);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return jsonResponse(request,{ok:true,data:(data ?? []).filter((o:any)=>Number(o.total_designs)>0 || o.status!=="Draft").map((o:any)=>({
+        orderId:o.id,customerId:o.customer_id,firm:o.firm,status:o.status,designs:Number(o.total_designs)||0,
+        sets:Number(o.total_sets)||0,pieces:Number(o.total_pieces)||0,updatedAt:o.updated_at,
+        companyName:o.customers?.company_name??"",contactName:o.customers?.contact_name??"",phone:o.customers?.phone_e164??"",
+        city:o.customers?.city??"",state:o.customers?.state??"",agent:o.customers?.agent??""
+      }))});
     }
 
     if (action === "getCustomerOrders") {
@@ -632,7 +957,7 @@ Deno.serve(async (request: Request) => {
       // Fetch both firm orders + items for assisted editing.
       const { data: orders, error: oErr } = await db
         .from("orders")
-        .select("id,firm,status,version,total_designs,total_sets,total_pieces,admin_unlocked,order_items(barcode,design_no,qty,category_snapshot,style_snapshot,fabric_snapshot,pcs_per_set_snapshot,line_note,color_snapshot,description_snapshot,designs(image_url))")
+        .select("id,firm,status,version,total_designs,total_sets,total_pieces,admin_unlocked,order_items(barcode,design_no,qty,category_snapshot,style_snapshot,fabric_snapshot,pcs_per_set_snapshot,line_note,color_snapshot,description_snapshot,created_by_type,last_modified_by_type,last_modified_by_user_id,designs(image_url))")
         .eq("customer_id", customerId);
       if (oErr) throw oErr;
       const shaped = (orders ?? []).map((o: any) => ({
@@ -656,6 +981,9 @@ Deno.serve(async (request: Request) => {
           note: i.line_note ?? "",
           color: i.color_snapshot,
           description: i.description_snapshot,
+          createdByType: i.created_by_type ?? "unknown",
+          lastModifiedByType: i.last_modified_by_type ?? "unknown",
+          lastModifiedByUserId: i.last_modified_by_user_id ?? null,
           imageUrl: i.designs?.image_url ?? "",
         })),
       }));
@@ -677,7 +1005,9 @@ Deno.serve(async (request: Request) => {
   } catch (error) {
     console.error(error);
     const message = errorMessage(error);
-    const status = message === "ADMIN_REQUIRED" ? 403 : message.includes("SESSION") || message === "AUTH_REQUIRED" ? 401 : 500;
+    const status = /PERMISSION_DENIED|STAFF_ACCESS_REQUIRED|STAFF_ACCOUNT_DISABLED|STAFF_PROFILE_NOT_FOUND|ADMIN_REQUIRED/.test(message)
+      ? 403
+      : message.includes("SESSION") || message === "AUTH_REQUIRED" ? 401 : 500;
     return jsonResponse(request, { ok: false, error: message }, status);
   }
 });

@@ -47,7 +47,7 @@ const TABLES: Record<string, TableCfg> = {
   },
   order_items: {
     pk: "id",
-    cols: ["id","order_id","barcode","design_no","qty","category_snapshot","style_snapshot","fabric_snapshot","pcs_per_set_snapshot","line_note","description_snapshot"],
+    cols: ["id","order_id","barcode","design_no","qty","category_snapshot","style_snapshot","fabric_snapshot","pcs_per_set_snapshot","line_note","description_snapshot","created_by_type","last_modified_by_type","last_modified_by_user_id"],
     write: ["qty","line_note"],
     hide: ["color_snapshot"],
     insert: false,

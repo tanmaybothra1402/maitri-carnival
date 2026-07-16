@@ -1,3 +1,4 @@
+
 import type { User } from "npm:@supabase/supabase-js@2";
 import { serviceClient } from "./supabase.ts";
 
@@ -18,8 +19,9 @@ export async function requireUser(request: Request): Promise<User> {
 
 export async function requireAdmin(request: Request): Promise<User> {
   const user = await requireUser(request);
-  if (String(user.app_metadata?.role ?? "") !== "admin") {
-    throw new Error("ADMIN_REQUIRED");
+  const role = String(user.app_metadata?.role ?? "");
+  if (role !== "admin" && role !== "staff") {
+    throw new Error("STAFF_ACCESS_REQUIRED");
   }
   return user;
 }
