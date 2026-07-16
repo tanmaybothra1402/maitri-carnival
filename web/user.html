@@ -2,26 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#225E63">
   <title>Maitri Carnival 2026 · Orders</title>
+  <link rel="preconnect" href="https://ezmtiiftolcaslqfvozu.supabase.co">
+  <link rel="preconnect" href="https://ik.imagekit.io" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
   <style>
-    :root{--teal:#2B7379;--teal-deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#FFFFFF;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--warning:#B7791F}
+    :root{--teal:#2B7379;--teal-deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#FFFFFF;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--indigo:#2E2A6B;--pink:#E6007E}
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
-    html,body{min-height:100%;background:var(--warm);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-    button,input,select,textarea{font:inherit}.hidden{display:none!important}
-    .appbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px 15px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+    html,body{min-height:100%;max-width:100%;overflow-x:hidden;background:var(--warm);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+    button,input,select,textarea{font:inherit}.hidden{display:none!important}img,svg{max-width:100%}
+    .appbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px 14px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+    .brandlock{display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden}
     .wordmark{display:flex;align-items:center;gap:7px;color:var(--teal-deep);font-size:15px;font-weight:800;letter-spacing:.12em}
     .logo-dot{width:12px;height:12px;border-radius:50%;background:var(--orange);flex:0 0 auto}
-    .brand-sub{display:block;color:var(--muted);font-size:8.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-top:1px}
+    .brand-sub{display:block;color:var(--muted);font-size:8.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-top:1px;white-space:nowrap}
+    .bdiv{width:1px;height:24px;background:var(--border);flex:0 0 auto}
+    .firmlogos{display:flex;align-items:center;gap:9px}.firm-logo{height:17px;width:auto;display:block}
     .top-actions{margin-left:auto;display:flex;gap:7px}
     .icon-btn{min-height:38px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--teal-deep);font-size:12px;font-weight:750;cursor:pointer}
     main{width:min(100%,600px);margin:0 auto;padding:16px 13px 40px}
+    .brandbar{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:12px;margin-bottom:13px;border:1px solid var(--border);border-radius:14px;background:#fff}
+    .brandbar .firm-logo{height:20px}.brandbar .wordmark{font-size:16px}
     .hero{padding:22px;border-radius:18px;background:linear-gradient(135deg,var(--teal-deep),#17494D);color:#fff;box-shadow:0 15px 34px rgba(34,94,99,.18)}
-    .hero h1{font-size:23px;letter-spacing:.01em}.hero p{margin-top:8px;color:rgba(255,255,255,.82);font-size:12.5px;line-height:1.55}
+    .hero h1{font-size:23px}.hero p{margin-top:8px;color:rgba(255,255,255,.82);font-size:12.5px;line-height:1.55}.hero .dates{display:inline-block;margin-top:10px;padding:5px 11px;border-radius:20px;background:rgba(255,255,255,.16);font-size:11px;font-weight:700;letter-spacing:.03em}
     .card{margin-top:13px;padding:17px;border:1px solid var(--border);border-radius:15px;background:#fff;box-shadow:0 6px 18px rgba(34,94,99,.06)}
     .card h2{color:var(--teal-deep);font-size:15px}.copy{margin-top:5px;color:var(--muted);font-size:11.5px;line-height:1.55}
     label{display:block;margin:12px 0 5px;color:var(--slate);font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
@@ -34,8 +41,8 @@
     .btn{width:100%;min-height:48px;margin-top:13px;border:0;border-radius:10px;background:var(--teal-deep);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
     .btn.secondary{border:1.5px solid var(--teal-deep);background:#fff;color:var(--teal-deep)}
     .btn.ghost{border:1px solid var(--border);background:#fff;color:var(--slate)}
-    .btn.danger{background:var(--error)}.btn:disabled{background:#E7EBE9;color:#949A97;cursor:not-allowed}
-    .switch{display:flex;gap:4px;margin-top:2px;padding:4px;border-radius:13px;background:var(--foam)}
+    .btn:disabled{background:#E7EBE9;color:#949A97;cursor:not-allowed}
+    .switch{display:flex;gap:4px;padding:4px;border-radius:13px;background:var(--foam)}
     .switch button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--teal-deep);font-size:12px;font-weight:800;cursor:pointer}
     .switch button.active{background:#fff;box-shadow:0 2px 8px rgba(34,94,99,.12)}
     .steps{margin-top:12px;display:grid;gap:8px}
@@ -50,21 +57,15 @@
     .status-banner.wait .dot{background:var(--orange);animation:pulse 1.4s ease-in-out infinite}
     .status-banner.ok .dot{background:var(--success)}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .slot-list{display:grid;gap:8px;margin-top:11px}
+    .booked-summary{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--teal);border-radius:12px;background:var(--foam);margin-top:6px}
+    .booked-summary b{color:var(--teal-deep);font-size:13px}.booked-summary .chg{margin-left:auto}
     .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
     .slot-col{display:flex;flex-direction:column;gap:6px;min-width:0}
     .slot-colhead{font-size:11px;font-weight:800;color:var(--teal-deep);text-align:center;padding:7px 4px;background:var(--foam);border-radius:9px}
     .slot-cell{padding:11px 4px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--charcoal);font-size:12px;cursor:pointer;text-align:center;line-height:1.2}
-    .slot-cell b{display:block;font-size:12px;font-weight:800}
-    .slot-cell small{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+    .slot-cell b{display:block;font-size:12px;font-weight:800}.slot-cell small{display:block;font-size:9px;color:var(--muted);margin-top:2px}
     .slot-cell.picked{border-color:var(--teal);background:var(--foam);box-shadow:0 0 0 2px rgba(43,115,121,.16)}
     .slot-cell.full{opacity:.4;cursor:not-allowed}
-    .slot{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:#fff;cursor:pointer;text-align:left}
-    .slot.picked{border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,115,121,.12)}
-    .slot.full{opacity:.5;cursor:not-allowed}
-    .slot b{font-size:12.5px;color:var(--charcoal)}.slot span{display:block;color:var(--muted);font-size:10.5px;margin-top:2px}
-    .slot .cap{margin-left:auto;font-size:10px;font-weight:700;color:var(--teal-deep)}
-    .booked-chip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:20px;background:var(--foam);color:var(--teal-deep);font-size:11.5px;font-weight:700}
     .countdown{position:sticky;top:60px;z-index:30;margin:0 0 12px;padding:11px 14px;border-radius:12px;background:linear-gradient(135deg,#225E63,#2B7379);color:#fff;display:flex;align-items:center;gap:10px;font-size:12px}
     .countdown.closed{background:#4B5563}.countdown b{font-variant-numeric:tabular-nums;font-size:13px}
     .firm-tabs{position:sticky;top:60px;z-index:29;display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 -1px 11px;padding:5px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px)}
@@ -91,31 +92,45 @@
     .cred-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px}.cred-row b{color:var(--teal-deep)}.cred-row span{font-weight:800;color:var(--charcoal);word-break:break-all}
     .config-warning{padding:12px;background:#FEE2E2;color:#991B1B;font-size:12px;text-align:center}
     .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:520px){.firmlogos,.bdiv{display:none}}
     @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
   </style>
 </head>
 <body oncontextmenu="return false">
   <div id="config-warning" class="config-warning hidden">Replace the Supabase placeholders in this file before publishing.</div>
   <header class="appbar hidden" id="app-top">
-    <div><div class="wordmark"><i class="logo-dot"></i>EKUM</div><small class="brand-sub">Maitri Carnival 2026</small></div>
+    <div class="brandlock">
+      <div><div class="wordmark"><i class="logo-dot"></i>EKUM</div><small class="brand-sub">Maitri Carnival 2026</small></div>
+      <span class="bdiv"></span>
+      <span class="firmlogos">
+        <svg class="firm-logo" viewBox="0 0 92 26" role="img" aria-label="Maitri"><text x="1" y="19" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">maitri</text><circle cx="80" cy="8" r="5" fill="#8DC63F"/><circle cx="80" cy="8" r="2.2" fill="#2E2A6B"/></svg>
+        <svg class="firm-logo" viewBox="0 0 112 26" role="img" aria-label="Niharika"><text x="1" y="19" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">Niharika</text><path d="M99 5 q9 1 8 11 q-5 -5 -8 -11z" fill="#E6007E"/></svg>
+      </span>
+    </div>
     <div class="top-actions"><button class="icon-btn" id="account-btn">Account</button><button class="icon-btn" id="logout-btn">Logout</button></div>
   </header>
 
   <main>
     <!-- AUTH -->
     <section id="auth-screen">
-      <div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p></div>
+      <div class="brandbar">
+        <div class="wordmark"><i class="logo-dot"></i>EKUM</div>
+        <svg class="firm-logo" viewBox="0 0 92 26" role="img" aria-label="Maitri"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">maitri</text><circle cx="80" cy="8" r="5" fill="#8DC63F"/><circle cx="80" cy="8" r="2.2" fill="#2E2A6B"/></svg>
+        <svg class="firm-logo" viewBox="0 0 112 26" role="img" aria-label="Niharika"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">Niharika</text><path d="M99 5 q9 1 8 11 q-5 -5 -8 -11z" fill="#E6007E"/></svg>
+      </div>
+      <div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p><span class="dates">19 – 21 July 2026</span></div>
       <div class="card">
         <div class="switch"><button id="login-mode" class="active">Login</button><button id="register-mode">Register</button></div>
-        <form id="login-form">
+        <form id="login-form" style="margin-top:12px">
           <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="login-phone" inputmode="numeric" maxlength="10" required placeholder="10-digit mobile"></div>
           <label>Password</label><input id="login-password" type="password" required minlength="8" autocomplete="current-password">
           <button class="btn" type="submit">Login</button>
         </form>
-        <form id="register-form" class="hidden">
+        <form id="register-form" class="hidden" style="margin-top:12px">
           <label>Company / firm name</label><input id="reg-company" required maxlength="120">
           <label>Contact person</label><input id="reg-contact" required maxlength="100">
-          <div class="grid2"><div><label>City</label><input id="reg-city" required></div><div><label>State</label><input id="reg-state" required></div></div>
+          <div class="grid2"><div><label>City</label><input id="reg-city" list="dl-city" autocomplete="off" required placeholder="Type or pick"></div><div><label>State</label><select id="reg-state" required></select></div></div>
+          <label>Agent <span class="optional">(type or pick)</span></label><input id="reg-agent" list="dl-agent" autocomplete="off" placeholder="Your agent's name">
           <label>GSTIN <span class="optional">(optional)</span></label><input id="reg-gstin" maxlength="15">
           <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="reg-phone" inputmode="numeric" maxlength="10" required></div>
           <label>Create password <span class="optional">(min 8 characters)</span></label><input id="reg-password" type="password" minlength="8" required autocomplete="new-password">
@@ -149,14 +164,15 @@
       <div class="card" id="booking-card">
         <h2>Book a visit slot</h2>
         <p class="copy">Pick a time that suits you. You can change it any time before the event.</p>
-        <div id="booked-info"></div>
-        <div class="grid2" style="margin-top:6px">
-          <div><label>People in your group</label><input id="party-size" type="number" min="1" max="99" value="1"></div>
-          <div><label>Note <span class="optional">(optional)</span></label><input id="booking-note" maxlength="120" placeholder="Anything we should know"></div>
+        <div id="booked-wrap"></div>
+        <div id="slot-picker">
+          <div class="grid2" style="margin-top:6px">
+            <div><label>People in your group</label><input id="party-size" type="number" min="1" max="99" value="1"></div>
+            <div><label>Note <span class="optional">(optional)</span></label><input id="booking-note" maxlength="120" placeholder="Anything we should know"></div>
+          </div>
+          <div id="slot-list" class="slot-list"></div>
+          <button id="book-btn" class="btn" disabled>Confirm slot</button>
         </div>
-        <div id="slot-list" class="slot-list"></div>
-        <button id="book-btn" class="btn" disabled>Confirm slot</button>
-        <button id="cancel-booking-btn" class="btn ghost hidden">Cancel my booking</button>
       </div>
     </section>
 
@@ -166,7 +182,7 @@
       <div class="firm-tabs"><button class="firm-tab active" data-firm="Maitri">Maitri</button><button class="firm-tab" data-firm="Niharika">Niharika</button></div>
       <div class="card">
         <h2 id="order-title">Maitri order</h2><p class="copy" id="order-status">Draft</p>
-        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="piece-count">0</b><span>Pieces</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
+        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="piece-count">0</b><span>Sets</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
       </div>
       <div class="card">
         <h2>Scan a barcode</h2><p class="copy">Each design is added once. Change the quantity manually.</p>
@@ -183,11 +199,15 @@
     <!-- ACCOUNT -->
     <section id="account-screen" class="hidden">
       <div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to exhibition staff.</p>
-        <div class="account-grid"><div><label>Company</label><input id="acc-company"></div><div><label>Contact</label><input id="acc-contact"></div><div><label>City</label><input id="acc-city"></div><div><label>State</label><input id="acc-state"></div></div>
+        <div class="account-grid"><div><label>Company</label><input id="acc-company"></div><div><label>Contact</label><input id="acc-contact"></div><div><label>City</label><input id="acc-city" list="dl-city" autocomplete="off"></div><div><label>State</label><select id="acc-state"></select></div></div>
+        <label>Agent</label><input id="acc-agent" list="dl-agent" autocomplete="off">
         <label>GSTIN</label><input id="acc-gstin"><button id="save-account" class="btn">Save account details</button><button id="back-order" class="btn secondary">Back</button>
       </div>
     </section>
   </main>
+
+  <datalist id="dl-city"></datalist>
+  <datalist id="dl-agent"></datalist>
 
   <!-- Credentials modal -->
   <div id="cred-modal" class="modal">
@@ -208,11 +228,9 @@
   <div id="loading" class="loading"><div class="loader-card"><div class="spinner"></div><span id="loading-text">Working…</span></div></div>
 
 <script>
-const CONFIG={
-  SUPABASE_URL:"https://ezmtiiftolcaslqfvozu.supabase.co",
-  SUPABASE_ANON_KEY:"sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",
-  REQUIRE_ACCESS_CODE:false
-};
+const CONFIG={SUPABASE_URL:"https://ezmtiiftolcaslqfvozu.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",REQUIRE_ACCESS_CODE:false};
+const FIRMS={Maitri:{name:'Maitri Texfab Private Limited',gstin:'24AAGCM4427L2ZB'},Niharika:{name:'Niharika Texfab LLP',gstin:'24AAWFN4840R1ZC'}};
+const STATES=["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
 const configured=!CONFIG.SUPABASE_URL.includes('__')&&!CONFIG.SUPABASE_ANON_KEY.includes('__');
 if(!configured)document.getElementById('config-warning').classList.remove('hidden');
 if(CONFIG.REQUIRE_ACCESS_CODE)document.getElementById('access-code-wrap').classList.remove('hidden');
@@ -226,6 +244,17 @@ function loading(on,text='Working…'){$('loading-text').textContent=text;$('loa
 function normalizePhone(v){const d=String(v||'').replace(/\D/g,'');if(!/^[6-9]\d{9}$/.test(d))throw new Error('Enter a valid 10-digit Indian mobile number');return '91'+d}
 function ik(url,tr){if(!url)return '';return url+(url.includes('?')?'&':'?')+'tr='+tr}
 function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return d.toLocaleString('en-IN',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}
+function isAuthErr(m){return /INVALID_OR_EXPIRED_SESSION|JWT|expired|AUTH_REQUIRED|Session/i.test(String(m||''))}
+
+// Lazy script loader (jsPDF, camera scanner) for faster initial load.
+function loadScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();const el=document.createElement('script');el.src=src;el.onload=()=>res();el.onerror=()=>rej(new Error('Could not load a required file. Check your connection.'));document.head.appendChild(el)})}
+async function ensureJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return;await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');if(!window.jspdf||!window.jspdf.jsPDF)throw new Error('PDF tool could not load. Try again.')}
+async function ensureScanner(){if(window.Html5Qrcode)return;await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js')}
+
+// Populate state selects + lookup datalists.
+function fillStates(){const opts='<option value="">Select state</option>'+STATES.map(s=>`<option>${s}</option>`).join('');$('reg-state').innerHTML=opts;$('acc-state').innerHTML=opts}
+async function loadLookups(){try{const{data}=await sb.rpc('list_lookups');const L=data||{};$('dl-city').innerHTML=(L.city||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-agent').innerHTML=(L.agent||[]).map(v=>`<option value="${esc(v)}">`).join('')}catch(e){/* non-blocking */}}
+fillStates();if(sb)loadLookups();
 
 function show(screen){state.screen=screen;['auth-screen','lobby-screen','order-screen','account-screen'].forEach(id=>$(id).classList.toggle('hidden',id!==screen+'-screen'));$('app-top').classList.toggle('hidden',screen==='auth');
   if(screen!=='lobby'&&state.poll){clearInterval(state.poll);state.poll=null}
@@ -245,7 +274,7 @@ async function applySession(session){if(!session?.access_token||!session?.refres
 
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;try{loading(true,'Logging in…');const phone=normalizePhone($('login-phone').value);const data=await customerAuth('login',{phone,password:$('login-password').value});await applySession(data.session)}catch(err){toast(err.message,'error')}finally{loading(false)}});
 
-$('register-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;try{loading(true,'Creating account…');const phone=normalizePhone($('reg-phone').value);const password=$('reg-password').value;const data=await customerAuth('register',{phone,password,companyName:$('reg-company').value.trim(),contactName:$('reg-contact').value.trim(),city:$('reg-city').value.trim(),state:$('reg-state').value.trim(),gstin:$('reg-gstin').value.trim().toUpperCase(),accessCode:$('reg-access-code').value.trim()});
+$('register-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;if(!$('reg-state').value){toast('Please select your state','error');return}try{loading(true,'Creating account…');const phone=normalizePhone($('reg-phone').value);const password=$('reg-password').value;const data=await customerAuth('register',{phone,password,companyName:$('reg-company').value.trim(),contactName:$('reg-contact').value.trim(),city:$('reg-city').value.trim(),state:$('reg-state').value,agent:$('reg-agent').value.trim(),gstin:$('reg-gstin').value.trim().toUpperCase(),accessCode:$('reg-access-code').value.trim()});
   $('cred-user').textContent=phone;$('cred-pass').textContent=password;window.__pendingSession=data.session;$('cred-modal').classList.add('open');
 }catch(err){toast(String(err.message||err).replace('Database error saving new user','Registration details were rejected'),'error')}finally{loading(false)}});
 
@@ -254,31 +283,35 @@ $('cred-done').onclick=async()=>{try{loading(true,'Signing you in…');$('cred-m
 
 /* ---------- Lobby / status / slots ---------- */
 async function loadProfileAndStatus(){
-  const{data:profile,error}=await sb.from('customers').select('*').single();if(error)throw error;state.profile=profile;
-  fillAccount();$('lobby-name').textContent=profile.contact_name||profile.company_name||'there';
-  await refreshStatus();await loadSlots();
+  const [pr,stt]=await Promise.all([sb.from('customers').select('*').single(),sb.rpc('get_my_status')]);
+  if(pr.error)throw pr.error;if(stt.error)throw stt.error;
+  state.profile=pr.data;state.status=stt.data;
+  fillAccount();$('lobby-name').textContent=state.profile.contact_name||state.profile.company_name||'there';
+  renderEntry();applyStatusSteps();
+  await loadSlots();
 }
-async function refreshStatus(){
-  const{data,error}=await sb.rpc('get_my_status');if(error)throw error;state.status=data;renderEntry();
-  if(data.checkedIn){$('step-entry').className='step done';$('step-order').className='step active'}
-  else{$('step-entry').className='step active';$('step-order').className='step'}
-}
+async function refreshStatus(){const{data,error}=await sb.rpc('get_my_status');if(error)throw error;state.status=data;renderEntry();applyStatusSteps()}
+function applyStatusSteps(){const s=state.status||{};if(s.checkedIn){$('step-entry').className='step done';$('step-order').className='step active'}else{$('step-entry').className='step active';$('step-order').className='step'}if(s.booking){$('step-slot').className='step done'}}
 function renderEntry(){
   const s=state.status||{};const banner=$('entry-banner');const text=$('entry-text');
   if(s.active===false){banner.className='status-banner wait';text.innerHTML='<b>Account paused.</b> Please speak to exhibition staff.';$('enter-order-btn').classList.add('hidden');return}
-  if(s.checkedIn){banner.className='status-banner ok';text.innerHTML='<b>You are checked in.</b> You can build and edit your order now.';$('enter-order-btn').classList.remove('hidden');
-    if(state.poll){clearInterval(state.poll);state.poll=null}
-  }else{banner.className='status-banner wait';text.innerHTML='<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+'+esc(state.profile?.phone_e164||'')+'</b>. This screen updates automatically once staff check you in.';$('enter-order-btn').classList.add('hidden');
-    if(!state.poll)state.poll=setInterval(()=>refreshStatus().catch(()=>{}),8000);
-  }
+  if(s.checkedIn){banner.className='status-banner ok';text.innerHTML='<b>You are checked in.</b> You can build and edit your order now.';$('enter-order-btn').classList.remove('hidden');if(state.poll){clearInterval(state.poll);state.poll=null}}
+  else{banner.className='status-banner wait';text.innerHTML='<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+'+esc(state.profile?.phone_e164||'')+'</b>. This screen updates automatically once staff check you in.';$('enter-order-btn').classList.add('hidden');if(!state.poll)state.poll=setInterval(()=>refreshStatus().catch(()=>{}),15000)}
 }
 async function loadSlots(){
   const{data,error}=await sb.rpc('list_slots');if(error){console.warn(error);return}
   state.slots=data||[];const booking=state.status?.booking;
-  const info=$('booked-info');
-  if(booking){info.innerHTML=`<div class="booked-chip">✓ Booked: ${esc(fmtTime(booking.startsAt))}${booking.label?' · '+esc(booking.label):''}</div>`;state.pickedSlot=booking.slotId;$('cancel-booking-btn').classList.remove('hidden');$('party-size').value=booking.partySize||1;$('booking-note').value=booking.note||'';$('book-btn').textContent='Update my slot'}
-  else{info.innerHTML='';$('cancel-booking-btn').classList.add('hidden');$('book-btn').textContent='Confirm slot'}
-  renderSlotGrid();
+  if(booking){state.pickedSlot=booking.slotId;$('party-size').value=booking.partySize||1;$('booking-note').value=booking.note||'';$('book-btn').textContent='Update my slot'}
+  else{$('book-btn').textContent='Confirm slot'}
+  renderBookingCard();
+}
+function renderBookingCard(){
+  const booking=state.status?.booking;const wrap=$('booked-wrap');const picker=$('slot-picker');
+  if(booking){
+    wrap.innerHTML=`<div class="booked-summary"><div><b>Your slot: ${esc(fmtTime(booking.startsAt))}</b><div class="copy" style="margin-top:2px">${esc(booking.label||'')}${booking.partySize?' · '+booking.partySize+' people':''}</div></div><button id="change-slot-btn" class="btn secondary chg" style="width:auto;margin:0;min-height:40px">Change your slot</button></div>`;
+    picker.classList.add('hidden');
+    $('change-slot-btn').onclick=()=>{picker.classList.remove('hidden');renderSlotGrid()};
+  }else{wrap.innerHTML='';picker.classList.remove('hidden');renderSlotGrid()}
 }
 function renderSlotGrid(){
   const host=$('slot-list');host.className='';
@@ -294,16 +327,15 @@ function renderSlotGrid(){
 }
 $('slot-list').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b||b.disabled)return;state.pickedSlot=b.dataset.slot;renderSlotGrid()});
 $('book-btn').onclick=async()=>{if(!state.pickedSlot)return;try{loading(true,'Saving your slot…');const{error}=await sb.rpc('book_slot',{p_slot_id:state.pickedSlot,p_party_size:Number($('party-size').value)||1,p_note:$('booking-note').value.trim()});if(error)throw error;await refreshStatus();await loadSlots();toast('Slot booked','success')}catch(err){toast(err.message==='SLOT_FULL'?'That slot is full — pick another':err.message,'error')}finally{loading(false)}};
-$('cancel-booking-btn').onclick=async()=>{try{loading(true,'Cancelling…');const{error}=await sb.rpc('cancel_my_booking');if(error)throw error;state.pickedSlot=null;await refreshStatus();await loadSlots();toast('Booking cancelled','success')}catch(err){toast(err.message,'error')}finally{loading(false)}};
 $('refresh-status-btn').onclick=()=>refreshStatus().then(()=>toast('Status updated')).catch(e=>toast(e.message,'error'));
 $('enter-order-btn').onclick=async()=>{await loadOrders();show('order');render()};
 $('back-lobby-btn').onclick=async()=>{await stopScanner();await refreshStatus().catch(()=>{});await loadSlots().catch(()=>{});show('lobby')};
 
 /* ---------- Orders ---------- */
-async function loadOrders(){loading(true,'Loading your orders…');try{for(const firm of ['Maitri','Niharika']){const{data,error}=await sb.rpc('get_my_order_state',{p_firm:firm});if(error)throw error;state.orders[firm]=data;state.carts[firm]=(data.items||[]).map(x=>({...x}))}}catch(err){toast(err.message,'error')}finally{loading(false)}}
+async function loadOrders(){loading(true,'Loading your orders…');try{const [m,n]=await Promise.all([sb.rpc('get_my_order_state',{p_firm:'Maitri'}),sb.rpc('get_my_order_state',{p_firm:'Niharika'})]);if(m.error)throw m.error;if(n.error)throw n.error;state.orders.Maitri=m.data;state.orders.Niharika=n.data;state.carts.Maitri=(m.data.items||[]).map(x=>({...x}));state.carts.Niharika=(n.data.items||[]).map(x=>({...x}))}catch(err){toast(err.message,'error')}finally{loading(false)}}
 function currentCart(){return state.carts[state.activeFirm]}
 function windowClosed(){const s=state.status;if(!s||!s.editDeadline)return false;return new Date(s.editDeadline).getTime()<Date.now()}
-function fillAccount(){const p=state.profile||{};$('acc-company').value=p.company_name||'';$('acc-contact').value=p.contact_name||'';$('acc-city').value=p.city||'';$('acc-state').value=p.state||'';$('acc-gstin').value=p.gstin||''}
+function fillAccount(){const p=state.profile||{};$('acc-company').value=p.company_name||'';$('acc-contact').value=p.contact_name||'';$('acc-city').value=p.city||'';$('acc-state').value=p.state||'';$('acc-agent').value=p.agent||'';$('acc-gstin').value=p.gstin||''}
 
 function render(){
   document.querySelectorAll('.firm-tab').forEach(b=>b.classList.toggle('active',b.dataset.firm===state.activeFirm));
@@ -336,29 +368,61 @@ document.querySelectorAll('.firm-tab').forEach(b=>b.onclick=async()=>{await stop
 async function addBarcode(raw){const barcode=String(raw||'').trim();if(!barcode)return;try{$('scan-note').classList.add('hidden');const{data,error}=await sb.rpc('lookup_barcode',{p_barcode:barcode});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('Barcode is not mapped to an active design');if(![state.activeFirm,'Both'].includes(row.firm))throw new Error(`${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`);const cart=currentCart();if(cart.some(x=>x.designNo===row.design_no))throw new Error(`${row.design_no} is already in this order`);cart.push({barcode:row.barcode,designNo:row.design_no,imageUrl:row.image_url||'',qty:1,category:row.category,fabric:row.fabric,color:row.color,description:row.description});$('barcode-input').value='';render();note(`Added ${row.design_no}`,'success');navigator.vibrate?.(80)}catch(err){note(err.message,'error');navigator.vibrate?.([100,70,100])}}
 function note(t,type=''){$('scan-note').textContent=t;$('scan-note').className='notice '+type}
 $('add-barcode').onclick=()=>addBarcode($('barcode-input').value);$('barcode-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addBarcode(e.target.value)}});
-$('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err,'error');await stopScanner()}};
+$('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{await ensureScanner();state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err.message,'error');await stopScanner()}};
 async function stopScanner(){if(state.scanner){try{if(state.scanning)await state.scanner.stop()}catch{}try{await state.scanner.clear()}catch{}}state.scanner=null;state.scanning=false;$('reader').classList.remove('open');$('camera-btn').textContent='Open camera scanner'}
 
 $('save-btn').onclick=async()=>{try{loading(true,'Saving order…');const firm=state.activeFirm,order=state.orders[firm];const items=currentCart().map(x=>({barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1}));const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok){state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));render();throw new Error(data.message)}state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));await refreshStatus();render();toast(`${firm} order saved`,'success')}catch(err){if(isAuthErr(err.message)){toast('Your session expired — please log in again.','error');show('auth')}else toast(friendlySave(err.message),'error')}finally{loading(false)}};
 function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';return m}
 
+/* ---------- PDF (sale order) ---------- */
 async function blobToDataUrl(b){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
-async function imageThumbDataUrl(url){const res=await fetch(ik(url,'w-320,h-430,c-at_max,q-40,f-jpg'),{mode:'cors',credentials:'omit'});if(!res.ok)throw new Error('img');return await blobToDataUrl(await res.blob())}
-$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}try{loading(true,'Building PDF…');const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});const p=state.profile,firm=state.activeFirm;doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text(`${firm} · Maitri Carnival 2026`,14,16);doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text(`${p.company_name} · ${p.contact_name}`,14,23);doc.text(`Phone: +${p.phone_e164}   City: ${p.city}, ${p.state}`,14,29);doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`,14,35);let y=43;for(let i=0;i<cart.length;i++){const it=cart[i];if(y>260){doc.addPage();y=16}try{const dataUrl=await imageThumbDataUrl(it.imageUrl);doc.addImage(dataUrl,'JPEG',14,y,28,38,undefined,'FAST')}catch{doc.setDrawColor(220);doc.rect(14,y,28,38)}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(it.designNo,48,y+7);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(doc.splitTextToSize([it.category,it.fabric,it.color].filter(Boolean).join(' · '),130),48,y+14);doc.text(doc.splitTextToSize(it.description||'',130),48,y+20);doc.setFont('helvetica','bold');doc.text(`Qty: ${it.qty} pcs`,48,y+34);doc.setDrawColor(225);doc.line(14,y+41,196,y+41);y+=46}doc.setFontSize(11);doc.text(`Total designs: ${cart.length}    Total pieces: ${cart.reduce((s,x)=>s+Number(x.qty||0),0)}`,14,Math.min(y+3,285));doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Maitri-Carnival.pdf`);toast('PDF downloaded','success')}catch(err){toast(err.message,'error')}finally{loading(false)}};
+async function fetchThumb(url){const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(ik(url,'w-300,h-400,c-at_max,q-45,f-jpg'),{mode:'cors',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('img');return await blobToDataUrl(await r.blob())}finally{clearTimeout(t)}}
+$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}
+  try{loading(true,'Preparing PDF…');await ensureJsPDF();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});const p=state.profile,firm=state.activeFirm,f=FIRMS[firm];const W=210;let y=14;
+    // Header
+    doc.setFillColor(34,94,99);doc.rect(0,0,W,26,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('EKUM · '+firm,12,12);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(f.name,12,18);doc.text('GSTIN: '+f.gstin+'    Maitri Carnival 2026',12,22.5);
+    doc.setTextColor(51,39,27);y=34;
+    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('SALE ORDER',12,y);
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('Date: '+new Date().toLocaleDateString('en-IN'),W-12,y,{align:'right'});y+=7;
+    // Buyer block
+    doc.setDrawColor(220);doc.setFillColor(245,248,247);doc.rect(12,y,W-24,24,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Buyer',15,y+5);
+    doc.setFont('helvetica','normal');
+    doc.text(`${p.company_name||''}  ·  ${p.contact_name||''}`,15,y+10);
+    doc.text(`Phone: +${p.phone_e164||''}    GSTIN: ${p.gstin||'—'}`,15,y+15);
+    doc.text(`${[p.city,p.state].filter(Boolean).join(', ')}    Agent: ${p.agent||'—'}`,15,y+20);
+    y+=30;
+    // Table header
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setFillColor(232,242,241);doc.rect(12,y,W-24,7,'F');
+    doc.text('#',15,y+5);doc.text('Design',33,y+5);doc.text('Details',75,y+5);doc.text('Sets',W-16,y+5,{align:'right'});
+    y+=7;doc.setFont('helvetica','normal');
+    const thumbs=await Promise.allSettled(cart.map(it=>fetchThumb(it.imageUrl)));
+    for(let i=0;i<cart.length;i++){const it=cart[i];if(y>272){doc.addPage();y=16}
+      const tv=thumbs[i];if(tv.status==='fulfilled'){try{doc.addImage(tv.value,'JPEG',15,y+1,12,16,undefined,'FAST')}catch{doc.setDrawColor(225);doc.rect(15,y+1,12,16)}}else{doc.setDrawColor(225);doc.rect(15,y+1,12,16)}
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(String(it.designNo||''),33,y+7);
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(doc.splitTextToSize([it.category,it.fabric,it.color].filter(Boolean).join(' · ')+(it.description?'  '+it.description:''),110),75,y+5);
+      doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.text(String(it.qty),W-16,y+8,{align:'right'});
+      doc.setDrawColor(235);doc.line(12,y+19,W-12,y+19);y+=20;
+    }
+    doc.setFont('helvetica','bold');doc.setFontSize(10);
+    const totalSets=cart.reduce((s,x)=>s+Number(x.qty||0),0);
+    doc.text(`Total designs: ${cart.length}     Total sets: ${totalSets}`,12,Math.min(y+6,289));
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120);doc.text('Computer-generated sale order · Maitri Carnival 2026',12,293);
+    doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Sale-Order.pdf`);toast('PDF downloaded','success')
+  }catch(err){toast(err.message||'Could not generate the PDF','error')}finally{loading(false)}};
 
 /* ---------- Account ---------- */
 $('account-btn').onclick=()=>{fillAccount();show('account')};
 $('back-order').onclick=()=>show(state.status?.checkedIn?'order':'lobby');
-$('save-account').onclick=async()=>{try{loading(true,'Saving account…');const patch={company_name:$('acc-company').value.trim(),contact_name:$('acc-contact').value.trim(),city:$('acc-city').value.trim(),state:$('acc-state').value.trim(),gstin:$('acc-gstin').value.trim().toUpperCase()};const{data,error}=await sb.from('customers').update(patch).eq('id',state.profile.id).select().single();if(error)throw error;state.profile=data;toast('Account updated','success');show(state.status?.checkedIn?'order':'lobby')}catch(err){toast(err.message,'error')}finally{loading(false)}};
+$('save-account').onclick=async()=>{try{loading(true,'Saving account…');const patch={company_name:$('acc-company').value.trim(),contact_name:$('acc-contact').value.trim(),city:$('acc-city').value.trim(),state:$('acc-state').value,agent:$('acc-agent').value.trim(),gstin:$('acc-gstin').value.trim().toUpperCase()};const{data,error}=await sb.from('customers').update(patch).eq('id',state.profile.id).select().single();if(error)throw error;state.profile=data;loadLookups();toast('Account updated','success');show(state.status?.checkedIn?'order':'lobby')}catch(err){toast(err.message,'error')}finally{loading(false)}};
 $('logout-btn').onclick=async()=>{await stopScanner();if(state.poll){clearInterval(state.poll);state.poll=null}stopTick();await sb.auth.signOut();state.profile=null;show('auth')};
 
 /* ---------- Boot ---------- */
-function isAuthErr(m){return /INVALID_OR_EXPIRED_SESSION|JWT|expired|AUTH_REQUIRED|Session/i.test(String(m||''))}
 let booted=false;
 async function boot(){if(booted)return;booted=true;try{loading(true,'Loading…');await loadProfileAndStatus();show('lobby')}catch(err){booted=false;if(!isAuthErr(err.message))toast(err.message,'error');show('auth')}finally{loading(false)}}
 if(sb){
-  // Only (re)load on real sign-in / sign-out. Ignore TOKEN_REFRESHED so a
-  // background token refresh never wipes an order the customer is editing.
   sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session){booted=false;show('auth');return}if(event==='SIGNED_IN'){booted=false;setTimeout(boot,0)}});
   sb.auth.getSession().then(({data})=>{data.session?boot():show('auth')});
 }else show('auth');

@@ -344,21 +344,40 @@ Deno.serve(async (request: Request) => {
 
     // ---- Entry gate ----------------------------------------------------
     if (action === "directory") {
-      const q = clean(body.query).toLowerCase();
+      const q = clean(body.query);
       let query = db
         .from("customers")
-        .select("id,phone_e164,company_name,contact_name,city,state,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
+        .select("id,phone_e164,company_name,contact_name,city,state,gstin,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
         .order("created_at", { ascending: false })
         .limit(400);
       if (q) {
-        const digits = q.replace(/\D/g, "");
         const like = `%${q}%`;
-        query = digits
-          ? query.or(`phone_e164.ilike.%${digits}%,company_name.ilike.${like},contact_name.ilike.${like}`)
-          : query.or(`company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like}`);
+        // Search across every customer field.
+        query = query.or(
+          `phone_e164.ilike.${like},company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like},gstin.ilike.${like}`,
+        );
       }
       const { data, error } = await query;
       if (error) throw error;
+      // Attach each customer's booked slot.
+      const ids = (data ?? []).map((r) => r.id);
+      const bookingByCust = new Map<string, any>();
+      if (ids.length) {
+        const { data: bks, error: bErr } = await db
+          .from("bookings")
+          .select("customer_id,party_size,slots(starts_at,ends_at,label)")
+          .eq("status", "Booked")
+          .in("customer_id", ids);
+        if (bErr) throw bErr;
+        for (const b of bks ?? []) {
+          bookingByCust.set(b.customer_id, {
+            startsAt: (b as any).slots?.starts_at ?? null,
+            endsAt: (b as any).slots?.ends_at ?? null,
+            label: (b as any).slots?.label ?? "",
+            partySize: b.party_size,
+          });
+        }
+      }
       return jsonResponse(request, {
         ok: true,
         data: (data ?? []).map((r) => ({
@@ -368,12 +387,61 @@ Deno.serve(async (request: Request) => {
           contactName: r.contact_name,
           city: r.city,
           state: r.state,
+          gstin: r.gstin,
           active: r.active,
           checkedInAt: r.checked_in_at,
           orderingStartedAt: r.ordering_started_at,
           editDeadline: r.edit_deadline,
+          booking: bookingByCust.get(r.id) ?? null,
         })),
       });
+    }
+
+    if (action === "getProductDetail") {
+      const dn = clean(body.designNo);
+      const { data: d, error } = await db
+        .from("designs")
+        .select("design_no,firm,image_url,category,fabric,color,description,active,updated_at")
+        .eq("design_no", dn)
+        .maybeSingle();
+      if (error) throw error;
+      if (!d) throw new Error("Design not found");
+      const { data: bcs, error: bErr } = await db
+        .from("barcode_mappings")
+        .select("barcode,active,updated_at")
+        .eq("design_no", dn)
+        .order("updated_at", { ascending: false });
+      if (bErr) throw bErr;
+      return jsonResponse(request, {
+        ok: true,
+        data: {
+          design: {
+            designNo: d.design_no, firm: d.firm, imageUrl: d.image_url,
+            category: d.category, fabric: d.fabric, color: d.color,
+            description: d.description, active: d.active, updatedAt: d.updated_at,
+          },
+          barcodes: (bcs ?? []).map((b) => ({ barcode: b.barcode, active: b.active })),
+        },
+      });
+    }
+
+    if (action === "updateProduct") {
+      const dn = clean(body.designNo);
+      if (!dn) throw new Error("Design number is required");
+      const firm = clean(body.firm);
+      if (!["Maitri", "Niharika", "Both"].includes(firm)) throw new Error("Firm must be Maitri, Niharika or Both");
+      // Image is owned by the Excel/sheet sync and is not editable here.
+      const patch = {
+        firm,
+        category: clean(body.category),
+        fabric: clean(body.fabric),
+        color: clean(body.color),
+        description: clean(body.description),
+        active: body.active === undefined ? true : Boolean(body.active),
+      };
+      const { data, error } = await db.from("designs").update(patch).eq("design_no", dn).select("design_no").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
     }
 
     if (action === "checkIn") {
@@ -494,6 +562,7 @@ Deno.serve(async (request: Request) => {
           city: clean(body.city),
           state: clean(body.state),
           gstin: clean(body.gstin).toUpperCase(),
+          agent: clean(body.agent),
           login_method: "phone_password_hidden_email",
           created_by: "admin_assisted",
         },
@@ -503,6 +572,22 @@ Deno.serve(async (request: Request) => {
         ok: true,
         data: { customerId: created.user?.id, phone, password, companyName },
       });
+    }
+
+    if (action === "createStaff") {
+      const email = clean(body.email).toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Enter a valid email address");
+      if (email.endsWith(CUSTOMER_DOMAIN)) throw new Error("Use a normal email, not the customer domain");
+      const password = clean(body.password) || generatePassword();
+      if (password.length < 8) throw new Error("Password must be at least 8 characters");
+      const { data: created, error } = await db.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        app_metadata: { role: "admin" },
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: { id: created.user?.id, email, password } });
     }
 
     if (action === "assistedSaveOrder") {
@@ -519,6 +604,11 @@ Deno.serve(async (request: Request) => {
 
     if (action === "getCustomerOrders") {
       const customerId = clean(body.customerId);
+      const { data: cust } = await db
+        .from("customers")
+        .select("company_name,contact_name,phone_e164,city,state,agent,gstin,active,checked_in_at")
+        .eq("id", customerId)
+        .maybeSingle();
       // Fetch both firm orders + items for assisted editing.
       const { data: orders, error: oErr } = await db
         .from("orders")
@@ -544,7 +634,18 @@ Deno.serve(async (request: Request) => {
           imageUrl: i.designs?.image_url ?? "",
         })),
       }));
-      return jsonResponse(request, { ok: true, data: { orders: shaped } });
+      return jsonResponse(request, {
+        ok: true,
+        data: {
+          orders: shaped,
+          customer: cust ? {
+            companyName: cust.company_name, contactName: cust.contact_name,
+            phone: cust.phone_e164, city: cust.city, state: cust.state,
+            agent: cust.agent, gstin: cust.gstin, active: cust.active,
+            checkedIn: !!cust.checked_in_at,
+          } : null,
+        },
+      });
     }
 
     return jsonResponse(request, { ok: false, error: `UNKNOWN_ACTION_${action}` }, 400);

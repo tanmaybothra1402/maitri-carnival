@@ -111,6 +111,7 @@ Deno.serve(async (request: Request) => {
       const city = clean(body.city);
       const state = clean(body.state);
       const gstin = clean(body.gstin).toUpperCase();
+      const agent = clean(body.agent);
       const accessCode = clean(body.accessCode);
 
       if (companyName.length < 2) throw new Error("COMPANY_NAME_REQUIRED");
@@ -128,6 +129,7 @@ Deno.serve(async (request: Request) => {
           city,
           state,
           gstin,
+          agent,
           access_code: accessCode,
           login_method: "phone_password_hidden_email",
         },
