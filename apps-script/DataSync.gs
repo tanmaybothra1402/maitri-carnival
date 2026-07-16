@@ -17,6 +17,12 @@ const DS_PROP_URL = 'DS_SUPABASE_URL';
 const DS_PROP_SECRET = 'DS_SHEET_SYNC_SECRET';
 const DS_PATH = '/functions/v1/data-sync';
 
+// ── Fill these two in the Apps Script editor to skip "Configure connection". ──
+// SECURITY: only paste the real secret into the Apps Script editor copy.
+// Keep the repo copy of this file blank so the secret is never committed to GitHub.
+const DS_URL = 'https://ezmtiiftolcaslqfvozu.supabase.co';
+const DS_SECRET = '';  // <-- paste your SHEET_SYNC_SECRET here (from supabase/.env.production)
+
 // Tab name -> Supabase table.
 const DS_TABS = {
   'Designs': 'designs',
@@ -70,11 +76,13 @@ function dsConfigure() {
   ui.alert('Saved. Now run "Pull ALL tables".');
 }
 
+function dsAlert_(msg) { try { SpreadsheetApp.getUi().alert(msg); } catch (e) { Logger.log(msg); } }
+
 function dsCall_(payload) {
   const props = PropertiesService.getScriptProperties();
-  const base = String(props.getProperty(DS_PROP_URL) || '').replace(/\/$/, '');
-  const secret = String(props.getProperty(DS_PROP_SECRET) || '');
-  if (!base || !secret) throw new Error('Run "1. Configure connection" first.');
+  const base = String(DS_URL || props.getProperty(DS_PROP_URL) || '').replace(/\/$/, '');
+  const secret = String(DS_SECRET || props.getProperty(DS_PROP_SECRET) || '');
+  if (!base || !secret) throw new Error('Set DS_URL and DS_SECRET at the top of the script (or run "1. Configure connection").');
   const resp = UrlFetchApp.fetch(base + DS_PATH, {
     method: 'post', contentType: 'application/json',
     headers: { 'x-sheet-sync-secret': secret },
@@ -89,7 +97,7 @@ function dsCall_(payload) {
 
 function dsTest() {
   const d = dsCall_({ action: 'ping' });
-  SpreadsheetApp.getUi().alert('Connected.\nTables: ' + (d.tables || []).join(', ') + '\n' + d.at);
+  dsAlert_('Connected.\nTables: ' + (d.tables || []).join(', ') + '\n' + d.at);
 }
 
 function dsTableForTab_(name) { return DS_TABS[name] || null; }
@@ -126,23 +134,23 @@ function dsPullAll() {
     const table = DS_TABS[tab];
     if (all[table]) dsWrite_(tab, all[table]);
   });
-  SpreadsheetApp.getUi().alert('Pulled all tables. Editable columns are tinted. Edit, then use "Push this tab".');
+  dsAlert_('Pulled all tables. Editable columns are tinted. Edit, then use "Push this tab".');
 }
 
 function dsPullActive() {
   const sh = SpreadsheetApp.getActiveSheet();
   const table = dsTableForTab_(sh.getName());
-  if (!table) { SpreadsheetApp.getUi().alert('This tab is not a synced table. Use one of: ' + Object.keys(DS_TABS).join(', ')); return; }
+  if (!table) { dsAlert_('This tab is not a synced table. Use one of: ' + Object.keys(DS_TABS).join(', ')); return; }
   dsWrite_(sh.getName(), dsCall_({ action: 'pull', table: table }));
-  SpreadsheetApp.getUi().alert('Pulled ' + sh.getName() + '.');
+  dsAlert_('Pulled ' + sh.getName() + '.');
 }
 
 function dsPushActive() {
   const sh = SpreadsheetApp.getActiveSheet();
   const table = dsTableForTab_(sh.getName());
-  if (!table) { SpreadsheetApp.getUi().alert('This tab is not a synced table.'); return; }
+  if (!table) { dsAlert_('This tab is not a synced table.'); return; }
   const grid = sh.getDataRange().getValues();
-  if (grid.length < 2) { SpreadsheetApp.getUi().alert('No data rows to push.'); return; }
+  if (grid.length < 2) { dsAlert_('No data rows to push.'); return; }
   const header = grid[0].map(String);
   const rows = [];
   for (var i = 1; i < grid.length; i++) {
@@ -157,5 +165,5 @@ function dsPushActive() {
     rows.push(obj);
   }
   const res = dsCall_({ action: 'push', table: table, rows: rows });
-  SpreadsheetApp.getUi().alert('Pushed ' + sh.getName() + ':\nUpdated: ' + (res.updated || 0) + '\nCreated/Upserted: ' + (res.upserted || 0) + '\nDeleted: ' + (res.deleted || 0));
+  dsAlert_('Pushed ' + sh.getName() + ':\nUpdated: ' + (res.updated || 0) + '\nCreated/Upserted: ' + (res.upserted || 0) + '\nDeleted: ' + (res.deleted || 0));
 }

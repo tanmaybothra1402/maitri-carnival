@@ -98,14 +98,19 @@ async function pull(db: SupabaseClient, table: string) {
   const out: any[] = [];
   let from = 0; const size = 1000;
   while (true) {
-    const { data, error } = await db.from(table).select(cfg.cols.join(",")).range(from, from + size - 1);
+    // Read every column so newly-added DB columns appear in the sheet automatically.
+    const { data, error } = await db.from(table).select("*").range(from, from + size - 1);
     if (error) throw error;
     const rows = data ?? [];
     out.push(...rows);
     if (rows.length < size) break;
     from += size;
   }
-  return { table, columns: cfg.cols, rows: out };
+  // Known columns first (stable order), then any new/extra columns discovered in the data.
+  const seen = new Set(cfg.cols);
+  const extra: string[] = [];
+  for (const r of out) for (const k of Object.keys(r)) if (!seen.has(k)) { seen.add(k); extra.push(k); }
+  return { table, columns: cfg.cols.concat(extra), rows: out };
 }
 
 async function recompute(db: SupabaseClient, orderId: string) {
