@@ -1,16 +1,17 @@
 
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#225E63">
-  <title>Maitri Carnival 2026 · Orders</title>
-  <link rel="preconnect" href="https://ezmtiiftolcaslqfvozu.supabase.co">
-  <link rel="preconnect" href="https://ik.imagekit.io" crossorigin>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" name="viewport"/>
+<meta content="#225E63" name="theme-color"/>
+<title>Maitri Carnival 2026 · Orders</title>
+<link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
+<link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
     :root{--teal:#2B7379;--teal-deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#FFFFFF;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--indigo:#2E2A6B;--pink:#E6007E}
     html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
@@ -78,11 +79,11 @@
     .reader{display:none;margin-top:12px;overflow:hidden;border-radius:13px}.reader.open{display:block}
     .notice{margin-top:10px;padding:10px 12px;border-radius:10px;background:#FFF5DF;color:#8A5A09;font-size:11px;line-height:1.45}.notice.error{background:#FEE2E2;color:#991B1B}.notice.success{background:#DCFCE7;color:#166534}
     .items{display:grid;gap:10px;margin-top:12px}
-    .item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:11px;padding:11px;border:1px solid var(--border);border-radius:13px;background:#fff}
+    .item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:11px;padding:11px;border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(34,94,99,.045)}
     .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-    .item h3{font-size:14px;color:var(--teal-deep)}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45}
-    .qty{display:flex;align-items:center;gap:5px;margin-top:9px}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}
-    .qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{margin-left:auto!important;color:var(--error)!important}.line-total{margin-top:7px;color:var(--teal-deep);font-size:11px;font-weight:800}.line-note{min-height:58px;margin-top:7px;padding:8px 10px;font-size:13px;line-height:1.35}.line-note-label{margin-top:9px;font-size:9px}
+    .item-content{min-width:0}.item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.item h3{min-width:0;font-size:14px;color:var(--teal-deep);overflow-wrap:anywhere}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}.line-piece-pill{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:var(--foam);color:var(--teal-deep);font-size:9px;font-weight:850;white-space:nowrap}
+    .qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}.qty{display:flex;align-items:center;gap:5px;margin:0}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}.qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{flex:0 0 auto;width:36px!important;height:36px!important;margin:0!important;color:var(--error)!important}
+    .line-total{margin-top:8px;padding:7px 9px;border-radius:9px;background:#F6FAF9;color:var(--teal-deep);font-size:10.5px;font-weight:800;line-height:1.35;overflow-wrap:anywhere}.line-note-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px}.line-note-help{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.line-note{width:100%;min-height:62px;margin-top:6px;padding:9px 10px;font-size:16px!important;line-height:1.4;overflow-wrap:anywhere}
     .savebar{position:sticky;bottom:8px;z-index:25;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 30px rgba(34,55,52,.14);backdrop-filter:blur(10px)}.savebar .btn{margin:0}
     .empty{padding:26px 12px;border:1px dashed #BCD0CB;border-radius:13px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}
     .toast{position:fixed;left:50%;top:70px;z-index:200;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%);box-shadow:0 9px 25px rgba(0,0,0,.18)}.toast.open{display:block}.toast.error{background:#B91C1C}.toast.success{background:#166534}
@@ -96,382 +97,1511 @@
     @media(max-width:520px){.firmlogos,.bdiv{display:none}}
     @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
   </style>
-</head>
+<style>
+/* Real firm marks, mobile keyboard stability, and safe content containment. */
+html,body{touch-action:manipulation}input,select,textarea{font-size:16px!important;max-width:100%}.firm-logo{display:block;width:auto;object-fit:contain;flex:0 0 auto}.firmlogos .maitri-logo{height:24px}.firmlogos .niharika-logo{height:23px}.brandbar .maitri-logo{height:30px}.brandbar .niharika-logo{height:29px}.brandbar{overflow:hidden}.card,.item,.item>div,.step>div,.modal-card,.savebar{min-width:0}.copy,.meta,.step p,.status-banner,.line-total,.line-note{overflow-wrap:anywhere;word-break:break-word}.item{overflow:hidden}.line-note{width:100%;font-size:16px!important}.loading{backdrop-filter:blur(2px)}
+@media(max-width:520px){.firmlogos{display:flex!important;gap:6px}.firmlogos .maitri-logo{height:18px}.firmlogos .niharika-logo{height:17px}.bdiv{display:none}.brandbar{gap:9px}.brandbar .maitri-logo{height:24px}.brandbar .niharika-logo{height:23px}}
+@media(max-width:390px){.firmlogos .niharika-logo{display:block!important;height:14px}.firmlogos .maitri-logo{height:15px}.brandbar .maitri-logo{height:22px}.brandbar .niharika-logo{height:21px}}
+</style></head>
 <body oncontextmenu="return false">
-  <div id="config-warning" class="config-warning hidden">Replace the Supabase placeholders in this file before publishing.</div>
-  <header class="appbar hidden" id="app-top">
-    <div class="brandlock">
-      <div><div class="wordmark"><i class="logo-dot"></i>EKUM</div><small class="brand-sub">Maitri Carnival 2026</small></div>
-      <span class="bdiv"></span>
-      <span class="firmlogos">
-        <svg class="firm-logo" viewBox="0 0 92 26" role="img" aria-label="Maitri"><text x="1" y="19" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">maitri</text><circle cx="80" cy="8" r="5" fill="#8DC63F"/><circle cx="80" cy="8" r="2.2" fill="#2E2A6B"/></svg>
-        <svg class="firm-logo" viewBox="0 0 112 26" role="img" aria-label="Niharika"><text x="1" y="19" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">Niharika</text><path d="M99 5 q9 1 8 11 q-5 -5 -8 -11z" fill="#E6007E"/></svg>
-      </span>
-    </div>
-    <div class="top-actions"><button class="icon-btn" id="account-btn">Account</button><button class="icon-btn" id="logout-btn">Logout</button></div>
-  </header>
-
-  <main>
-    <!-- AUTH -->
-    <section id="auth-screen">
-      <div class="brandbar">
-        <div class="wordmark"><i class="logo-dot"></i>EKUM</div>
-        <svg class="firm-logo" viewBox="0 0 92 26" role="img" aria-label="Maitri"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">maitri</text><circle cx="80" cy="8" r="5" fill="#8DC63F"/><circle cx="80" cy="8" r="2.2" fill="#2E2A6B"/></svg>
-        <svg class="firm-logo" viewBox="0 0 112 26" role="img" aria-label="Niharika"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">Niharika</text><path d="M99 5 q9 1 8 11 q-5 -5 -8 -11z" fill="#E6007E"/></svg>
-      </div>
-      <div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p><span class="dates">19 – 21 July 2026</span></div>
-      <div class="card">
-        <div class="switch"><button id="login-mode" class="active">Login</button><button id="register-mode">Register</button></div>
-        <form id="login-form" style="margin-top:12px">
-          <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="login-phone" inputmode="numeric" maxlength="10" required placeholder="10-digit mobile"></div>
-          <label>Password</label><input id="login-password" type="password" required minlength="8" autocomplete="current-password">
-          <button class="btn" type="submit">Login</button>
-        </form>
-        <form id="register-form" class="hidden" style="margin-top:12px">
-          <label>Company / firm name</label><input id="reg-company" required maxlength="120">
-          <label>Contact person</label><input id="reg-contact" required maxlength="100">
-          <div class="grid2"><div><label>City</label><input id="reg-city" list="dl-city" autocomplete="off" required placeholder="Type or pick"></div><div><label>State</label><select id="reg-state" required></select></div></div>
-          <label>Agent <span class="optional">(type or pick)</span></label><input id="reg-agent" list="dl-agent" autocomplete="off" placeholder="Your agent's name">
-          <label>GSTIN <span class="optional">(optional)</span></label><input id="reg-gstin" maxlength="15">
-          <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="reg-phone" inputmode="numeric" maxlength="10" required></div>
-          <label>Create password <span class="optional">(min 8 characters)</span></label><input id="reg-password" type="password" minlength="8" required autocomplete="new-password">
-          <div id="access-code-wrap" class="hidden"><label>Exhibition access code</label><input id="reg-access-code"></div>
-          <button class="btn" type="submit">Register</button>
-        </form>
-        <p class="copy">No OTP is sent. Save your mobile number and password — you will log in with them at the venue.</p>
-      </div>
-    </section>
-
-    <!-- LOBBY -->
-    <section id="lobby-screen" class="hidden">
-      <div class="card">
-        <h2>Welcome, <span id="lobby-name">there</span></h2>
-        <p class="copy">Here is how the carnival ordering works:</p>
-        <div class="steps">
-          <div class="step done"><div class="n">✓</div><div><b>Registered</b><p>Your account is ready.</p></div></div>
-          <div class="step" id="step-slot"><div class="n">2</div><div><b id="step-slot-title">Book a visit slot</b><p id="step-slot-copy">Optional, helps us manage the crowd.</p><div id="step-slot-actions" class="step-actions"></div></div></div>
-          <div class="step" id="step-entry"><div class="n">3</div><div><b id="step-entry-title">Check in at reception</b><p id="step-entry-copy">Show your mobile number to our staff when you arrive.</p><div id="step-entry-actions" class="step-actions"></div></div></div>
-          <div class="step" id="step-order"><div class="n">4</div><div><b id="step-order-title">Create your order</b><p id="step-order-copy">Scan product barcodes for Maitri and Niharika.</p><div id="step-order-actions" class="step-actions"></div></div></div>
-          <div class="step" id="step-edit"><div class="n">5</div><div><b id="step-edit-title">Edit and download</b><p id="step-edit-copy">Your edit window starts after the first save.</p><div id="step-edit-actions" class="step-actions"></div></div></div>
-        </div>
-      </div>
-
-      <div class="card" id="entry-card">
-        <div id="entry-banner" class="status-banner wait"><span class="dot"></span><div id="entry-text">Checking your entry status…</div></div>
-        <button id="enter-order-btn" class="btn hidden">Start / continue my order →</button>
-        <button id="refresh-status-btn" class="btn secondary">Refresh status</button>
-      </div>
-
-      <div class="card" id="booking-card">
-        <h2>Book a visit slot</h2>
-        <p class="copy">Pick a time that suits you. You can change it any time before the event.</p>
-        <div id="booked-wrap"></div>
-        <div id="slot-picker">
-          <div class="grid2" style="margin-top:6px">
-            <div><label>People in your group</label><input id="party-size" type="number" min="1" max="99" value="1"></div>
-            <div><label>Note <span class="optional">(optional)</span></label><input id="booking-note" maxlength="120" placeholder="Anything we should know"></div>
-          </div>
-          <div id="slot-list" class="slot-list"></div>
-          <button id="book-btn" class="btn" disabled>Confirm slot</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ORDER -->
-    <section id="order-screen" class="hidden">
-      <div id="countdown" class="countdown hidden"><span>⏱</span><div>Edit window: <b id="countdown-text">—</b></div></div>
-      <div class="firm-tabs"><button class="firm-tab active" data-firm="Maitri">Maitri</button><button class="firm-tab" data-firm="Niharika">Niharika</button></div>
-      <div class="card">
-        <h2 id="order-title">Maitri order</h2><p class="copy" id="order-status">Draft</p>
-        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="set-count">0</b><span>Sets</span></div><div class="metric"><b id="piece-count">0</b><span>Total pcs</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
-      </div>
-      <div class="card">
-        <h2>Scan a barcode</h2><p class="copy">Each design is added once. Change the quantity manually.</p>
-        <div class="scan-actions"><div><label>Barcode</label><input id="barcode-input" autocomplete="off" inputmode="text" placeholder="Scan or type barcode"></div><button id="add-barcode" class="btn">Add</button></div>
-        <button id="camera-btn" class="btn secondary">Open camera scanner</button>
-        <div id="reader" class="reader"></div>
-        <div id="scan-note" class="notice hidden"></div>
-      </div>
-      <div class="card"><h2>Order items</h2><div id="items" class="items"></div></div>
-      <div class="savebar"><button id="save-btn" class="btn">Save order</button><button id="pdf-btn" class="btn secondary">Download PDF</button></div>
-      <button id="back-lobby-btn" class="btn ghost">← Back to slot & status</button>
-    </section>
-
-    <!-- ACCOUNT -->
-    <section id="account-screen" class="hidden">
-      <div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to exhibition staff.</p>
-        <div class="account-grid"><div><label>Company</label><input id="acc-company"></div><div><label>Contact</label><input id="acc-contact"></div><div><label>City</label><input id="acc-city" list="dl-city" autocomplete="off"></div><div><label>State</label><select id="acc-state"></select></div></div>
-        <label>Agent</label><input id="acc-agent" list="dl-agent" autocomplete="off">
-        <label>GSTIN</label><input id="acc-gstin"><button id="save-account" class="btn">Save account details</button><button id="back-order" class="btn secondary">Back</button>
-      </div>
-    </section>
-  </main>
-
-  <datalist id="dl-city"></datalist>
-  <datalist id="dl-agent"></datalist>
-
-  <!-- Credentials modal -->
-  <div id="cred-modal" class="modal">
-    <div class="modal-card">
-      <div class="wordmark" style="justify-content:center"><i class="logo-dot"></i>EKUM</div>
-      <h2 style="margin-top:12px;color:var(--teal-deep)">Save your login</h2>
-      <p class="copy">You will need these to log in at the venue. Take a screenshot or copy them now.</p>
-      <div class="cred">
-        <div class="cred-row"><b>Username (mobile)</b><span id="cred-user">—</span></div>
-        <div class="cred-row"><b>Password</b><span id="cred-pass">—</span></div>
-      </div>
-      <button id="cred-copy" class="btn secondary">Copy my login details</button>
-      <button id="cred-done" class="btn">I've saved them — continue</button>
-    </div>
-  </div>
-
-  <div id="toast" class="toast"></div>
-  <div id="loading" class="loading"><div class="loader-card"><div class="spinner"></div><span id="loading-text">Working…</span></div></div>
-
+<div class="config-warning hidden" id="config-warning">Replace the Supabase placeholders in this file before publishing.</div>
+<header class="appbar hidden" id="app-top">
+<div class="brandlock">
+<div><div class="wordmark"><i class="logo-dot"></i>EKUM</div><small class="brand-sub">Maitri Carnival 2026</small></div>
+<span class="bdiv"></span>
+<span class="firmlogos">
+<img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></span>
+</div>
+<div class="top-actions"><button class="icon-btn" id="account-btn">Account</button><button class="icon-btn" id="logout-btn">Logout</button></div>
+</header>
+<main>
+<!-- AUTH -->
+<section id="auth-screen">
+<div class="brandbar">
+<div class="wordmark"><i class="logo-dot"></i>EKUM</div>
+<img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
+<div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p><span class="dates">19 – 21 July 2026</span></div>
+<div class="card">
+<div class="switch"><button class="active" id="login-mode">Login</button><button id="register-mode">Register</button></div>
+<form id="login-form" style="margin-top:12px">
+<label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="login-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" required=""/></div>
+<label>Password</label><input autocomplete="current-password" id="login-password" minlength="8" required="" type="password"/>
+<button class="btn" type="submit">Login</button>
+</form>
+<form class="hidden" id="register-form" style="margin-top:12px">
+<label>Company / firm name</label><input id="reg-company" maxlength="120" required=""/>
+<label>Contact person</label><input id="reg-contact" maxlength="100" required=""/>
+<div class="grid2"><div><label>City</label><input autocomplete="off" id="reg-city" list="dl-city" placeholder="Type or pick" required=""/></div><div><label>State</label><select id="reg-state" required=""></select></div></div>
+<label>Agent <span class="optional">(type or pick)</span></label><input autocomplete="off" id="reg-agent" list="dl-agent" placeholder="Your agent's name"/>
+<label>GSTIN <span class="optional">(optional)</span></label><input id="reg-gstin" maxlength="15"/>
+<label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="reg-phone" inputmode="numeric" maxlength="10" required=""/></div>
+<label>Create password <span class="optional">(min 8 characters)</span></label><input autocomplete="new-password" id="reg-password" minlength="8" required="" type="password"/>
+<div class="hidden" id="access-code-wrap"><label>Exhibition access code</label><input id="reg-access-code"/></div>
+<button class="btn" type="submit">Register</button>
+</form>
+<p class="copy">No OTP is sent. Save your mobile number and password — you will log in with them at the venue.</p>
+</div>
+</section>
+<!-- LOBBY -->
+<section class="hidden" id="lobby-screen">
+<div class="card">
+<h2>Welcome, <span id="lobby-name">there</span></h2>
+<p class="copy">Here is how the carnival ordering works:</p>
+<div class="steps">
+<div class="step done"><div class="n">✓</div><div><b>Registered</b><p>Your account is ready.</p></div></div>
+<div class="step" id="step-slot"><div class="n">2</div><div><b id="step-slot-title">Book a visit slot</b><p id="step-slot-copy">Optional, helps us manage the crowd.</p><div class="step-actions" id="step-slot-actions"></div></div></div>
+<div class="step" id="step-entry"><div class="n">3</div><div><b id="step-entry-title">Check in at reception</b><p id="step-entry-copy">Show your mobile number to our staff when you arrive.</p><div class="step-actions" id="step-entry-actions"></div></div></div>
+<div class="step" id="step-order"><div class="n">4</div><div><b id="step-order-title">Create your order</b><p id="step-order-copy">Scan product barcodes for Maitri and Niharika.</p><div class="step-actions" id="step-order-actions"></div></div></div>
+<div class="step" id="step-edit"><div class="n">5</div><div><b id="step-edit-title">Edit and download</b><p id="step-edit-copy">Your edit window starts after the first save.</p><div class="step-actions" id="step-edit-actions"></div></div></div>
+</div>
+</div>
+<div class="card" id="entry-card">
+<div class="status-banner wait" id="entry-banner"><span class="dot"></span><div id="entry-text">Checking your entry status…</div></div>
+<button class="btn hidden" id="enter-order-btn">Start / continue my order →</button>
+<button class="btn secondary" id="refresh-status-btn">Refresh status</button>
+</div>
+<div class="card" id="booking-card">
+<h2>Book a visit slot</h2>
+<p class="copy">Pick a time that suits you. You can change it any time before the event.</p>
+<div id="booked-wrap"></div>
+<div id="slot-picker">
+<div class="grid2" style="margin-top:6px">
+<div><label>People in your group</label><input id="party-size" max="99" min="1" type="number" value="1"/></div>
+<div><label>Note <span class="optional">(optional)</span></label><input id="booking-note" maxlength="120" placeholder="Anything we should know"/></div>
+</div>
+<div class="slot-list" id="slot-list"></div>
+<button class="btn" disabled="" id="book-btn">Confirm slot</button>
+</div>
+</div>
+</section>
+<!-- ORDER -->
+<section class="hidden" id="order-screen">
+<div class="countdown hidden" id="countdown"><span>⏱</span><div>Edit window: <b id="countdown-text">—</b></div></div>
+<div class="firm-tabs"><button class="firm-tab active" data-firm="Maitri">Maitri</button><button class="firm-tab" data-firm="Niharika">Niharika</button></div>
+<div class="card">
+<h2 id="order-title">Maitri order</h2><p class="copy" id="order-status">Draft</p>
+<div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="set-count">0</b><span>Sets</span></div><div class="metric"><b id="piece-count">0</b><span>Total pcs</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
+</div>
+<div class="card">
+<h2>Scan a barcode</h2><p class="copy">Each design is added once. Change the quantity manually.</p>
+<div class="scan-actions"><div><label>Barcode</label><input autocomplete="off" id="barcode-input" inputmode="text" placeholder="Scan or type barcode"/></div><button class="btn" id="add-barcode">Add</button></div>
+<button class="btn secondary" id="camera-btn">Open camera scanner</button>
+<div class="reader" id="reader"></div>
+<div class="notice hidden" id="scan-note"></div>
+</div>
+<div class="card"><h2>Order items</h2><div class="items" id="items"></div></div>
+<div class="savebar"><button class="btn" id="save-btn">Save order</button><button class="btn secondary" id="pdf-btn">Download PDF</button></div>
+<button class="btn ghost" id="back-lobby-btn">← Back to slot &amp; status</button>
+</section>
+<!-- ACCOUNT -->
+<section class="hidden" id="account-screen">
+<div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to exhibition staff.</p>
+<div class="account-grid"><div><label>Company</label><input id="acc-company"/></div><div><label>Contact</label><input id="acc-contact"/></div><div><label>City</label><input autocomplete="off" id="acc-city" list="dl-city"/></div><div><label>State</label><select id="acc-state"></select></div></div>
+<label>Agent</label><input autocomplete="off" id="acc-agent" list="dl-agent"/>
+<label>GSTIN</label><input id="acc-gstin"/><button class="btn" id="save-account">Save account details</button><button class="btn secondary" id="back-order">Back</button>
+</div>
+</section>
+</main>
+<datalist id="dl-city"></datalist>
+<datalist id="dl-agent"></datalist>
+<!-- Credentials modal -->
+<div class="modal" id="cred-modal">
+<div class="modal-card">
+<div class="wordmark" style="justify-content:center"><i class="logo-dot"></i>EKUM</div>
+<h2 style="margin-top:12px;color:var(--teal-deep)">Save your login</h2>
+<p class="copy">You will need these to log in at the venue. Take a screenshot or copy them now.</p>
+<div class="cred">
+<div class="cred-row"><b>Username (mobile)</b><span id="cred-user">—</span></div>
+<div class="cred-row"><b>Password</b><span id="cred-pass">—</span></div>
+</div>
+<button class="btn secondary" id="cred-copy">Copy my login details</button>
+<button class="btn" id="cred-done">I've saved them — continue</button>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading"><div class="loader-card"><div class="spinner"></div><span id="loading-text">Working…</span></div></div>
 <script>
-const CONFIG={SUPABASE_URL:"https://ezmtiiftolcaslqfvozu.supabase.co",SUPABASE_ANON_KEY:"sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",REQUIRE_ACCESS_CODE:false};
-const FIRMS={Maitri:{name:'Maitri Texfab Private Limited',gstin:'24AAGCM4427L2ZB'},Niharika:{name:'Niharika Texfab LLP',gstin:'24AAWFN4840R1ZC'}};
-const STATES=["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
-const configured=!CONFIG.SUPABASE_URL.includes('__')&&!CONFIG.SUPABASE_ANON_KEY.includes('__');
-if(!configured)document.getElementById('config-warning').classList.remove('hidden');
-if(CONFIG.REQUIRE_ACCESS_CODE)document.getElementById('access-code-wrap').classList.remove('hidden');
-const sb=configured?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const CONFIG = {
+  SUPABASE_URL: "https://ezmtiiftolcaslqfvozu.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",
+  REQUIRE_ACCESS_CODE: false,
+};
+const FIRMS = {
+  Maitri: { name: "Maitri Texfab Private Limited", gstin: "24AAGCM4427L2ZB" },
+  Niharika: { name: "Niharika Texfab LLP", gstin: "24AAWFN4840R1ZC" },
+};
+const STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+const configured =
+  !CONFIG.SUPABASE_URL.includes("__") &&
+  !CONFIG.SUPABASE_ANON_KEY.includes("__");
+if (!configured)
+  document.getElementById("config-warning").classList.remove("hidden");
+if (CONFIG.REQUIRE_ACCESS_CODE)
+  document.getElementById("access-code-wrap").classList.remove("hidden");
+const sb = configured
+  ? supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null;
 
-const state={profile:null,status:null,slots:[],pickedSlot:null,orders:{Maitri:null,Niharika:null},carts:{Maitri:[],Niharika:[]},deleted:{Maitri:new Set(),Niharika:new Set()},activeFirm:'Maitri',scanner:null,scanning:false,poll:null,tick:null,screen:'auth',skippedSlot:sessionStorage.getItem('mc_skip_slot')==='1'};
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-function toast(m,t=''){const el=$('toast');el.textContent=m;el.className='toast open '+t;clearTimeout(window.__t);window.__t=setTimeout(()=>el.className='toast',3200)}
-function loading(on,text='Working…'){$('loading-text').textContent=text;$('loading').classList.toggle('open',on)}
-function normalizePhone(v){const d=String(v||'').replace(/\D/g,'');if(!/^[6-9]\d{9}$/.test(d))throw new Error('Enter a valid 10-digit Indian mobile number');return '91'+d}
-function ik(url,tr){if(!url)return '';return url+(url.includes('?')?'&':'?')+'tr='+tr}
-function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return d.toLocaleString('en-IN',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}
-function isAuthErr(m){return /INVALID_OR_EXPIRED_SESSION|JWT|expired|AUTH_REQUIRED|Session/i.test(String(m||''))}
+const state = {
+  profile: null,
+  status: null,
+  slots: [],
+  pickedSlot: null,
+  orders: { Maitri: null, Niharika: null },
+  carts: { Maitri: [], Niharika: [] },
+  deleted: { Maitri: new Set(), Niharika: new Set() },
+  activeFirm: "Maitri",
+  scanner: null,
+  scanning: false,
+  poll: null,
+  tick: null,
+  screen: "auth",
+  skippedSlot: sessionStorage.getItem("mc_skip_slot") === "1",
+  ordersLoadedAt: 0,
+};
+const $ = (id) => document.getElementById(id);
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>'"]/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[
+        c
+      ],
+  );
+function toast(m, t = "") {
+  const el = $("toast");
+  el.textContent = m;
+  el.className = "toast open " + t;
+  clearTimeout(window.__t);
+  window.__t = setTimeout(() => (el.className = "toast"), 3200);
+}
+function loading(on, text = "Working…") {
+  $("loading-text").textContent = text;
+  $("loading").classList.toggle("open", on);
+}
+function normalizePhone(v) {
+  const d = String(v || "").replace(/\D/g, "");
+  if (!/^[6-9]\d{9}$/.test(d))
+    throw new Error("Enter a valid 10-digit Indian mobile number");
+  return "91" + d;
+}
+function ik(url, tr) {
+  if (!url) return "";
+  return url + (url.includes("?") ? "&" : "?") + "tr=" + tr;
+}
+function fmtTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+function isAuthErr(m) {
+  return /INVALID_OR_EXPIRED_SESSION|JWT|expired|AUTH_REQUIRED|Session/i.test(
+    String(m || ""),
+  );
+}
 
 // Lazy script loader (jsPDF, camera scanner) for faster initial load.
-function loadScript(src){return new Promise((res,rej)=>{if([...document.scripts].some(s=>s.src===src))return res();const el=document.createElement('script');el.src=src;el.onload=()=>res();el.onerror=()=>rej(new Error('Could not load a required file. Check your connection.'));document.head.appendChild(el)})}
-async function ensureJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return;await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js');if(!window.jspdf||!window.jspdf.jsPDF)throw new Error('PDF tool could not load. Try again.')}
-async function ensureScanner(){if(window.Html5Qrcode)return;await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js')}
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    if ([...document.scripts].some((s) => s.src === src)) return res();
+    const el = document.createElement("script");
+    el.src = src;
+    el.onload = () => res();
+    el.onerror = () =>
+      rej(new Error("Could not load a required file. Check your connection."));
+    document.head.appendChild(el);
+  });
+}
+async function ensureJsPDF() {
+  if (window.jspdf && window.jspdf.jsPDF) return;
+  await loadScript(
+    "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js",
+  );
+  if (!window.jspdf || !window.jspdf.jsPDF)
+    throw new Error("PDF tool could not load. Try again.");
+}
+async function ensureScanner() {
+  if (window.Html5Qrcode) return;
+  await loadScript(
+    "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js",
+  );
+}
 
 // Populate state selects + lookup datalists.
-function fillStates(){const opts='<option value="">Select state</option>'+STATES.map(s=>`<option>${s}</option>`).join('');$('reg-state').innerHTML=opts;$('acc-state').innerHTML=opts}
-async function loadLookups(){try{const{data}=await sb.rpc('list_lookups');const L=data||{};$('dl-city').innerHTML=(L.city||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-agent').innerHTML=(L.agent||[]).map(v=>`<option value="${esc(v)}">`).join('')}catch(e){/* non-blocking */}}
-fillStates();if(sb)loadLookups();
+function fillStates() {
+  const opts =
+    '<option value="">Select state</option>' +
+    STATES.map((s) => `<option>${s}</option>`).join("");
+  $("reg-state").innerHTML = opts;
+  $("acc-state").innerHTML = opts;
+}
+async function loadLookups() {
+  try {
+    const { data } = await sb.rpc("list_lookups");
+    const L = data || {};
+    $("dl-city").innerHTML = (L.city || [])
+      .map((v) => `<option value="${esc(v)}">`)
+      .join("");
+    $("dl-agent").innerHTML = (L.agent || [])
+      .map((v) => `<option value="${esc(v)}">`)
+      .join("");
+  } catch (e) {
+    /* non-blocking */
+  }
+}
+fillStates();
+if (sb) loadLookups();
 
-function show(screen){state.screen=screen;['auth-screen','lobby-screen','order-screen','account-screen'].forEach(id=>$(id).classList.toggle('hidden',id!==screen+'-screen'));$('app-top').classList.toggle('hidden',screen==='auth');
-  if(screen!=='lobby'&&state.poll){clearInterval(state.poll);state.poll=null}
-  if(screen==='order'){startTick()}else{stopTick()}}
+function show(screen) {
+  state.screen = screen;
+  ["auth-screen", "lobby-screen", "order-screen", "account-screen"].forEach(
+    (id) => $(id).classList.toggle("hidden", id !== screen + "-screen"),
+  );
+  $("app-top").classList.toggle("hidden", screen === "auth");
+  if (screen !== "lobby" && state.poll) {
+    clearInterval(state.poll);
+    state.poll = null;
+  }
+  if (screen === "order") {
+    startTick();
+  } else {
+    stopTick();
+  }
+}
 
 /* ---------- Auth ---------- */
-function setMode(reg){$('login-form').classList.toggle('hidden',reg);$('register-form').classList.toggle('hidden',!reg);$('login-mode').classList.toggle('active',!reg);$('register-mode').classList.toggle('active',reg)}
-$('login-mode').onclick=()=>setMode(false);$('register-mode').onclick=()=>setMode(true);
+function setMode(reg) {
+  $("login-form").classList.toggle("hidden", reg);
+  $("register-form").classList.toggle("hidden", !reg);
+  $("login-mode").classList.toggle("active", !reg);
+  $("register-mode").classList.toggle("active", reg);
+}
+$("login-mode").onclick = () => setMode(false);
+$("register-mode").onclick = () => setMode(true);
 
-async function customerAuth(action,payload){
-  const res=await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/customer-auth`,{method:'POST',headers:{'Content-Type':'application/json','apikey':CONFIG.SUPABASE_ANON_KEY},body:JSON.stringify({action,...payload})});
-  const out=await res.json().catch(()=>({ok:false,error:'Invalid server response'}));
-  if(!res.ok||!out.ok)throw new Error(out.error||`Authentication failed (${res.status})`);
+async function customerAuth(action, payload) {
+  const res = await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/customer-auth`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: CONFIG.SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const out = await res
+    .json()
+    .catch(() => ({ ok: false, error: "Invalid server response" }));
+  if (!res.ok || !out.ok)
+    throw new Error(out.error || `Authentication failed (${res.status})`);
   return out.data;
 }
-async function applySession(session){if(!session?.access_token||!session?.refresh_token)throw new Error('No session returned');const{error}=await sb.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});if(error)throw error}
+async function applySession(session) {
+  if (!session?.access_token || !session?.refresh_token)
+    throw new Error("No session returned");
+  const { error } = await sb.auth.setSession({
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
+  if (error) throw error;
+}
 
-$('login-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;try{loading(true,'Logging in…');const phone=normalizePhone($('login-phone').value);const data=await customerAuth('login',{phone,password:$('login-password').value});await applySession(data.session)}catch(err){toast(err.message,'error')}finally{loading(false)}});
+$("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!sb) return;
+  try {
+    loading(true, "Logging in…");
+    const phone = normalizePhone($("login-phone").value);
+    const data = await customerAuth("login", {
+      phone,
+      password: $("login-password").value,
+    });
+    await applySession(data.session);
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    loading(false);
+  }
+});
 
-$('register-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;if(!$('reg-state').value){toast('Please select your state','error');return}try{loading(true,'Creating account…');const phone=normalizePhone($('reg-phone').value);const password=$('reg-password').value;const data=await customerAuth('register',{phone,password,companyName:$('reg-company').value.trim(),contactName:$('reg-contact').value.trim(),city:$('reg-city').value.trim(),state:$('reg-state').value,agent:$('reg-agent').value.trim(),gstin:$('reg-gstin').value.trim().toUpperCase(),accessCode:$('reg-access-code').value.trim()});
-  $('cred-user').textContent=phone;$('cred-pass').textContent=password;window.__pendingSession=data.session;$('cred-modal').classList.add('open');
-}catch(err){toast(String(err.message||err).replace('Database error saving new user','Registration details were rejected'),'error')}finally{loading(false)}});
+$("register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!sb) return;
+  if (!$("reg-state").value) {
+    toast("Please select your state", "error");
+    return;
+  }
+  try {
+    loading(true, "Creating account…");
+    const phone = normalizePhone($("reg-phone").value);
+    const password = $("reg-password").value;
+    const data = await customerAuth("register", {
+      phone,
+      password,
+      companyName: $("reg-company").value.trim(),
+      contactName: $("reg-contact").value.trim(),
+      city: $("reg-city").value.trim(),
+      state: $("reg-state").value,
+      agent: $("reg-agent").value.trim(),
+      gstin: $("reg-gstin").value.trim().toUpperCase(),
+      accessCode: $("reg-access-code").value.trim(),
+    });
+    $("cred-user").textContent = phone;
+    $("cred-pass").textContent = password;
+    window.__pendingSession = data.session;
+    $("cred-modal").classList.add("open");
+  } catch (err) {
+    toast(
+      String(err.message || err).replace(
+        "Database error saving new user",
+        "Registration details were rejected",
+      ),
+      "error",
+    );
+  } finally {
+    loading(false);
+  }
+});
 
-$('cred-copy').onclick=async()=>{const text=`Maitri Carnival 2026 login\nUsername (mobile): ${$('cred-user').textContent}\nPassword: ${$('cred-pass').textContent}`;try{await navigator.clipboard.writeText(text);toast('Login details copied','success')}catch{toast('Copy not available — please screenshot','error')}};
-$('cred-done').onclick=async()=>{try{loading(true,'Signing you in…');$('cred-modal').classList.remove('open');await applySession(window.__pendingSession);window.__pendingSession=null}catch(err){toast(err.message,'error');show('auth')}finally{loading(false)}};
+$("cred-copy").onclick = async () => {
+  const text = `Maitri Carnival 2026 login\nUsername (mobile): ${$("cred-user").textContent}\nPassword: ${$("cred-pass").textContent}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("Login details copied", "success");
+  } catch {
+    toast("Copy not available — please screenshot", "error");
+  }
+};
+$("cred-done").onclick = async () => {
+  try {
+    loading(true, "Signing you in…");
+    $("cred-modal").classList.remove("open");
+    await applySession(window.__pendingSession);
+    window.__pendingSession = null;
+  } catch (err) {
+    toast(err.message, "error");
+    show("auth");
+  } finally {
+    loading(false);
+  }
+};
 
 /* ---------- Lobby / status / slots ---------- */
-async function loadProfileAndStatus(){
-  const [pr,stt]=await Promise.all([sb.from('customers').select('*').single(),sb.rpc('get_my_status')]);
-  if(pr.error)throw pr.error;if(stt.error)throw stt.error;
-  state.profile=pr.data;state.status=stt.data;
-  fillAccount();$('lobby-name').textContent=state.profile.contact_name||state.profile.company_name||'there';
+async function loadProfileAndStatus() {
+  const { data, error } = await sb.rpc("get_my_carnival_bootstrap");
+  if (error) throw error;
+  state.profile = data.profile;
+  state.status = data.status;
+  state.orders.Maitri = data.orders?.Maitri || null;
+  state.orders.Niharika = data.orders?.Niharika || null;
+  state.carts.Maitri = (state.orders.Maitri?.items || []).map(hydrateItem);
+  state.carts.Niharika = (state.orders.Niharika?.items || []).map(hydrateItem);
+  state.deleted.Maitri.clear();
+  state.deleted.Niharika.clear();
+  state.ordersLoadedAt = Date.now();
+  fillAccount();
+  $("lobby-name").textContent = state.profile.contact_name || state.profile.company_name || "there";
   renderEntry();
-  await Promise.all([loadSlots(),loadJourneyOrders()]);
+  applySlots(data.slots || []);
   applyStatusSteps();
 }
-async function refreshStatus(){const{data,error}=await sb.rpc('get_my_status');if(error)throw error;state.status=data;renderEntry();applyStatusSteps()}
-async function loadJourneyOrders(){
-  try{
-    const[m,n]=await Promise.all([sb.rpc('get_my_order_state',{p_firm:'Maitri'}),sb.rpc('get_my_order_state',{p_firm:'Niharika'})]);
-    if(!m.error)state.orders.Maitri=m.data;if(!n.error)state.orders.Niharika=n.data;
-  }catch(e){}
+async function refreshStatus() {
+  const { data, error } = await sb.rpc("get_my_status");
+  if (error) throw error;
+  state.status = data;
+  renderEntry();
+  applyStatusSteps();
 }
-function setStep(id,status,title,copy,actions=''){
-  const el=$(id);el.className='step '+status;el.querySelector('.n').textContent=status==='done'?'✓':id.split('-').pop()==='slot'?'2':id.split('-').pop()==='entry'?'3':id.split('-').pop()==='order'?'4':'5';
-  $(id+'-title').textContent=title;$(id+'-copy').textContent=copy;$(id+'-actions').innerHTML=actions;
+async function loadJourneyOrders() {
+  try {
+    const { data, error } = await sb.rpc("get_my_orders_state");
+    if (error) throw error;
+    state.orders.Maitri = data?.Maitri || state.orders.Maitri;
+    state.orders.Niharika = data?.Niharika || state.orders.Niharika;
+    state.ordersLoadedAt = Date.now();
+  } catch (e) {}
 }
-function orderJourneySummary(){
-  const m=state.orders.Maitri||{},n=state.orders.Niharika||{};
-  const designs=(Number(m.totalDesigns)||0)+(Number(n.totalDesigns)||0),sets=(Number(m.totalSets)||0)+(Number(n.totalSets)||0);
-  return{started:designs>0,designs,sets,latest:[m,n].filter(x=>x?.updatedAt).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt))[0]};
+function setStep(id, status, title, copy, actions = "") {
+  const el = $(id);
+  el.className = "step " + status;
+  el.querySelector(".n").textContent =
+    status === "done"
+      ? "✓"
+      : id.split("-").pop() === "slot"
+        ? "2"
+        : id.split("-").pop() === "entry"
+          ? "3"
+          : id.split("-").pop() === "order"
+            ? "4"
+            : "5";
+  $(id + "-title").textContent = title;
+  $(id + "-copy").textContent = copy;
+  $(id + "-actions").innerHTML = actions;
 }
-function applyStatusSteps(){
-  const s=state.status||{},o=orderJourneySummary(),booked=!!s.booking;
-  if(booked){state.skippedSlot=false;sessionStorage.removeItem('mc_skip_slot');setStep('step-slot','done','Visit slot booked',fmtTime(s.booking.startsAt)+(s.booking.label?' · '+s.booking.label:''),'<button class="step-action secondary" data-journey="slot">Change slot</button>')}
-  else if(!state.skippedSlot){setStep('step-slot','current','Book a visit slot','Choose a convenient time for your visit.','<button class="step-action" data-journey="slot">Choose a slot</button><button class="step-action secondary" data-journey="skip-slot">Continue without booking</button>')}
-  else setStep('step-slot','done','Visit slot skipped','Slot booking is optional.','<button class="step-action secondary" data-journey="slot">Book one now</button>');
-  if(s.checkedIn)setStep('step-entry','done','Checked in',s.checkedInAt?'Entry confirmed '+fmtTime(s.checkedInAt):'Entry confirmed.','');
-  else setStep('step-entry',(booked||state.skippedSlot)?'waiting':'upcoming','Check in at reception',(booked||state.skippedSlot)?'Show your registered mobile number to reception.':'Complete or skip the optional slot step first.',(booked||state.skippedSlot)?'<button class="step-action" data-journey="entry">View entry status</button>':'');
-  if(!s.checkedIn)setStep('step-order','upcoming','Create your order','Ordering unlocks after reception checks you in.','');
-  else if(!o.started)setStep('step-order','current','Create your order','Scan designs for Maitri and Niharika.','<button class="step-action" data-journey="order">Start my order</button>');
-  else setStep('step-order','done','Order started',`${o.designs} designs · ${o.sets} sets saved`,'<button class="step-action secondary" data-journey="order">Continue ordering</button>');
-  if(!o.started)setStep('step-edit','upcoming','Edit and download','Your edit window starts after the first save.','');
-  else if(windowClosed())setStep('step-edit','done','Ordering window completed','Your saved orders remain available to view and download.','<button class="step-action secondary" data-journey="edit">View orders</button>');
-  else{const left=s.editDeadline?Math.max(0,new Date(s.editDeadline)-Date.now()):0,h=Math.floor(left/36e5),m=Math.floor(left%36e5/6e4);setStep('step-edit','current','Edit and download',`You can update both orders for another ${h}h ${m}m.`,'<button class="step-action" data-journey="edit">Continue editing</button>')}
+function orderJourneySummary() {
+  const m = state.orders.Maitri || {},
+    n = state.orders.Niharika || {};
+  const designs = (Number(m.totalDesigns) || 0) + (Number(n.totalDesigns) || 0),
+    sets = (Number(m.totalSets) || 0) + (Number(n.totalSets) || 0);
+  return {
+    started: designs > 0,
+    designs,
+    sets,
+    latest: [m, n]
+      .filter((x) => x?.updatedAt)
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0],
+  };
 }
-function focusJourneyCard(id){const el=$(id);el.scrollIntoView({behavior:'smooth',block:'start'});el.classList.remove('journey-flash');requestAnimationFrame(()=>el.classList.add('journey-flash'));setTimeout(()=>el.classList.remove('journey-flash'),1300)}
-$('lobby-screen').addEventListener('click',async e=>{const b=e.target.closest('[data-journey]');if(!b)return;const a=b.dataset.journey;if(a==='skip-slot'){state.skippedSlot=true;sessionStorage.setItem('mc_skip_slot','1');applyStatusSteps();return}if(a==='slot'){const picker=$('slot-picker');picker.classList.remove('hidden');renderSlotGrid();focusJourneyCard('booking-card');setTimeout(()=>$('party-size').focus(),450);return}if(a==='entry'){focusJourneyCard('entry-card');return}if(a==='order'||a==='edit'){await loadOrders();const latest=orderJourneySummary().latest;if(latest?.firm)state.activeFirm=latest.firm;show('order');render()}});
+function applyStatusSteps() {
+  const s = state.status || {},
+    o = orderJourneySummary(),
+    booked = !!s.booking;
+  if (booked) {
+    state.skippedSlot = false;
+    sessionStorage.removeItem("mc_skip_slot");
+    setStep(
+      "step-slot",
+      "done",
+      "Visit slot booked",
+      fmtTime(s.booking.startsAt) +
+        (s.booking.label ? " · " + s.booking.label : ""),
+      '<button class="step-action secondary" data-journey="slot">Change slot</button>',
+    );
+  } else if (!state.skippedSlot) {
+    setStep(
+      "step-slot",
+      "current",
+      "Book a visit slot",
+      "Choose a convenient time for your visit.",
+      '<button class="step-action" data-journey="slot">Choose a slot</button><button class="step-action secondary" data-journey="skip-slot">Continue without booking</button>',
+    );
+  } else
+    setStep(
+      "step-slot",
+      "done",
+      "Visit slot skipped",
+      "Slot booking is optional.",
+      '<button class="step-action secondary" data-journey="slot">Book one now</button>',
+    );
+  if (s.checkedIn)
+    setStep(
+      "step-entry",
+      "done",
+      "Checked in",
+      s.checkedInAt
+        ? "Entry confirmed " + fmtTime(s.checkedInAt)
+        : "Entry confirmed.",
+      "",
+    );
+  else
+    setStep(
+      "step-entry",
+      booked || state.skippedSlot ? "waiting" : "upcoming",
+      "Check in at reception",
+      booked || state.skippedSlot
+        ? "Show your registered mobile number to reception."
+        : "Complete or skip the optional slot step first.",
+      booked || state.skippedSlot
+        ? '<button class="step-action" data-journey="entry">View entry status</button>'
+        : "",
+    );
+  if (!s.checkedIn)
+    setStep(
+      "step-order",
+      "upcoming",
+      "Create your order",
+      "Ordering unlocks after reception checks you in.",
+      "",
+    );
+  else if (!o.started)
+    setStep(
+      "step-order",
+      "current",
+      "Create your order",
+      "Scan designs for Maitri and Niharika.",
+      '<button class="step-action" data-journey="order">Start my order</button>',
+    );
+  else
+    setStep(
+      "step-order",
+      "done",
+      "Order started",
+      `${o.designs} designs · ${o.sets} sets saved`,
+      '<button class="step-action secondary" data-journey="order">Continue ordering</button>',
+    );
+  if (!o.started)
+    setStep(
+      "step-edit",
+      "upcoming",
+      "Edit and download",
+      "Your edit window starts after the first save.",
+      "",
+    );
+  else if (windowClosed())
+    setStep(
+      "step-edit",
+      "done",
+      "Ordering window completed",
+      "Your saved orders remain available to view and download.",
+      '<button class="step-action secondary" data-journey="edit">View orders</button>',
+    );
+  else {
+    const left = s.editDeadline
+        ? Math.max(0, new Date(s.editDeadline) - Date.now())
+        : 0,
+      h = Math.floor(left / 36e5),
+      m = Math.floor((left % 36e5) / 6e4);
+    setStep(
+      "step-edit",
+      "current",
+      "Edit and download",
+      `You can update both orders for another ${h}h ${m}m.`,
+      '<button class="step-action" data-journey="edit">Continue editing</button>',
+    );
+  }
+}
+function focusJourneyCard(id) {
+  const el = $(id);
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+  el.classList.remove("journey-flash");
+  requestAnimationFrame(() => el.classList.add("journey-flash"));
+  setTimeout(() => el.classList.remove("journey-flash"), 1300);
+}
+$("lobby-screen").addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-journey]");
+  if (!b) return;
+  const a = b.dataset.journey;
+  if (a === "skip-slot") {
+    state.skippedSlot = true;
+    sessionStorage.setItem("mc_skip_slot", "1");
+    applyStatusSteps();
+    return;
+  }
+  if (a === "slot") {
+    const picker = $("slot-picker");
+    picker.classList.remove("hidden");
+    renderSlotGrid();
+    focusJourneyCard("booking-card");
+    setTimeout(() => $("party-size").focus(), 450);
+    return;
+  }
+  if (a === "entry") {
+    focusJourneyCard("entry-card");
+    return;
+  }
+  if (a === "order" || a === "edit") {
+    await loadOrders();
+    const latest = orderJourneySummary().latest;
+    if (latest?.firm) state.activeFirm = latest.firm;
+    show("order");
+    render();
+  }
+});
 
-function renderEntry(){
-  const s=state.status||{};const banner=$('entry-banner');const text=$('entry-text');
-  if(s.active===false){banner.className='status-banner wait';text.innerHTML='<b>Account paused.</b> Please speak to exhibition staff.';$('enter-order-btn').classList.add('hidden');return}
-  if(s.checkedIn){banner.className='status-banner ok';text.innerHTML='<b>You are checked in.</b> You can build and edit your order now.';$('enter-order-btn').classList.remove('hidden');if(state.poll){clearInterval(state.poll);state.poll=null}}
-  else{banner.className='status-banner wait';text.innerHTML='<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+'+esc(state.profile?.phone_e164||'')+'</b>. This screen updates automatically once staff check you in.';$('enter-order-btn').classList.add('hidden');if(!state.poll)state.poll=setInterval(()=>refreshStatus().catch(()=>{}),15000)}
+function renderEntry() {
+  const s = state.status || {};
+  const banner = $("entry-banner");
+  const text = $("entry-text");
+  if (s.active === false) {
+    banner.className = "status-banner wait";
+    text.innerHTML = "<b>Account paused.</b> Please speak to exhibition staff.";
+    $("enter-order-btn").classList.add("hidden");
+    return;
+  }
+  if (s.checkedIn) {
+    banner.className = "status-banner ok";
+    text.innerHTML =
+      "<b>You are checked in.</b> You can build and edit your order now.";
+    $("enter-order-btn").classList.remove("hidden");
+    if (state.poll) {
+      clearInterval(state.poll);
+      state.poll = null;
+    }
+  } else {
+    banner.className = "status-banner wait";
+    text.innerHTML =
+      "<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+" +
+      esc(state.profile?.phone_e164 || "") +
+      "</b>. This screen updates automatically once staff check you in.";
+    $("enter-order-btn").classList.add("hidden");
+    if (!state.poll)
+      state.poll = setInterval(() => refreshStatus().catch(() => {}), 15000);
+  }
 }
-async function loadSlots(){
-  const{data,error}=await sb.rpc('list_slots');if(error){console.warn(error);return}
-  state.slots=data||[];const booking=state.status?.booking;
-  if(booking){state.pickedSlot=booking.slotId;$('party-size').value=booking.partySize||1;$('booking-note').value=booking.note||'';$('book-btn').textContent='Update my slot'}
-  else{$('book-btn').textContent='Confirm slot'}
-  renderBookingCard();applyStatusSteps();
+function applySlots(rows) {
+  state.slots = rows || [];
+  const booking = state.status?.booking;
+  if (booking) {
+    state.pickedSlot = booking.slotId;
+    $("party-size").value = booking.partySize || 1;
+    $("booking-note").value = booking.note || "";
+    $("book-btn").textContent = "Update my slot";
+  } else {
+    state.pickedSlot = null;
+    $("book-btn").textContent = "Confirm slot";
+  }
+  renderBookingCard();
+  applyStatusSteps();
 }
-function renderBookingCard(){
-  const booking=state.status?.booking;const wrap=$('booked-wrap');const picker=$('slot-picker');
-  if(booking){
-    wrap.innerHTML=`<div class="booked-summary"><div><b>Your slot: ${esc(fmtTime(booking.startsAt))}</b><div class="copy" style="margin-top:2px">${esc(booking.label||'')}${booking.partySize?' · '+booking.partySize+' people':''}</div></div><button id="change-slot-btn" class="btn secondary chg" style="width:auto;margin:0;min-height:40px">Change your slot</button></div>`;
-    picker.classList.add('hidden');
-    $('change-slot-btn').onclick=()=>{picker.classList.remove('hidden');renderSlotGrid()};
-  }else{wrap.innerHTML='';picker.classList.remove('hidden');renderSlotGrid()}
+async function loadSlots() {
+  const { data, error } = await sb.rpc("list_slots");
+  if (error) { console.warn(error); return; }
+  applySlots(data || []);
 }
-function renderSlotGrid(){
-  const host=$('slot-list');host.className='';
-  if(!state.slots.length){host.innerHTML='<div class="empty">No slots have been published yet. You can still come during event hours.</div>';$('book-btn').disabled=true;return}
-  const byDate=new Map();
-  [...state.slots].sort((a,b)=>new Date(a.startsAt)-new Date(b.startsAt)).forEach(s=>{const k=new Date(s.startsAt).toDateString();if(!byDate.has(k))byDate.set(k,[]);byDate.get(k).push(s)});
-  host.innerHTML='<div class="slot-grid">'+[...byDate.entries()].map(([date,slots])=>{
-    const head=new Date(date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-    const cells=slots.map(s=>{const picked=s.id===state.pickedSlot;const full=s.full&&!picked;const t=new Date(s.startsAt).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});const meta=s.full?'<small>Full</small>':(s.capacity!=null?`<small>${Math.max(0,s.capacity-s.booked)} left</small>`:'');return `<button type="button" class="slot-cell ${picked?'picked':''} ${full?'full':''}" data-slot="${s.id}" ${full?'disabled':''}><b>${esc(t)}</b>${meta}</button>`}).join('');
-    return `<div class="slot-col"><div class="slot-colhead">${esc(head)}</div>${cells}</div>`;
-  }).join('')+'</div>';
-  $('book-btn').disabled=!state.pickedSlot;
+function renderBookingCard() {
+  const booking = state.status?.booking;
+  const wrap = $("booked-wrap");
+  const picker = $("slot-picker");
+  if (booking) {
+    wrap.innerHTML = `<div class="booked-summary"><div><b>Your slot: ${esc(fmtTime(booking.startsAt))}</b><div class="copy" style="margin-top:2px">${esc(booking.label || "")}${booking.partySize ? " · " + booking.partySize + " people" : ""}</div></div><button id="change-slot-btn" class="btn secondary chg" style="width:auto;margin:0;min-height:40px">Change your slot</button></div>`;
+    picker.classList.add("hidden");
+    $("change-slot-btn").onclick = () => {
+      picker.classList.remove("hidden");
+      renderSlotGrid();
+    };
+  } else {
+    wrap.innerHTML = "";
+    picker.classList.remove("hidden");
+    renderSlotGrid();
+  }
 }
-$('slot-list').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b||b.disabled)return;state.pickedSlot=b.dataset.slot;renderSlotGrid()});
-$('book-btn').onclick=async()=>{if(!state.pickedSlot)return;try{loading(true,'Saving your slot…');const{error}=await sb.rpc('book_slot',{p_slot_id:state.pickedSlot,p_party_size:Number($('party-size').value)||1,p_note:$('booking-note').value.trim()});if(error)throw error;await refreshStatus();await loadSlots();toast('Slot booked','success')}catch(err){toast(err.message==='SLOT_FULL'?'That slot is full — pick another':err.message,'error')}finally{loading(false)}};
-$('refresh-status-btn').onclick=()=>refreshStatus().then(()=>toast('Status updated')).catch(e=>toast(e.message,'error'));
-$('enter-order-btn').onclick=async()=>{await loadOrders();show('order');render()};
-$('back-lobby-btn').onclick=async()=>{await stopScanner();await refreshStatus().catch(()=>{});await loadJourneyOrders();await loadSlots().catch(()=>{});applyStatusSteps();show('lobby')};
+function renderSlotGrid() {
+  const host = $("slot-list");
+  host.className = "";
+  if (!state.slots.length) {
+    host.innerHTML =
+      '<div class="empty">No slots have been published yet. You can still come during event hours.</div>';
+    $("book-btn").disabled = true;
+    return;
+  }
+  const byDate = new Map();
+  [...state.slots]
+    .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
+    .forEach((s) => {
+      const k = new Date(s.startsAt).toDateString();
+      if (!byDate.has(k)) byDate.set(k, []);
+      byDate.get(k).push(s);
+    });
+  host.innerHTML =
+    '<div class="slot-grid">' +
+    [...byDate.entries()]
+      .map(([date, slots]) => {
+        const head = new Date(date).toLocaleDateString("en-IN", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        });
+        const cells = slots
+          .map((s) => {
+            const picked = s.id === state.pickedSlot;
+            const full = s.full && !picked;
+            const t = new Date(s.startsAt).toLocaleTimeString("en-IN", {
+              hour: "numeric",
+              minute: "2-digit",
+            });
+            const meta = s.full
+              ? "<small>Full</small>"
+              : s.capacity != null
+                ? `<small>${Math.max(0, s.capacity - s.booked)} left</small>`
+                : "";
+            return `<button type="button" class="slot-cell ${picked ? "picked" : ""} ${full ? "full" : ""}" data-slot="${s.id}" ${full ? "disabled" : ""}><b>${esc(t)}</b>${meta}</button>`;
+          })
+          .join("");
+        return `<div class="slot-col"><div class="slot-colhead">${esc(head)}</div>${cells}</div>`;
+      })
+      .join("") +
+    "</div>";
+  $("book-btn").disabled = !state.pickedSlot;
+}
+$("slot-list").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-slot]");
+  if (!b || b.disabled) return;
+  state.pickedSlot = b.dataset.slot;
+  renderSlotGrid();
+});
+$("book-btn").onclick = async () => {
+  if (!state.pickedSlot) return;
+  try {
+    loading(true, "Saving your slot…");
+    const { error } = await sb.rpc("book_slot", {
+      p_slot_id: state.pickedSlot,
+      p_party_size: Number($("party-size").value) || 1,
+      p_note: $("booking-note").value.trim(),
+    });
+    if (error) throw error;
+    await refreshStatus();
+    await loadSlots();
+    toast("Slot booked", "success");
+  } catch (err) {
+    toast(
+      err.message === "SLOT_FULL"
+        ? "That slot is full — pick another"
+        : err.message,
+      "error",
+    );
+  } finally {
+    loading(false);
+  }
+};
+$("refresh-status-btn").onclick = () =>
+  refreshStatus()
+    .then(() => toast("Status updated"))
+    .catch((e) => toast(e.message, "error"));
+$("enter-order-btn").onclick = async () => {
+  await loadOrders();
+  show("order");
+  render();
+};
+$("back-lobby-btn").onclick = async () => {
+  await stopScanner();
+  await refreshStatus().catch(() => {});
+  await loadJourneyOrders();
+  await loadSlots().catch(() => {});
+  applyStatusSteps();
+  show("lobby");
+};
 
 /* ---------- Orders ---------- */
-async function loadOrders(){loading(true,'Loading your orders…');try{const [m,n]=await Promise.all([sb.rpc('get_my_order_state',{p_firm:'Maitri'}),sb.rpc('get_my_order_state',{p_firm:'Niharika'})]);if(m.error)throw m.error;if(n.error)throw n.error;state.orders.Maitri=m.data;state.orders.Niharika=n.data;state.carts.Maitri=(m.data.items||[]).map(hydrateItem);state.carts.Niharika=(n.data.items||[]).map(hydrateItem);state.deleted.Maitri.clear();state.deleted.Niharika.clear()}catch(err){toast(err.message,'error')}finally{loading(false)}}
-function hydrateItem(x){return{...x,qty:Number(x.qty)||1,pcsPerSet:Number(x.pcsPerSet)||1,note:String(x.note||''),_dirty:false,_serverExists:true}}
-function currentCart(){return state.carts[state.activeFirm]}
-function currentDeleted(){return state.deleted[state.activeFirm]}
-function hasUnsavedChanges(){return currentCart().some(x=>x._dirty)||currentDeleted().size>0}
-function markDirty(item){if(item)item._dirty=true}
-function windowClosed(){const s=state.status;if(!s||!s.editDeadline)return false;return new Date(s.editDeadline).getTime()<Date.now()}
-function fillAccount(){const p=state.profile||{};$('acc-company').value=p.company_name||'';$('acc-contact').value=p.contact_name||'';$('acc-city').value=p.city||'';$('acc-state').value=p.state||'';$('acc-agent').value=p.agent||'';$('acc-gstin').value=p.gstin||''}
+async function loadOrders(force = false) {
+  const fresh = state.orders.Maitri && state.orders.Niharika && Date.now() - state.ordersLoadedAt < 15000;
+  if (fresh && !force) return;
+  const showLoader = !state.orders.Maitri || !state.orders.Niharika;
+  if (showLoader) loading(true, "Loading your orders…");
+  try {
+    const { data, error } = await sb.rpc("get_my_orders_state");
+    if (error) throw error;
+    state.orders.Maitri = data.Maitri;
+    state.orders.Niharika = data.Niharika;
+    state.carts.Maitri = (data.Maitri?.items || []).map(hydrateItem);
+    state.carts.Niharika = (data.Niharika?.items || []).map(hydrateItem);
+    state.deleted.Maitri.clear();
+    state.deleted.Niharika.clear();
+    state.ordersLoadedAt = Date.now();
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    if (showLoader) loading(false);
+  }
+}
+function hydrateItem(x) {
+  return {
+    ...x,
+    qty: Number(x.qty) || 1,
+    pcsPerSet: Number(x.pcsPerSet) || 1,
+    note: String(x.note || ""),
+    _dirty: false,
+    _serverExists: true,
+  };
+}
+function currentCart() {
+  return state.carts[state.activeFirm];
+}
+function currentDeleted() {
+  return state.deleted[state.activeFirm];
+}
+function hasUnsavedChanges() {
+  return currentCart().some((x) => x._dirty) || currentDeleted().size > 0;
+}
+function markDirty(item) {
+  if (item) item._dirty = true;
+}
+function windowClosed() {
+  const s = state.status;
+  if (!s || !s.editDeadline) return false;
+  return new Date(s.editDeadline).getTime() < Date.now();
+}
+function fillAccount() {
+  const p = state.profile || {};
+  $("acc-company").value = p.company_name || "";
+  $("acc-contact").value = p.contact_name || "";
+  $("acc-city").value = p.city || "";
+  $("acc-state").value = p.state || "";
+  $("acc-agent").value = p.agent || "";
+  $("acc-gstin").value = p.gstin || "";
+}
 
-function render(){
-  document.querySelectorAll('.firm-tab').forEach(b=>b.classList.toggle('active',b.dataset.firm===state.activeFirm));
-  const order=state.orders[state.activeFirm]||{version:1,status:'Draft'};const cart=currentCart();
-  const totalSets=cart.reduce((sum,x)=>sum+(Number(x.qty)||0),0);
-  const totalPieces=cart.reduce((sum,x)=>sum+(Number(x.qty)||0)*(Number(x.pcsPerSet)||1),0);
-  $('order-title').textContent=state.activeFirm+' order';
-  $('order-status').textContent=`${order.status||'Draft'} · Last saved ${order.updatedAt?new Date(order.updatedAt).toLocaleString('en-IN'):'not yet'}${hasUnsavedChanges()?' · Unsaved changes':''}`;
-  $('design-count').textContent=cart.length;$('set-count').textContent=totalSets;$('piece-count').textContent=totalPieces;$('version-count').textContent=order.version||1;
-  const host=$('items');
-  if(!cart.length){host.innerHTML='<div class="empty">No designs added yet. Scan the first sticker above.</div>'}
-  else{host.innerHTML=cart.map((it,i)=>{const linePieces=(Number(it.qty)||1)*(Number(it.pcsPerSet)||1);return `<article class="item">${it.imageUrl?`<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl,'w-240,h-320,c-at_max,q-55'))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">`:'<div class="thumb"></div>'}<div><h3>${esc(it.designNo)}</h3><div class="meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(' · '))}${it.description?'<br>'+esc(it.description):''}</div><div class="qty"><button data-act="minus" data-i="${i}">−</button><input data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty)||1}"><button data-act="plus" data-i="${i}">+</button><button class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.qty)||1} set${Number(it.qty)===1?'':'s'} × ${Number(it.pcsPerSet)||1} pcs = ${linePieces} pcs</div><label class="line-note-label">Design note <span class="optional">(usually colour)</span></label><textarea class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="e.g. Red 2 sets, Blue 1 set">${esc(it.note||'')}</textarea></div></article>`}).join('');
-    cart.forEach((it,i)=>{const el=$('thumb-'+i);if(el)protect(el)})}
+function render() {
+  document
+    .querySelectorAll(".firm-tab")
+    .forEach((b) =>
+      b.classList.toggle("active", b.dataset.firm === state.activeFirm),
+    );
+  const order = state.orders[state.activeFirm] || {
+    version: 1,
+    status: "Draft",
+  };
+  const cart = currentCart();
+  const totalSets = cart.reduce((sum, x) => sum + (Number(x.qty) || 0), 0);
+  const totalPieces = cart.reduce(
+    (sum, x) => sum + (Number(x.qty) || 0) * (Number(x.pcsPerSet) || 1),
+    0,
+  );
+  $("order-title").textContent = state.activeFirm + " order";
+  $("order-status").textContent =
+    `${order.status || "Draft"} · Last saved ${order.updatedAt ? new Date(order.updatedAt).toLocaleString("en-IN") : "not yet"}${hasUnsavedChanges() ? " · Unsaved changes" : ""}`;
+  $("design-count").textContent = cart.length;
+  $("set-count").textContent = totalSets;
+  $("piece-count").textContent = totalPieces;
+  $("version-count").textContent = order.version || 1;
+  const host = $("items");
+  if (!cart.length) {
+    host.innerHTML =
+      '<div class="empty">No designs added yet. Scan the first sticker above.</div>';
+  } else {
+    host.innerHTML = cart
+      .map((it, i) => {
+        const linePieces = (Number(it.qty) || 1) * (Number(it.pcsPerSet) || 1);
+        return `<article class="item">${it.imageUrl ? `<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl, "w-240,h-320,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div><div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}">−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"><button aria-label="Increase sets" data-act="plus" data-i="${i}">+</button></div><button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.qty) || 1} set${Number(it.qty) === 1 ? "" : "s"} × ${Number(it.pcsPerSet) || 1} pcs per set = ${linePieces} pieces</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team">${esc(it.note || "")}</textarea></div></article>`;
+      })
+      .join("");
+    cart.forEach((it, i) => {
+      const el = $("thumb-" + i);
+      if (el) protect(el);
+    });
+  }
   renderCountdown();
 }
-function protect(el){el.draggable=false;el.addEventListener('contextmenu',e=>e.preventDefault());el.addEventListener('dragstart',e=>e.preventDefault())}
-function renderCountdown(){const s=state.status;const order=state.orders[state.activeFirm]||{};const box=$('countdown');const closed=windowClosed();
-  if(!s||!s.editDeadline){box.classList.add('hidden');$('save-btn').disabled=false;return}
-  box.classList.remove('hidden');
-  if(closed&&order.adminUnlocked){box.classList.remove('closed');$('countdown-text').textContent='reopened by staff for this '+state.activeFirm+' order';$('save-btn').disabled=false;return}
-  if(closed){box.classList.add('closed');$('countdown-text').textContent='closed — ask staff to reopen';$('save-btn').disabled=true;return}
-  box.classList.remove('closed');$('save-btn').disabled=false;
-  const ms=new Date(s.editDeadline).getTime()-Date.now();const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1000);
-  $('countdown-text').textContent=`${h}h ${String(m).padStart(2,'0')}m ${String(sec).padStart(2,'0')}s left to edit`;
+function protect(el) {
+  el.draggable = false;
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+  el.addEventListener("dragstart", (e) => e.preventDefault());
 }
-function startTick(){stopTick();state.tick=setInterval(renderCountdown,1000)}
-function stopTick(){if(state.tick){clearInterval(state.tick);state.tick=null}}
+function renderCountdown() {
+  const s = state.status;
+  const order = state.orders[state.activeFirm] || {};
+  const box = $("countdown");
+  const closed = windowClosed();
+  if (!s || !s.editDeadline) {
+    box.classList.add("hidden");
+    $("save-btn").disabled = false;
+    return;
+  }
+  box.classList.remove("hidden");
+  if (closed && order.adminUnlocked) {
+    box.classList.remove("closed");
+    $("countdown-text").textContent =
+      "reopened by staff for this " + state.activeFirm + " order";
+    $("save-btn").disabled = false;
+    return;
+  }
+  if (closed) {
+    box.classList.add("closed");
+    $("countdown-text").textContent = "closed — ask staff to reopen";
+    $("save-btn").disabled = true;
+    return;
+  }
+  box.classList.remove("closed");
+  $("save-btn").disabled = false;
+  const ms = new Date(s.editDeadline).getTime() - Date.now();
+  const h = Math.floor(ms / 3.6e6),
+    m = Math.floor((ms % 3.6e6) / 6e4),
+    sec = Math.floor((ms % 6e4) / 1000);
+  $("countdown-text").textContent =
+    `${h}h ${String(m).padStart(2, "0")}m ${String(sec).padStart(2, "0")}s left to edit`;
+}
+function startTick() {
+  stopTick();
+  state.tick = setInterval(renderCountdown, 1000);
+}
+function stopTick() {
+  if (state.tick) {
+    clearInterval(state.tick);
+    state.tick = null;
+  }
+}
 
-$('items').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT'||b.tagName==='TEXTAREA')return;const i=Number(b.dataset.i),cart=currentCart(),it=cart[i];if(!it)return;if(b.dataset.act==='plus'){it.qty=Math.min(9999,(Number(it.qty)||1)+1);markDirty(it)}if(b.dataset.act==='minus'){it.qty=Math.max(1,(Number(it.qty)||1)-1);markDirty(it)}if(b.dataset.act==='remove'){const [removed]=cart.splice(i,1);if(removed?._serverExists)currentDeleted().add(removed.designNo)}render()});
-$('items').addEventListener('change',e=>{if(e.target.dataset.act!=='qty')return;const i=Number(e.target.dataset.i),it=currentCart()[i];if(!it)return;it.qty=Math.max(1,Math.min(9999,Number(e.target.value)||1));markDirty(it);render()});
-$('items').addEventListener('input',e=>{if(e.target.dataset.act!=='note')return;const i=Number(e.target.dataset.i),it=currentCart()[i];if(!it)return;it.note=e.target.value.slice(0,500);markDirty(it);$('order-status').textContent=(state.orders[state.activeFirm]?.status||'Draft')+' · Unsaved changes'});
-document.querySelectorAll('.firm-tab').forEach(b=>b.onclick=async()=>{await stopScanner();state.activeFirm=b.dataset.firm;render()});
+$("items").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]");
+  if (!b || b.tagName === "INPUT" || b.tagName === "TEXTAREA") return;
+  const i = Number(b.dataset.i),
+    cart = currentCart(),
+    it = cart[i];
+  if (!it) return;
+  if (b.dataset.act === "plus") {
+    it.qty = Math.min(9999, (Number(it.qty) || 1) + 1);
+    markDirty(it);
+  }
+  if (b.dataset.act === "minus") {
+    it.qty = Math.max(1, (Number(it.qty) || 1) - 1);
+    markDirty(it);
+  }
+  if (b.dataset.act === "remove") {
+    const [removed] = cart.splice(i, 1);
+    if (removed?._serverExists) currentDeleted().add(removed.designNo);
+  }
+  render();
+});
+$("items").addEventListener("change", (e) => {
+  if (e.target.dataset.act !== "qty") return;
+  const i = Number(e.target.dataset.i),
+    it = currentCart()[i];
+  if (!it) return;
+  it.qty = Math.max(1, Math.min(9999, Number(e.target.value) || 1));
+  markDirty(it);
+  render();
+});
+$("items").addEventListener("input", (e) => {
+  if (e.target.dataset.act !== "note") return;
+  const i = Number(e.target.dataset.i),
+    it = currentCart()[i];
+  if (!it) return;
+  it.note = e.target.value.slice(0, 500);
+  markDirty(it);
+  $("order-status").textContent =
+    (state.orders[state.activeFirm]?.status || "Draft") + " · Unsaved changes";
+});
+document.querySelectorAll(".firm-tab").forEach(
+  (b) =>
+    (b.onclick = async () => {
+      await stopScanner();
+      state.activeFirm = b.dataset.firm;
+      render();
+    }),
+);
 
-async function addBarcode(raw){const barcode=String(raw||'').trim();if(!barcode)return;try{$('scan-note').classList.add('hidden');const{data,error}=await sb.rpc('lookup_barcode',{p_barcode:barcode});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('Barcode is not mapped to an active design');if(![state.activeFirm,'Both'].includes(row.firm))throw new Error(`${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`);const cart=currentCart();if(cart.some(x=>x.designNo===row.design_no))throw new Error(`${row.design_no} is already in this order`);currentDeleted().delete(row.design_no);cart.push({barcode:row.barcode,designNo:row.design_no,imageUrl:row.image_url||'',qty:1,category:row.category,style:row.style,fabric:row.fabric,pcsPerSet:Number(row.pcs_per_set)||1,note:'',description:row.description||'',_dirty:true,_serverExists:false});$('barcode-input').value='';render();note(`Added ${row.design_no}`,'success');navigator.vibrate?.(80)}catch(err){note(err.message,'error');navigator.vibrate?.([100,70,100])}}
-function note(t,type=''){$('scan-note').textContent=t;$('scan-note').className='notice '+type}
-$('add-barcode').onclick=()=>addBarcode($('barcode-input').value);$('barcode-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addBarcode(e.target.value)}});
-$('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{await ensureScanner();state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err.message,'error');await stopScanner()}};
-async function stopScanner(){if(state.scanner){try{if(state.scanning)await state.scanner.stop()}catch{}try{await state.scanner.clear()}catch{}}state.scanner=null;state.scanning=false;$('reader').classList.remove('open');$('camera-btn').textContent='Open camera scanner'}
+async function addBarcode(raw) {
+  const barcode = String(raw || "").trim();
+  if (!barcode) return;
+  try {
+    $("scan-note").classList.add("hidden");
+    const { data, error } = await sb.rpc("lookup_barcode", {
+      p_barcode: barcode,
+    });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) throw new Error("Barcode is not mapped to an active design");
+    if (![state.activeFirm, "Both"].includes(row.firm))
+      throw new Error(
+        `${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`,
+      );
+    const cart = currentCart();
+    if (cart.some((x) => x.designNo === row.design_no))
+      throw new Error(`${row.design_no} is already in this order`);
+    currentDeleted().delete(row.design_no);
+    cart.push({
+      barcode: row.barcode,
+      designNo: row.design_no,
+      imageUrl: row.image_url || "",
+      qty: 1,
+      category: row.category,
+      style: row.style,
+      fabric: row.fabric,
+      pcsPerSet: Number(row.pcs_per_set) || 1,
+      note: "",
+      description: row.description || "",
+      _dirty: true,
+      _serverExists: false,
+    });
+    $("barcode-input").value = "";
+    render();
+    note(`Added ${row.design_no}`, "success");
+    navigator.vibrate?.(80);
+  } catch (err) {
+    note(err.message, "error");
+    navigator.vibrate?.([100, 70, 100]);
+  }
+}
+function note(t, type = "") {
+  $("scan-note").textContent = t;
+  $("scan-note").className = "notice " + type;
+}
+$("add-barcode").onclick = () => addBarcode($("barcode-input").value);
+$("barcode-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addBarcode(e.target.value);
+  }
+});
+$("camera-btn").onclick = async () => {
+  if (state.scanning) {
+    await stopScanner();
+    return;
+  }
+  try {
+    await ensureScanner();
+    state.scanner = new Html5Qrcode("reader");
+    $("reader").classList.add("open");
+    await state.scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 260, height: 160 } },
+      async (d) => {
+        await addBarcode(d);
+        await stopScanner();
+      },
+      () => {},
+    );
+    state.scanning = true;
+    $("camera-btn").textContent = "Close camera scanner";
+  } catch (err) {
+    toast("Camera could not start: " + err.message, "error");
+    await stopScanner();
+  }
+};
+async function stopScanner() {
+  if (state.scanner) {
+    try {
+      if (state.scanning) await state.scanner.stop();
+    } catch {}
+    try {
+      await state.scanner.clear();
+    } catch {}
+  }
+  state.scanner = null;
+  state.scanning = false;
+  $("reader").classList.remove("open");
+  $("camera-btn").textContent = "Open camera scanner";
+}
 
-$('save-btn').onclick=async()=>{const firm=state.activeFirm,order=state.orders[firm];const upserts=currentCart().filter(x=>x._dirty).map(x=>({_op:'upsert',barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1,note:String(x.note||'').trim()}));const deletes=[...state.deleted[firm]].map(designNo=>({_op:'delete',designNo,_delete:true}));const items=upserts.concat(deletes);if(!items.length){toast('No unsaved changes');return}try{loading(true,'Saving and merging order…');const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok)throw new Error(data.message||'Order could not be saved');state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(hydrateItem);state.deleted[firm].clear();await refreshStatus();render();toast(data.code==='MERGED'?`${firm} changes merged with the latest order`:`${firm} order saved`,'success')}catch(err){if(isAuthErr(err.message)){toast('Your session expired — please log in again.','error');show('auth')}else toast(friendlySave(err.message),'error')}finally{loading(false)}};
-function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';if(/NOTE_TOO_LONG/.test(m))return 'A design note is too long. Keep it under 500 characters.';return m}
+$("save-btn").onclick = async () => {
+  const firm = state.activeFirm, order = state.orders[firm];
+  const upserts = currentCart().filter((x) => x._dirty).map((x) => ({ _op: "upsert", barcode: x.barcode || "", designNo: x.designNo, qty: Number(x.qty) || 1, note: String(x.note || "").trim() }));
+  const deletes = [...state.deleted[firm]].map((designNo) => ({ _op: "delete", designNo, _delete: true }));
+  const items = upserts.concat(deletes);
+  if (!items.length) { toast("No unsaved changes"); return; }
+  const button = $("save-btn"), oldText = button.textContent;
+  try {
+    button.disabled = true;
+    button.textContent = "Saving…";
+    const { data, error } = await sb.rpc("save_my_order", { p_firm: firm, p_base_version: order.version, p_items: items, p_request_id: crypto.randomUUID() });
+    if (error) throw error;
+    if (!data.ok) throw new Error(data.message || "Order could not be saved");
+    state.orders[firm] = data.order;
+    state.carts[firm] = (data.order.items || []).map(hydrateItem);
+    state.deleted[firm].clear();
+    state.ordersLoadedAt = Date.now();
+    render();
+    toast(data.code === "MERGED" ? `${firm} changes merged` : `${firm} order saved`, "success");
+    refreshStatus().then(() => { applyStatusSteps(); renderCountdown(); }).catch(() => {});
+  } catch (err) {
+    if (isAuthErr(err.message)) { toast("Your session expired — please log in again.", "error"); show("auth"); }
+    else toast(friendlySave(err.message), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+};
+
+function friendlySave(m) {
+  if (/NOT_CHECKED_IN/.test(m))
+    return "You are not checked in yet. Please visit the counter.";
+  if (/EDIT_WINDOW_CLOSED/.test(m))
+    return "Your 24-hour edit window has closed. Ask staff to reopen it.";
+  if (/ORDER_LOCKED/.test(m))
+    return "This order is locked. Ask staff to reopen it.";
+  if (/NOTE_TOO_LONG/.test(m))
+    return "A note is too long. Keep each design note under 500 characters.";
+  return m;
+}
 
 /* ---------- PDF (sale order) ---------- */
-async function blobToDataUrl(b){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
-async function fetchThumb(url){if(!url)throw new Error('no-image');const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(ik(url,'w-300,h-400,c-at_max,q-45,f-jpg'),{mode:'cors',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('image-http-'+r.status);return await blobToDataUrl(await r.blob())}finally{clearTimeout(t)}}
-async function fetchThumbsLimited(items,limit=6){const out=new Array(items.length);let next=0;async function worker(){while(true){const i=next++;if(i>=items.length)return;try{out[i]={status:'fulfilled',value:await fetchThumb(items[i].imageUrl)}}catch(reason){out[i]={status:'rejected',reason}}}}const workers=Array.from({length:Math.min(limit,Math.max(1,items.length))},worker);await Promise.all(workers);return out}
-function pdfText(v,fallback='-'){const t=String(v??'').replace(/[\r\n\t]+/g,' ').replace(/\s{2,}/g,' ').trim();return t||fallback}
-async function buildSaleOrderPdf(){
-  await ensureJsPDF();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
-  const p=state.profile||{},firm=state.activeFirm,f=FIRMS[firm],cart=currentCart(),order=state.orders[firm]||{},W=210,M=10,contentW=W-M*2;
-  const totalSets=cart.reduce((sum,x)=>sum+(Number(x.qty)||0),0);const totalPieces=cart.reduce((sum,x)=>sum+(Number(x.qty)||0)*(Number(x.pcsPerSet)||1),0);
-  let y=0;
-  function pageHeader(first=false){
-    doc.setFillColor(34,94,99);doc.rect(0,0,W,25,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('EKUM - '+firm,M,10.5);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text(pdfText(f.name),M,16);doc.text('GSTIN: '+pdfText(f.gstin)+'   |   Maitri Carnival 2026',M,21);
-    doc.setTextColor(51,39,27);y=31;
-    if(first){doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('SALE ORDER',M,y);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text('Date: '+new Date().toLocaleDateString('en-IN'),W-M,y,{align:'right'});doc.setFontSize(7.2);doc.text('Order ref: '+pdfText(String(order.id||'').slice(0,8).toUpperCase())+' | Version '+(Number(order.version)||1),W-M,y+4,{align:'right'});y+=8;
-      doc.setDrawColor(220);doc.setFillColor(245,248,247);doc.roundedRect(M,y,contentW,25,2,2,'FD');doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('BUYER',M+3,y+5);doc.setFont('helvetica','normal');doc.text(pdfText(p.company_name)+' | '+pdfText(p.contact_name),M+3,y+10);doc.text('Phone: +'+pdfText(p.phone_e164)+' | GSTIN: '+pdfText(p.gstin),M+3,y+15);doc.text(pdfText([p.city,p.state].filter(Boolean).join(', '))+' | Agent: '+pdfText(p.agent),M+3,y+20);y+=30;
+async function blobToDataUrl(b) {
+  return await new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(b);
+  });
+}
+async function fetchThumb(url) {
+  if (!url) throw new Error("no-image");
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), 6000);
+  try {
+    const r = await fetch(ik(url, "w-300,h-400,c-at_max,q-45,f-jpg"), {
+      mode: "cors",
+      credentials: "omit",
+      signal: c.signal,
+    });
+    if (!r.ok) throw new Error("image-http-" + r.status);
+    return await blobToDataUrl(await r.blob());
+  } finally {
+    clearTimeout(t);
+  }
+}
+async function fetchThumbsLimited(items, limit = 6) {
+  const out = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      try {
+        out[i] = {
+          status: "fulfilled",
+          value: await fetchThumb(items[i].imageUrl),
+        };
+      } catch (reason) {
+        out[i] = { status: "rejected", reason };
+      }
+    }
+  }
+  const workers = Array.from(
+    { length: Math.min(limit, Math.max(1, items.length)) },
+    worker,
+  );
+  await Promise.all(workers);
+  return out;
+}
+function pdfText(v, fallback = "-") {
+  const t = String(v ?? "")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return t || fallback;
+}
+async function buildSaleOrderPdf() {
+  await ensureJsPDF();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
+  const p = state.profile || {},
+    firm = state.activeFirm,
+    f = FIRMS[firm],
+    cart = currentCart(),
+    order = state.orders[firm] || {},
+    W = 210,
+    M = 10,
+    contentW = W - M * 2;
+  const totalSets = cart.reduce((sum, x) => sum + (Number(x.qty) || 0), 0);
+  const totalPieces = cart.reduce(
+    (sum, x) => sum + (Number(x.qty) || 0) * (Number(x.pcsPerSet) || 1),
+    0,
+  );
+  let y = 0;
+  function pageHeader(first = false) {
+    doc.setFillColor(34, 94, 99);
+    doc.rect(0, 0, W, 25, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("EKUM - " + firm, M, 10.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(pdfText(f.name), M, 16);
+    doc.text(
+      "GSTIN: " + pdfText(f.gstin) + "   |   Maitri Carnival 2026",
+      M,
+      21,
+    );
+    doc.setTextColor(51, 39, 27);
+    y = 31;
+    if (first) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("SALE ORDER", M, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.text("Date: " + new Date().toLocaleDateString("en-IN"), W - M, y, {
+        align: "right",
+      });
+      doc.setFontSize(7.2);
+      doc.text(
+        "Order ref: " +
+          pdfText(
+            String(order.id || "")
+              .slice(0, 8)
+              .toUpperCase(),
+          ) +
+          " | Version " +
+          (Number(order.version) || 1),
+        W - M,
+        y + 4,
+        { align: "right" },
+      );
+      y += 8;
+      doc.setDrawColor(220);
+      doc.setFillColor(245, 248, 247);
+      doc.roundedRect(M, y, contentW, 25, 2, 2, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.text("BUYER", M + 3, y + 5);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        pdfText(p.company_name) + " | " + pdfText(p.contact_name),
+        M + 3,
+        y + 10,
+      );
+      doc.text(
+        "Phone: +" + pdfText(p.phone_e164) + " | GSTIN: " + pdfText(p.gstin),
+        M + 3,
+        y + 15,
+      );
+      doc.text(
+        pdfText([p.city, p.state].filter(Boolean).join(", ")) +
+          " | Agent: " +
+          pdfText(p.agent),
+        M + 3,
+        y + 20,
+      );
+      y += 30;
     }
     tableHeader();
   }
-  function tableHeader(){doc.setFillColor(232,242,241);doc.rect(M,y,contentW,8,'F');doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(7.2);doc.text('#',M+2,y+5.3);doc.text('PHOTO',M+10,y+5.3);doc.text('DESIGN',M+29,y+5.3);doc.text('DETAILS',M+54,y+5.3);doc.text('NOTE',M+108,y+5.3);doc.text('SETS',M+148,y+5.3);doc.text('PCS/SET',M+162,y+5.3);doc.text('PCS',W-M-2,y+5.3,{align:'right'});doc.setTextColor(51,39,27);y+=8}
-  pageHeader(true);
-  const thumbs=await fetchThumbsLimited(cart,6);
-  for(let i=0;i<cart.length;i++){
-    const it=cart[i],sets=Number(it.qty)||1,pps=Number(it.pcsPerSet)||1,linePieces=sets*pps;
-    doc.setFont('helvetica','normal');doc.setFontSize(7.4);
-    const detail=pdfText([it.category,it.style,it.fabric].filter(Boolean).join(' / '));
-    const detailLines=doc.splitTextToSize(detail+(it.description?' - '+pdfText(it.description):''),50);
-    const noteLines=doc.splitTextToSize(pdfText(it.note),36);
-    const rowH=Math.max(22,5+Math.max(detailLines.length,noteLines.length)*4);
-    if(y+rowH>278){doc.addPage();pageHeader(false)}
-    const tv=thumbs[i];doc.setDrawColor(230);doc.rect(M+9,y+2,15,18);
-    if(tv.status==='fulfilled'){try{doc.addImage(tv.value,'JPEG',M+9,y+2,15,18,undefined,'FAST')}catch{/* keep placeholder */}}
-    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.text(String(i+1),M+2,y+8);
-    doc.setFont('helvetica','bold');doc.setFontSize(8.2);doc.text(pdfText(it.designNo),M+29,y+8,{maxWidth:23});
-    doc.setFont('helvetica','normal');doc.setFontSize(7.4);doc.text(detailLines,M+54,y+6);doc.text(noteLines,M+108,y+6);
-    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(sets),M+154,y+8,{align:'right'});doc.text(String(pps),M+174,y+8,{align:'right'});doc.text(String(linePieces),W-M-2,y+8,{align:'right'});
-    doc.setDrawColor(235);doc.line(M,y+rowH,W-M,y+rowH);y+=rowH;
+  function tableHeader() {
+    doc.setFillColor(232, 242, 241);
+    doc.rect(M, y, contentW, 8, "F");
+    doc.setTextColor(34, 94, 99);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.2);
+    doc.text("#", M + 2, y + 5.3);
+    doc.text("PHOTO", M + 10, y + 5.3);
+    doc.text("DESIGN", M + 29, y + 5.3);
+    doc.text("DETAILS", M + 54, y + 5.3);
+    doc.text("NOTE", M + 108, y + 5.3);
+    doc.text("SETS", M + 148, y + 5.3);
+    doc.text("PCS/SET", M + 162, y + 5.3);
+    doc.text("PCS", W - M - 2, y + 5.3, { align: "right" });
+    doc.setTextColor(51, 39, 27);
+    y += 8;
   }
-  if(y+22>280){doc.addPage();pageHeader(false)}
-  doc.setFillColor(245,248,247);doc.roundedRect(M,y+4,contentW,14,2,2,'F');doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`Total designs: ${cart.length}`,M+4,y+12);doc.text(`Total sets: ${totalSets}`,M+72,y+12);doc.text(`Total pieces: ${totalPieces}`,W-M-4,y+12,{align:'right'});
-  const pages=doc.getNumberOfPages();for(let pg=1;pg<=pages;pg++){doc.setPage(pg);doc.setTextColor(120);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('Computer-generated sale order - Maitri Carnival 2026',M,293);doc.text(`Page ${pg} of ${pages}`,W-M,293,{align:'right'})}
+  pageHeader(true);
+  const thumbs = await fetchThumbsLimited(cart, 6);
+  for (let i = 0; i < cart.length; i++) {
+    const it = cart[i],
+      sets = Number(it.qty) || 1,
+      pps = Number(it.pcsPerSet) || 1,
+      linePieces = sets * pps;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.4);
+    const detail = pdfText(
+      [it.category, it.style, it.fabric].filter(Boolean).join(" / "),
+    );
+    const detailLines = doc.splitTextToSize(
+      detail + (it.description ? " - " + pdfText(it.description) : ""),
+      50,
+    );
+    const noteLines = doc.splitTextToSize(pdfText(it.note), 36);
+    const rowH = Math.max(
+      22,
+      5 + Math.max(detailLines.length, noteLines.length) * 4,
+    );
+    if (y + rowH > 278) {
+      doc.addPage();
+      pageHeader(false);
+    }
+    const tv = thumbs[i];
+    doc.setDrawColor(230);
+    doc.rect(M + 9, y + 2, 15, 18);
+    if (tv.status === "fulfilled") {
+      try {
+        doc.addImage(tv.value, "JPEG", M + 9, y + 2, 15, 18, undefined, "FAST");
+      } catch {
+        /* keep placeholder */
+      }
+    }
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.text(String(i + 1), M + 2, y + 8);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.2);
+    doc.text(pdfText(it.designNo), M + 29, y + 8, { maxWidth: 23 });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.4);
+    doc.text(detailLines, M + 54, y + 6);
+    doc.text(noteLines, M + 108, y + 6);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(String(sets), M + 154, y + 8, { align: "right" });
+    doc.text(String(pps), M + 174, y + 8, { align: "right" });
+    doc.text(String(linePieces), W - M - 2, y + 8, { align: "right" });
+    doc.setDrawColor(235);
+    doc.line(M, y + rowH, W - M, y + rowH);
+    y += rowH;
+  }
+  if (y + 22 > 280) {
+    doc.addPage();
+    pageHeader(false);
+  }
+  doc.setFillColor(245, 248, 247);
+  doc.roundedRect(M, y + 4, contentW, 14, 2, 2, "F");
+  doc.setTextColor(34, 94, 99);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text(`Total designs: ${cart.length}`, M + 4, y + 12);
+  doc.text(`Total sets: ${totalSets}`, M + 72, y + 12);
+  doc.text(`Total pieces: ${totalPieces}`, W - M - 4, y + 12, {
+    align: "right",
+  });
+  const pages = doc.getNumberOfPages();
+  for (let pg = 1; pg <= pages; pg++) {
+    doc.setPage(pg);
+    doc.setTextColor(120);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text("Computer-generated sale order - Maitri Carnival 2026", M, 293);
+    doc.text(`Page ${pg} of ${pages}`, W - M, 293, { align: "right" });
+  }
   return doc;
 }
-$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}if(hasUnsavedChanges()){toast('Save your latest changes before downloading the sale order','error');return}try{loading(true,'Preparing PDF…');const doc=await buildSaleOrderPdf();const p=state.profile||{},firm=state.activeFirm;doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Sale-Order.pdf`);toast('PDF downloaded','success')}catch(err){console.error('sale-order-pdf',err);toast('Could not generate the PDF. Check your connection and try again.','error')}finally{loading(false)}};
+$("pdf-btn").onclick = async () => {
+  const cart = currentCart();
+  if (!cart.length) {
+    toast("Add at least one design before downloading a PDF", "error");
+    return;
+  }
+  if (hasUnsavedChanges()) {
+    toast(
+      "Save your latest changes before downloading the sale order",
+      "error",
+    );
+    return;
+  }
+  try {
+    loading(true, "Preparing PDF…");
+    const doc = await buildSaleOrderPdf();
+    const p = state.profile || {},
+      firm = state.activeFirm;
+    doc.save(
+      `${(p.company_name || "order").replace(/[^a-z0-9]+/gi, "-")}-${firm}-Sale-Order.pdf`,
+    );
+    toast("PDF downloaded", "success");
+  } catch (err) {
+    console.error("sale-order-pdf", err);
+    toast(
+      "Could not generate the PDF. Check your connection and try again.",
+      "error",
+    );
+  } finally {
+    loading(false);
+  }
+};
 
 /* ---------- Account ---------- */
-$('account-btn').onclick=()=>{fillAccount();show('account')};
-$('back-order').onclick=()=>show(state.status?.checkedIn?'order':'lobby');
-$('save-account').onclick=async()=>{try{loading(true,'Saving account…');const patch={company_name:$('acc-company').value.trim(),contact_name:$('acc-contact').value.trim(),city:$('acc-city').value.trim(),state:$('acc-state').value,agent:$('acc-agent').value.trim(),gstin:$('acc-gstin').value.trim().toUpperCase()};const{data,error}=await sb.from('customers').update(patch).eq('id',state.profile.id).select().single();if(error)throw error;state.profile=data;loadLookups();toast('Account updated','success');show(state.status?.checkedIn?'order':'lobby')}catch(err){toast(err.message,'error')}finally{loading(false)}};
-$('logout-btn').onclick=async()=>{await stopScanner();if(state.poll){clearInterval(state.poll);state.poll=null}stopTick();await sb.auth.signOut();state.profile=null;show('auth')};
+$("account-btn").onclick = () => {
+  fillAccount();
+  show("account");
+};
+$("back-order").onclick = () =>
+  show(state.status?.checkedIn ? "order" : "lobby");
+$("save-account").onclick = async () => {
+  try {
+    loading(true, "Saving account…");
+    const patch = {
+      company_name: $("acc-company").value.trim(),
+      contact_name: $("acc-contact").value.trim(),
+      city: $("acc-city").value.trim(),
+      state: $("acc-state").value,
+      agent: $("acc-agent").value.trim(),
+      gstin: $("acc-gstin").value.trim().toUpperCase(),
+    };
+    const { data, error } = await sb
+      .from("customers")
+      .update(patch)
+      .eq("id", state.profile.id)
+      .select()
+      .single();
+    if (error) throw error;
+    state.profile = data;
+    loadLookups();
+    toast("Account updated", "success");
+    show(state.status?.checkedIn ? "order" : "lobby");
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    loading(false);
+  }
+};
+$("logout-btn").onclick = async () => {
+  await stopScanner();
+  if (state.poll) {
+    clearInterval(state.poll);
+    state.poll = null;
+  }
+  stopTick();
+  await sb.auth.signOut();
+  state.profile = null;
+  show("auth");
+};
+
+/* Keep mobile layouts stable when the software keyboard closes. */
+let __layoutViewportHeight = window.innerHeight;
+window.visualViewport?.addEventListener("resize", () => {
+  const h = window.visualViewport.height;
+  if (h > __layoutViewportHeight * 0.82) setTimeout(() => window.scrollTo({ top: window.scrollY, left: 0, behavior: "auto" }), 50);
+  __layoutViewportHeight = Math.max(__layoutViewportHeight, h);
+});
 
 /* ---------- Boot ---------- */
-let booted=false;
-async function boot(){if(booted)return;booted=true;try{loading(true,'Loading…');await loadProfileAndStatus();show('lobby')}catch(err){booted=false;if(!isAuthErr(err.message))toast(err.message,'error');show('auth')}finally{loading(false)}}
-if(sb){
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session){booted=false;show('auth');return}if(event==='SIGNED_IN'){booted=false;setTimeout(boot,0)}});
-  sb.auth.getSession().then(({data})=>{data.session?boot():show('auth')});
-}else show('auth');
+let booted = false;
+async function boot() {
+  if (booted) return;
+  booted = true;
+  try {
+    loading(true, "Loading…");
+    await loadProfileAndStatus();
+    show("lobby");
+  } catch (err) {
+    booted = false;
+    if (!isAuthErr(err.message)) toast(err.message, "error");
+    show("auth");
+  } finally {
+    loading(false);
+  }
+}
+if (sb) {
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT" || !session) {
+      booted = false;
+      show("auth");
+      return;
+    }
+    if (event === "SIGNED_IN") {
+      booted = false;
+      setTimeout(boot, 0);
+    }
+  });
+  sb.auth.getSession().then(({ data }) => {
+    data.session ? boot() : show("auth");
+  });
+} else show("auth");
+
 </script>
 </body>
 </html>

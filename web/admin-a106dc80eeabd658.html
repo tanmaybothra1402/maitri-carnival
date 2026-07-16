@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#225E63">
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" name="viewport"/>
+<meta content="#225E63" name="theme-color"/>
 <title>EKUM Staff · Maitri Carnival 2026</title>
-<link rel="preconnect" href="https://ezmtiiftolcaslqfvozu.supabase.co">
-<link rel="preconnect" href="https://ik.imagekit.io" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
+<link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
+<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
@@ -28,179 +29,1910 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 @media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.permission-grid{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:390px){.page{padding-left:9px;padding-right:9px}.firm-logo,.divider{display:none}.staff-meta b{max-width:90px}.dashboard-subnav button{font-size:10px}.chart-frame,.chart-frame.hero{height:235px}}
 </style>
-</head>
+<style>
+/* EKUM floor UX refinement: clarity, containment and fast visual navigation. */
+html,body{touch-action:manipulation}input,select,textarea{font-size:16px!important;max-width:100%}button{max-width:100%}.page,.card,.list-row,.toolbar,.row,.grid2,.grid3,.grid4,.modal-card,.product-line{min-width:0}.copy,.list-row p,.list-row b,.selected-customer-meta,.selected-order-summary,.sale-item-meta,.sale-item-note,.catalogue-design{overflow-wrap:anywhere;word-break:break-word}
+.firm-logo{display:block;width:auto;object-fit:contain;flex:0 0 auto}.firm-logo.maitri-logo{height:24px}.firm-logo.niharika-logo{height:23px}.login-brand-lockup{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}.login-firm-logo{display:block;width:auto;object-fit:contain;flex:0 0 auto}.login-firm-logo.maitri-logo{height:28px}.login-firm-logo.niharika-logo{height:27px}.staff-meta b{font-size:11px;max-width:150px}
+.focus-card{border-color:rgba(43,115,121,.24);background:linear-gradient(180deg,#fff,#FBFEFD)}.focus-card:focus-within{box-shadow:0 0 0 3px rgba(43,115,121,.10),var(--shadow)}
+.customer-results{max-height:300px;overflow:auto;overscroll-behavior:contain}.customer-results:empty{display:none}.customer-choice{border-left:4px solid transparent}.customer-choice:hover,.customer-choice:active{border-left-color:var(--orange);background:var(--foam)}
+.sale-builder-card{border-color:rgba(43,115,121,.28);box-shadow:0 12px 30px rgba(34,94,99,.10)}.sale-builder-card>.toolbar{align-items:center;padding:12px;margin:-4px -4px 12px;border-radius:13px;background:var(--foam)}.selected-customer-meta{margin-top:3px;color:var(--slate);font-size:11px;font-weight:650;line-height:1.45}.selected-order-summary{margin-top:5px;color:var(--deep);font-size:11px;font-weight:800}.change-customer-btn{flex:0 0 auto;white-space:nowrap}
+.sale-cart-list{display:grid;gap:10px;margin-top:12px}.sale-item{display:grid;grid-template-columns:64px minmax(0,1fr);gap:11px;padding:12px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.055);overflow:hidden}.sale-item-thumb{width:64px;height:84px;border-radius:10px;background:#EEF3F1 center/cover no-repeat;object-fit:cover}.sale-item-main{min-width:0}.sale-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.sale-item-title{color:var(--deep);font-size:14px;font-weight:850;line-height:1.25}.sale-item-meta{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}.line-piece-pill{display:inline-flex;align-items:center;min-height:25px;margin-top:7px;padding:4px 9px;border-radius:999px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.sale-qty-row{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}.sale-qty-row .btn{min-width:38px;min-height:38px;padding:0}.sale-qty-input{width:64px!important;height:38px!important;padding:0!important;text-align:center;font-weight:850}.sale-remove{margin-left:auto;color:var(--error)!important}.sale-note-wrap{grid-column:1/-1;margin-top:1px;padding-top:10px;border-top:1px solid var(--border)}.sale-note-label{display:flex;justify-content:space-between;gap:8px;margin:0 0 5px;color:var(--slate);font-size:10px;font-weight:850;text-transform:none;letter-spacing:0}.sale-note-help{color:var(--muted);font-weight:550}.sale-item-note{width:100%;min-height:62px;padding:10px 11px;font-size:16px!important;line-height:1.4;resize:vertical}.sale-savebar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);z-index:24;margin-top:12px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 28px rgba(34,55,52,.13);backdrop-filter:blur(10px)}
+.entry-board{display:grid;gap:12px;margin-top:13px}.entry-section{padding:12px;border:1px solid var(--border);border-radius:14px;background:#FBFCFB}.entry-pending-section{border-color:rgba(255,151,0,.24);background:#FFFCF6}.entry-completed-section{background:#F8FBFA}.entry-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:2px 2px 10px}.entry-section-head h2{margin-top:2px;font-size:15px}.entry-section-head p{margin-top:3px;color:var(--muted);font-size:9.5px;line-height:1.4}.entry-kicker{color:var(--orange);font-size:8.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.entry-completed-section .entry-kicker{color:var(--success)}.entry-count{min-width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:var(--orange);color:#fff;font-size:12px;font-weight:900}.entry-count.success{background:var(--success)}.entry-scroll{display:grid;gap:8px;max-height:44vh;overflow:auto;overscroll-behavior:contain;padding-right:2px}.entry-scroll.compact{max-height:29vh}.entry-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff}.entry-card.current{border-color:rgba(255,151,0,.48);box-shadow:0 5px 16px rgba(255,151,0,.09)}.entry-card-main{min-width:0}.entry-card-title{display:flex;align-items:center;gap:7px;min-width:0}.entry-card-title b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--charcoal);font-size:13px}.entry-slot{flex:0 0 auto;display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border-radius:999px;background:var(--foam);color:var(--deep);font-size:8.5px;font-weight:900}.entry-slot.current{background:#FFF0D6;color:#8A5A09}.entry-slot.past{background:#FEECE2;color:#9A3412}.entry-slot.future{background:var(--foam);color:var(--deep)}.entry-slot.none{background:#F1F3F2;color:#6B716F}.entry-primary{margin-top:4px;color:var(--slate);font-size:10.5px;font-weight:750;line-height:1.4}.entry-secondary{margin-top:3px;color:var(--muted);font-size:9.5px;line-height:1.4}.entry-actions{display:flex;flex-direction:column;gap:6px;min-width:84px}.entry-actions .btn{width:100%;min-height:38px;padding:0 10px}.entry-complete-mark{display:flex;align-items:center;gap:6px;color:var(--success);font-size:10px;font-weight:850}
+.catalogue-guide{margin:0 0 10px;color:var(--muted);font-size:10px;line-height:1.45}.catalogue-groups{display:grid;gap:16px;margin-top:13px}.catalogue-group{display:grid;gap:8px}.catalogue-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px}.catalogue-group-head h2{color:var(--deep);font-size:13px}.catalogue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.catalogue-card{position:relative;min-width:0;padding:0;border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden;cursor:pointer;box-shadow:0 3px 10px rgba(34,94,99,.05);text-align:left}.catalogue-card:active{transform:scale(.98);background:var(--foam)}.catalogue-card.inactive{opacity:.55}.catalogue-thumb{width:100%;aspect-ratio:3/4;display:block;background:#EEF3F1 center/cover no-repeat;object-fit:cover}.catalogue-design{display:block;padding:7px 6px 8px;color:var(--deep);font-size:10px;font-weight:900;line-height:1.2;text-align:center}.catalogue-state-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border:2px solid #fff;border-radius:50%;background:var(--success);box-shadow:0 1px 4px rgba(0,0,0,.2)}.catalogue-card.inactive .catalogue-state-dot{background:var(--error)}
+.modal-card,.modal-body{min-width:0;max-width:100%;overflow-x:hidden}.product-line>*{min-width:0}.list-row>*,.toolbar>*{min-width:0}
+@media(max-width:480px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.firm-logo.maitri-logo{height:20px}.firm-logo.niharika-logo{height:19px}.brand{gap:5px}.divider{height:20px}.staff-meta b{max-width:86px}.entry-card{grid-template-columns:1fr}.entry-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.sale-item{grid-template-columns:58px minmax(0,1fr)}.sale-item-thumb{width:58px;height:77px}.sale-item-head{display:block}.sale-remove{margin-left:0}.catalogue-grid{gap:7px}.catalogue-design{font-size:9.5px}.login-firm-logo.maitri-logo{height:23px}.login-firm-logo.niharika-logo{height:22px}}
+@media(max-width:360px){.firm-logo.niharika-logo{display:block!important;height:14px}.firm-logo.maitri-logo{height:15px}.catalogue-grid{gap:6px}.catalogue-card{border-radius:10px}.entry-section{padding:10px}}
+</style></head>
 <body>
-<header id="top" class="appbar hidden">
-  <div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><svg class="firm-logo" viewBox="0 0 92 26"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">maitri</text><circle cx="80" cy="8" r="5" fill="#8DC63F"/></svg><svg class="firm-logo" viewBox="0 0 112 26"><text x="1" y="19" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="19" fill="#2E2A6B">Niharika</text><path d="M99 5 q9 1 8 11 q-5 -5 -8 -11z" fill="#E6007E"/></svg></div>
-  <div class="staff-meta"><b id="staff-name">Staff</b><button id="logout">Logout</button></div>
+<header class="appbar hidden" id="top">
+<div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
+<div class="staff-meta"><b id="staff-name">Staff</b><button id="logout">Logout</button></div>
 </header>
-
-<main id="login-screen" class="page active" style="padding-top:40px"><section class="card"><span class="wordmark"><i class="dot"></i>EKUM</span><h1 style="margin-top:12px">Staff login</h1><p class="copy">Use your Staff ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Staff ID or admin email</label><input id="login-id" required autocomplete="username" placeholder="sales01"><label>Password</label><input id="login-password" type="password" required autocomplete="current-password"><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
-
-<main id="page-reception" class="page">
-  <div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">Registration</button><button data-sub="password">Password</button></div>
-  <section id="reception-entry" class="subpanel"><div class="card"><h1>Reception</h1><p class="copy">Search, check in, revoke entry or manage customer access.</p><label>Search customer</label><input id="entry-search" placeholder="Company, mobile, contact, city, state, GSTIN or agent"><div id="entry-list" class="list"></div></div></section>
-  <section id="reception-registration" class="subpanel hidden"><div class="card"><h1>Register customer</h1><div class="grid2"><div><label>Company</label><input id="reg-company"></div><div><label>Contact</label><input id="reg-contact"></div><div><label>City</label><input id="reg-city" list="dl-city"></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent" list="dl-agent"></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"></div></div><button id="register-customer" class="btn" style="margin-top:12px">Register customer</button><div id="registration-result"></div></div></section>
-  <section id="reception-password" class="subpanel hidden"><div class="card"><h1>Password support</h1><p class="copy">Set a temporary password and share it directly with the customer.</p><label>Customer mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"><label>New password</label><input id="reset-password" type="text" minlength="8"><div class="row" style="margin-top:12px"><button id="generate-customer-pass" class="btn secondary">Generate</button><button id="reset-customer-pass" class="btn">Reset password</button></div><div id="password-result"></div></div></section>
+<main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Staff login</h1><p class="copy">Use your Staff ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Staff ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
+<main class="page" id="page-reception">
+<div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">Registration</button><button data-sub="password">Password</button></div>
+<section class="subpanel" id="reception-entry"><div class="card"><h1>Reception</h1><p class="copy">Search, check in, revoke entry or manage customer access.</p><label>Search customer</label><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/>
+<div class="entry-board">
+<section class="entry-section entry-pending-section">
+<div class="entry-section-head">
+<div><span class="entry-kicker">Action first</span><h2>Pending</h2><p>Current slot first, then past slots, upcoming slots and customers without a slot.</p></div>
+<span class="entry-count" id="entry-pending-count">0</span>
+</div>
+<div class="entry-scroll" id="entry-pending"></div>
+</section>
+<section class="entry-section entry-completed-section">
+<div class="entry-section-head">
+<div><span class="entry-kicker">Already entered</span><h2>Completed</h2><p>Most recently checked-in customers appear first.</p></div>
+<span class="entry-count success" id="entry-completed-count">0</span>
+</div>
+<div class="entry-scroll compact" id="entry-completed"></div>
+</section>
+</div>
+</div></section>
+<section class="subpanel hidden" id="reception-registration"><div class="card"><h1>Register customer</h1><div class="grid2"><div><label>Company</label><input id="reg-company"/></div><div><label>Contact</label><input id="reg-contact"/></div><div><label>City</label><input id="reg-city" list="dl-city"/></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent" list="dl-agent"/></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"/></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"/></div></div><button class="btn" id="register-customer" style="margin-top:12px">Register customer</button><div id="registration-result"></div></div></section>
+<section class="subpanel hidden" id="reception-password"><div class="card"><h1>Password support</h1><p class="copy">Set a temporary password and share it directly with the customer.</p><label>Customer mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"/><label>New password</label><input id="reset-password" minlength="8" type="text"/><div class="row" style="margin-top:12px"><button class="btn secondary" id="generate-customer-pass">Generate</button><button class="btn" id="reset-customer-pass">Reset password</button></div><div id="password-result"></div></div></section>
 </main>
-
-<main id="page-dashboard" class="page">
-  <div class="dashboard-header"><div><h1>Exhibition Dashboard</h1><div class="updated" id="dash-updated">Not loaded yet</div></div><div class="row"><button id="dash-export" class="btn secondary small">Export</button><button id="dash-refresh" class="btn secondary small">Refresh</button></div></div>
-  <div class="dashboard-subnav"><button class="active" data-dtab="overview">Overview</button><button data-dtab="products">Products</button><button data-dtab="customers">Customers</button><button data-dtab="zones">Zones</button></div>
-  <div class="filter-bar"><button id="filter-open" class="btn secondary small">＋ Filter</button><button id="filter-clear" class="btn ghost small">Clear</button><div id="filter-chips" class="filter-chips"><span class="copy">All exhibition data</span></div></div>
-  <div class="card" style="padding:10px"><input id="dash-search" placeholder="Search customer, phone or design"></div>
-  <div class="kpi-strip"><div class="kpi primary"><b id="k-pieces">0</b><span>Total pieces</span></div><div class="kpi"><b id="k-sets">0</b><span>Total sets</span></div><div class="kpi"><b id="k-buyers">0</b><span>Buyers</span></div><div class="kpi"><b id="k-customers">0</b><span>Customers</span></div><div class="kpi"><b id="k-checkin">0</b><span>Checked in</span></div><div class="kpi"><b id="k-orders">0</b><span>Orders</span></div><div class="kpi"><b id="k-designs">0</b><span>Designs</span></div><div class="kpi"><b id="k-average">0</b><span>Avg pcs / buyer</span></div></div>
-  <section id="dash-overview" class="dashboard-panel"><div class="viz-grid">
-    <article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">What’s selling best</div><div class="viz-copy">Top designs by pieces. Tap a row to drill down.</div></div></div><div class="chart-frame hero"><canvas id="chart-overview-design"></canvas></div><div id="rank-overview-design" class="ranking"></div></article>
-    <article class="viz-card"><div class="viz-head"><div><div class="viz-title">Customer mix</div><div class="viz-copy">Agent, state or city.</div></div><div class="mini-segment" id="mix-customer"><button class="active" data-mode="agentCustomers">Agent</button><button data-mode="stateCustomers">State</button><button data-mode="cityCustomers">City</button></div></div><div class="chart-frame"><canvas id="chart-overview-customer"></canvas></div></article>
-    <article class="viz-card"><div class="viz-head"><div><div class="viz-title">Zone-wise business</div><div class="viz-copy">Customers or pieces by state.</div></div><div class="mini-segment" id="mix-zone"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame"><canvas id="chart-overview-zone"></canvas></div></article>
-    <article class="viz-card wide"><div class="viz-head"><div><div class="viz-title">Best product mix</div><div class="viz-copy">Category, style, fabric or firm.</div></div><div class="mini-segment" id="mix-product"><button class="active" data-mode="category">Category</button><button data-mode="style">Style</button><button data-mode="fabric">Fabric</button><button data-mode="firm">Firm</button></div></div><div class="chart-frame"><canvas id="chart-overview-product"></canvas></div></article>
-  </div></section>
-  <section id="dash-products" class="dashboard-panel" hidden><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Top designs</div><div class="chart-frame hero"><canvas id="chart-products-design"></canvas></div><div id="rank-products-design" class="ranking"></div></article><article class="viz-card"><div class="viz-title">Categories</div><div class="chart-frame"><canvas id="chart-products-category"></canvas></div></article><article class="viz-card"><div class="viz-title">Styles</div><div class="chart-frame"><canvas id="chart-products-style"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Fabrics</div><div class="chart-frame"><canvas id="chart-products-fabric"></canvas></div></article></div></section>
-  <section id="dash-customers" class="dashboard-panel" hidden><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Best customers</div><div class="chart-frame hero"><canvas id="chart-customers-top"></canvas></div><div id="rank-customers" class="ranking"></div></article><article class="viz-card"><div class="viz-title">Agent mix</div><div class="chart-frame"><canvas id="chart-customers-agent"></canvas></div></article><article class="viz-card"><div class="viz-title">Customer states</div><div class="chart-frame"><canvas id="chart-customers-state"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Order source</div><div class="viz-copy">Customer versus staff-last-modified order lines.</div><div class="chart-frame"><canvas id="chart-customers-source"></canvas></div></article></div></section>
-  <section id="dash-zones" class="dashboard-panel" hidden><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">State performance</div><div class="viz-copy">Tap a state to apply it as a filter.</div></div><div class="mini-segment" id="zones-mode"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame hero"><canvas id="chart-zones-state"></canvas></div><div id="rank-zones" class="ranking"></div></article></div></section>
+<main class="page" id="page-dashboard">
+<div class="dashboard-header"><div><h1>Exhibition Dashboard</h1><div class="updated" id="dash-updated">Not loaded yet</div></div><div class="row"><button class="btn secondary small" id="dash-export">Export</button><button class="btn secondary small" id="dash-refresh">Refresh</button></div></div>
+<div class="dashboard-subnav"><button class="active" data-dtab="overview">Overview</button><button data-dtab="products">Products</button><button data-dtab="customers">Customers</button><button data-dtab="zones">Zones</button></div>
+<div class="filter-bar"><button class="btn secondary small" id="filter-open">＋ Filter</button><button class="btn ghost small" id="filter-clear">Clear</button><div class="filter-chips" id="filter-chips"><span class="copy">All exhibition data</span></div></div>
+<div class="card" style="padding:10px"><input id="dash-search" placeholder="Search customer, phone or design"/></div>
+<div class="kpi-strip"><div class="kpi primary"><b id="k-pieces">0</b><span>Total pieces</span></div><div class="kpi"><b id="k-sets">0</b><span>Total sets</span></div><div class="kpi"><b id="k-buyers">0</b><span>Buyers</span></div><div class="kpi"><b id="k-customers">0</b><span>Customers</span></div><div class="kpi"><b id="k-checkin">0</b><span>Checked in</span></div><div class="kpi"><b id="k-orders">0</b><span>Orders</span></div><div class="kpi"><b id="k-designs">0</b><span>Designs</span></div><div class="kpi"><b id="k-average">0</b><span>Avg pcs / buyer</span></div></div>
+<section class="dashboard-panel" id="dash-overview"><div class="viz-grid">
+<article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">What’s selling best</div><div class="viz-copy">Top designs by pieces. Tap a row to drill down.</div></div></div><div class="chart-frame hero"><canvas id="chart-overview-design"></canvas></div><div class="ranking" id="rank-overview-design"></div></article>
+<article class="viz-card"><div class="viz-head"><div><div class="viz-title">Customer mix</div><div class="viz-copy">Agent, state or city.</div></div><div class="mini-segment" id="mix-customer"><button class="active" data-mode="agentCustomers">Agent</button><button data-mode="stateCustomers">State</button><button data-mode="cityCustomers">City</button></div></div><div class="chart-frame"><canvas id="chart-overview-customer"></canvas></div></article>
+<article class="viz-card"><div class="viz-head"><div><div class="viz-title">Zone-wise business</div><div class="viz-copy">Customers or pieces by state.</div></div><div class="mini-segment" id="mix-zone"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame"><canvas id="chart-overview-zone"></canvas></div></article>
+<article class="viz-card wide"><div class="viz-head"><div><div class="viz-title">Best product mix</div><div class="viz-copy">Category, style, fabric or firm.</div></div><div class="mini-segment" id="mix-product"><button class="active" data-mode="category">Category</button><button data-mode="style">Style</button><button data-mode="fabric">Fabric</button><button data-mode="firm">Firm</button></div></div><div class="chart-frame"><canvas id="chart-overview-product"></canvas></div></article>
+</div></section>
+<section class="dashboard-panel" hidden="" id="dash-products"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Top designs</div><div class="chart-frame hero"><canvas id="chart-products-design"></canvas></div><div class="ranking" id="rank-products-design"></div></article><article class="viz-card"><div class="viz-title">Categories</div><div class="chart-frame"><canvas id="chart-products-category"></canvas></div></article><article class="viz-card"><div class="viz-title">Styles</div><div class="chart-frame"><canvas id="chart-products-style"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Fabrics</div><div class="chart-frame"><canvas id="chart-products-fabric"></canvas></div></article></div></section>
+<section class="dashboard-panel" hidden="" id="dash-customers"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Best customers</div><div class="chart-frame hero"><canvas id="chart-customers-top"></canvas></div><div class="ranking" id="rank-customers"></div></article><article class="viz-card"><div class="viz-title">Agent mix</div><div class="chart-frame"><canvas id="chart-customers-agent"></canvas></div></article><article class="viz-card"><div class="viz-title">Customer states</div><div class="chart-frame"><canvas id="chart-customers-state"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Order source</div><div class="viz-copy">Customer versus staff-last-modified order lines.</div><div class="chart-frame"><canvas id="chart-customers-source"></canvas></div></article></div></section>
+<section class="dashboard-panel" hidden="" id="dash-zones"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">State performance</div><div class="viz-copy">Tap a state to apply it as a filter.</div></div><div class="mini-segment" id="zones-mode"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame hero"><canvas id="chart-zones-state"></canvas></div><div class="ranking" id="rank-zones"></div></article></div></section>
 </main>
-
-<main id="page-sale" class="page">
-  <div class="toolbar"><div><h1>Sale Order</h1><p class="copy">Search a customer and start scanning.</p></div><button id="previous-orders" class="btn secondary small">Previous Orders</button></div>
-  <section class="card"><label>Find customer</label><input id="sale-search" placeholder="Company, mobile or contact"><div id="sale-results" class="list"></div></section>
-  <section id="sale-builder" class="card hidden"><div class="toolbar"><div><h2 id="sale-party">Order for —</h2><p id="sale-summary" class="copy"></p></div><button id="sale-close" class="btn ghost small">Change</button></div><div class="segment" style="position:static" id="sale-firms"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div><div class="grid2"><div><label>Barcode</label><input id="sale-barcode" placeholder="Scan or type"></div><div style="display:flex;align-items:flex-end"><button id="sale-add" class="btn" style="width:100%">Add design</button></div></div><button id="sale-camera" class="btn secondary" style="width:100%;margin-top:9px">Camera scanner</button><div id="sale-reader" class="reader"></div><div id="sale-note" class="copy"></div><div id="sale-cart" class="list"></div><button id="sale-save" class="btn" style="width:100%;margin-top:12px">Save order</button></section>
+<main class="page" id="page-sale">
+<div class="toolbar"><div><h1>Sale Order</h1><p class="copy">Search a customer and start scanning.</p></div><button class="btn secondary small" id="previous-orders">Previous Orders</button></div>
+<section class="card focus-card sale-find-card" id="sale-find-card"><label>Choose customer</label><input id="sale-search" placeholder="Search company, mobile or contact"/><div class="list customer-results" id="sale-results"></div></section>
+<section class="card hidden sale-builder-card" id="sale-builder"><div class="toolbar"><div><h2 id="sale-party">Order for —</h2><p class="selected-customer-meta" id="sale-customer-meta"></p><p class="selected-order-summary" id="sale-summary"></p></div><button class="btn ghost small change-customer-btn" id="sale-close">Change customer</button></div><div class="segment" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div><div class="grid2"><div><label>Barcode</label><input id="sale-barcode" placeholder="Scan or type"/></div><div style="display:flex;align-items:flex-end"><button class="btn" id="sale-add" style="width:100%">Add design</button></div></div><button class="btn secondary" id="sale-camera" style="width:100%;margin-top:9px">Camera scanner</button><div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save" style="width:100%;margin-top:12px">Save order</button></div></section>
 </main>
-
-<main id="page-products" class="page">
-  <div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="lookups">Lookups</button></div>
-  <section id="products-master" class="subpanel"><div class="card"><div class="toolbar"><h1>Products</h1><select id="product-group" class="compact"><option value="">No grouping</option><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div><input id="product-search" placeholder="Search design or details"><div id="product-list" class="list"></div></div></section>
-  <section id="products-mapping" class="subpanel hidden"><div class="card"><h1>Barcode Mapping</h1><div class="grid2"><div><label>Barcode</label><input id="map-barcode"></div><div><label>Design</label><input id="map-design" list="dl-design"></div></div><div class="row" style="margin-top:10px"><button id="map-save" class="btn">Save mapping</button><button id="map-camera" class="btn secondary">Camera</button></div><div id="map-reader" class="reader"></div></div><div class="card"><h2>Batch mapping</h2><textarea id="map-batch" placeholder="BARCODE,DESIGNNO"></textarea><button id="map-batch-save" class="btn" style="margin-top:9px">Save batch</button></div><div class="card"><input id="map-search" placeholder="Search mappings"><div id="mapping-list" class="list"></div></div></section>
-  <section id="products-lookups" class="subpanel hidden"><div class="card"><h1>Lookups</h1><div class="grid2"><div><label>Type</label><select id="lookup-kind"><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="agent">Agent</option><option value="city">City</option></select></div><div><label>Value</label><input id="lookup-value"></div></div><button id="lookup-add" class="btn" style="margin-top:10px">Add value</button><div id="lookup-list" class="list"></div></div></section>
+<main class="page" id="page-products">
+<div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="lookups">Lookups</button></div>
+<section class="subpanel" id="products-master"><div class="card product-master-card"><div class="toolbar"><h1>Products</h1><select class="compact" id="product-group"><option value="">No grouping</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div><p class="catalogue-guide">Products are grouped by category. Tap a thumbnail to view or edit details.</p><input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div></div></section>
+<section class="subpanel hidden" id="products-mapping"><div class="card"><h1>Barcode Mapping</h1><div class="grid2"><div><label>Barcode</label><input id="map-barcode"/></div><div><label>Design</label><input id="map-design" list="dl-design"/></div></div><div class="row" style="margin-top:10px"><button class="btn" id="map-save">Save mapping</button><button class="btn secondary" id="map-camera">Camera</button></div><div class="reader" id="map-reader"></div></div><div class="card"><h2>Batch mapping</h2><textarea id="map-batch" placeholder="BARCODE,DESIGNNO"></textarea><button class="btn" id="map-batch-save" style="margin-top:9px">Save batch</button></div><div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
+<section class="subpanel hidden" id="products-lookups"><div class="card"><h1>Lookups</h1><div class="grid2"><div><label>Type</label><select id="lookup-kind"><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="agent">Agent</option><option value="city">City</option></select></div><div><label>Value</label><input id="lookup-value"/></div></div><button class="btn" id="lookup-add" style="margin-top:10px">Add value</button><div class="list" id="lookup-list"></div></div></section>
 </main>
-
-<main id="page-admin" class="page">
-  <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="bookings">Bookings</button><button data-sub="staff">Staff</button><button data-sub="settings">Settings</button></div>
-  <section id="admin-slots" class="subpanel"><div class="card"><h1>Visit Slots</h1><p class="copy">Capacity is the number of parties, not the number of people.</p><div class="grid4"><div><label>Start</label><input id="slot-start" type="datetime-local"></div><div><label>End</label><input id="slot-end" type="datetime-local"></div><div><label>Label</label><input id="slot-label"></div><div><label>Party capacity</label><input id="slot-cap" type="number" min="1"></div></div><button id="slot-add" class="btn" style="margin-top:10px">Add slot</button><div id="slot-list" class="list"></div></div></section>
-  <section id="admin-bookings" class="subpanel hidden"><div class="card"><div class="toolbar"><h1>Bookings</h1><button id="bookings-refresh" class="btn secondary small">Refresh</button></div><input id="booking-search" placeholder="Search customer or slot"><div id="booking-list" class="list"></div></div></section>
-  <section id="admin-staff" class="subpanel hidden"><div class="card"><h1>Staff Accounts</h1><div class="grid2"><div><label>Staff name</label><input id="staff-fullname"></div><div><label>Staff ID</label><input id="staff-id" placeholder="sales01"></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div id="permission-grid" class="permission-grid"></div></details><button id="staff-create" class="btn" style="margin-top:12px">Create staff account</button><div id="staff-result"></div></div><div class="card"><h2>Current staff</h2><div id="staff-list" class="list"></div></div></section>
-  <section id="admin-settings" class="subpanel hidden"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"></div><div><label>Edit window hours</label><input id="set-hours" type="number" min="1" max="168"></div><div><label>Start date</label><input id="set-start" type="date"></div><div><label>End date</label><input id="set-end" type="date"></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"> Disable existing access code</label><button id="settings-save" class="btn" style="margin-top:12px">Save settings</button></div></section>
+<main class="page" id="page-admin">
+<div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="bookings">Bookings</button><button data-sub="staff">Staff</button><button data-sub="settings">Settings</button></div>
+<section class="subpanel" id="admin-slots"><div class="card"><h1>Visit Slots</h1><p class="copy">Capacity is the number of parties, not the number of people.</p><div class="grid4"><div><label>Start</label><input id="slot-start" type="datetime-local"/></div><div><label>End</label><input id="slot-end" type="datetime-local"/></div><div><label>Label</label><input id="slot-label"/></div><div><label>Party capacity</label><input id="slot-cap" min="1" type="number"/></div></div><button class="btn" id="slot-add" style="margin-top:10px">Add slot</button><div class="list" id="slot-list"></div></div></section>
+<section class="subpanel hidden" id="admin-bookings"><div class="card"><div class="toolbar"><h1>Bookings</h1><button class="btn secondary small" id="bookings-refresh">Refresh</button></div><input id="booking-search" placeholder="Search customer or slot"/><div class="list" id="booking-list"></div></div></section>
+<section class="subpanel hidden" id="admin-staff"><div class="card"><h1>Staff Accounts</h1><div class="grid2"><div><label>Staff name</label><input id="staff-fullname"/></div><div><label>Staff ID</label><input id="staff-id" placeholder="sales01"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div class="permission-grid" id="permission-grid"></div></details><button class="btn" id="staff-create" style="margin-top:12px">Create staff account</button><div id="staff-result"></div></div><div class="card"><h2>Current staff</h2><div class="list" id="staff-list"></div></div></section>
+<section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
 </main>
-
-<nav id="bottom-nav" class="bottom-nav hidden">
-<button class="nav-item" id="nav-reception" data-section="reception" style="grid-column:1"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Reception</button>
-<button class="nav-item" id="nav-dashboard" data-section="dashboard" style="grid-column:2"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19V2"/></svg>Dashboard</button>
-<button class="nav-item center" id="nav-sale" data-section="sale" style="grid-column:3"><span class="fab"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg></span>Sale Order</button>
-<button class="nav-item" id="nav-products" data-section="products" style="grid-column:4"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><path d="M7 7h.01"/></svg>Products</button>
-<button class="nav-item" id="nav-admin" data-section="admin" style="grid-column:5"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"/></svg>Admin</button>
+<nav class="bottom-nav hidden" id="bottom-nav">
+<button class="nav-item" data-section="reception" id="nav-reception" style="grid-column:1"><svg viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg>Reception</button>
+<button class="nav-item" data-section="dashboard" id="nav-dashboard" style="grid-column:2"><svg viewbox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19V2"></path></svg>Dashboard</button>
+<button class="nav-item center" data-section="sale" id="nav-sale" style="grid-column:3"><span class="fab"><svg viewbox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"></path></svg></span>Sale Order</button>
+<button class="nav-item" data-section="products" id="nav-products" style="grid-column:4"><svg viewbox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><path d="M7 7h.01"></path></svg>Products</button>
+<button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:5"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
 </nav>
-
-<div id="order-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p id="order-modal-sub" class="copy"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div id="order-modal-actions" class="row" style="margin-top:12px"></div></div></div>
-<div id="previous-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"><div id="previous-list" class="list"></div></div></div>
-<div id="product-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p id="pm-sub" class="copy"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" type="number" min="1"></div><div><label>Category</label><input id="pm-category" list="dl-category"></div><div><label>Style</label><input id="pm-style" list="dl-style"></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric"></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p id="pm-barcodes" class="copy"></p><button id="pm-save" class="btn" style="width:100%;margin-top:12px">Save product</button></div></div>
-<div id="filter-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div id="filter-fields" class="grid2"></div><div id="filter-values" class="list"></div></div></div>
-<div id="drill-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p id="drill-sub" class="copy"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button id="drill-apply" class="btn" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
-<div id="staff-modal" class="modal"><div class="sheet"><div class="sheet-head"><div><h2 id="staff-modal-title">Staff</h2><p id="staff-modal-sub" class="copy"></p></div><button class="close" data-close="staff-modal">✕</button></div><label>Staff name</label><input id="edit-staff-name"><label>Preset</label><select id="edit-staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select><label>Default section</label><select id="edit-staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select><div id="edit-permission-grid" class="permission-grid"></div><label class="perm"><input id="edit-staff-active" type="checkbox"> Account active</label><button id="edit-staff-save" class="btn" style="width:100%;margin-top:12px">Save permissions</button><button id="edit-staff-reset" class="btn secondary" style="width:100%;margin-top:8px">Generate new password</button><div id="edit-staff-result"></div></div></div>
+<div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
+<div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
+<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number"/></div><div><label>Category</label><input id="pm-category" list="dl-category"/></div><div><label>Style</label><input id="pm-style" list="dl-style"/></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
+<div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
+<div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
+<div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="staff-modal-title">Staff</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close" data-close="staff-modal">✕</button></div><label>Staff name</label><input id="edit-staff-name"/><label>Preset</label><select id="edit-staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select><label>Default section</label><select id="edit-staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select><div class="permission-grid" id="edit-permission-grid"></div><label class="perm"><input id="edit-staff-active" type="checkbox"/> Account active</label><button class="btn" id="edit-staff-save" style="width:100%;margin-top:12px">Save permissions</button><button class="btn secondary" id="edit-staff-reset" style="width:100%;margin-top:8px">Generate new password</button><div id="edit-staff-result"></div></div></div>
 <datalist id="dl-city"></datalist><datalist id="dl-agent"></datalist><datalist id="dl-category"></datalist><datalist id="dl-style"></datalist><datalist id="dl-fabric"></datalist><datalist id="dl-design"></datalist>
-<div id="toast" class="toast"></div><div id="loading" class="loading"><div id="loading-text" class="loader">Working…</div></div>
+<div class="toast" id="toast"></div><div class="loading" id="loading"><div class="loader" id="loading-text">Working…</div></div>
 <script>
-const CONFIG={SUPABASE_URL:'https://ezmtiiftolcaslqfvozu.supabase.co',SUPABASE_ANON_KEY:'sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG'};
-const STAFF_DOMAIN='staff.maitricarnival.app';
-const STATES=["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
-const PERMISSIONS={
-'reception.view':'View customers','reception.checkin':'Check in / revoke','reception.register':'Register customers','reception.password_reset':'Reset customer passwords','reception.customer_control':'Pause / reactivate customers','dashboard.view':'View dashboard','dashboard.export':'Export dashboard','sale.view':'Open Sale Order','sale.write':'Create / edit orders','sale.previous':'View previous orders','sale.pdf':'Download sale-order PDF','sale.lock':'Lock / reopen orders','products.view':'View products','products.edit':'Edit products','products.mapping':'Barcode mapping','products.lookups':'Manage lookups','admin.slots':'Manage slots','admin.bookings':'Manage bookings','admin.staff':'Manage staff','admin.settings':'System settings'};
-const PRESETS={sales:['sale.view','sale.write','sale.previous','sale.pdf','reception.view'],reception:['reception.view','reception.checkin','reception.register','reception.password_reset','reception.customer_control','admin.bookings'],products:['products.view','products.edit','products.mapping','products.lookups'],manager:Object.keys(PERMISSIONS).filter(k=>!['admin.staff','admin.settings'].includes(k)),administrator:Object.keys(PERMISSIONS),custom:[]};
-const COLORS=['#225E63','#FF9700','#2B7379','#6B8E23','#8B5CF6','#DB2777','#0EA5E9','#F59E0B','#10B981','#6366F1','#E11D48','#64748B','#14B8A6','#A855F7','#84CC16','#F97316'];
-const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}}), API=CONFIG.SUPABASE_URL+'/functions/v1/admin-api';
-const st={me:null,section:null,sub:{reception:'entry',products:'master',admin:'slots'},designs:[],mappings:[],lookups:[],slots:[],bookings:[],staff:[],sale:{customer:null,firm:'Maitri',carts:{Maitri:[],Niharika:[]},deleted:{Maitri:new Set(),Niharika:new Set()}},scanner:null,scannerTarget:null,detailOrder:null,dashboard:null,dtab:'overview',filters:{},charts:{},modes:{customer:'agentCustomers',zone:'stateCustomers',product:'category'},drill:null,editStaff:null,editProduct:null};
-function toast(m,t=''){const e=$('toast');e.textContent=m;e.className='toast open '+t;clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.className='toast',3200)}
-function loading(on,t='Working…'){$('loading-text').textContent=t;$('loading').classList.toggle('open',on)}
-function fmt(v){return v?new Date(v).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}):'—'}
-function ik(u,tr){return u?u+(u.includes('?')?'&':'?')+'tr='+tr:''}
-function pass(){const a='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';return Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>a[b%a.length]).join('')}
-function has(p){return !!st.me?.permissions?.[p]}
-function moduleAllowed(s){return s==='reception'?has('reception.view'):s==='dashboard'?has('dashboard.view'):s==='sale'?has('sale.view'):s==='products'?has('products.view')||has('products.mapping')||has('products.lookups'):Object.keys(st.me?.permissions||{}).some(k=>k.startsWith('admin.')&&st.me.permissions[k])}
-async function token(){let{data:{session}}=await sb.auth.getSession();if(!session)throw Error('NO_SESSION');if(session.expires_at&&session.expires_at*1000-Date.now()<90000){const{data}=await sb.auth.refreshSession();if(data.session)session=data.session}return session.access_token}
-async function admin(action,payload={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+await token(),'apikey':CONFIG.SUPABASE_ANON_KEY},body:JSON.stringify({action,...payload})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Request failed');return j.data}
-async function rpc(fn,args){const{data,error}=await sb.rpc(fn,args);if(error)throw error;return data}
-function setLogged(on){$('login-screen').classList.toggle('active',!on);$('top').classList.toggle('hidden',!on);$('bottom-nav').classList.toggle('hidden',!on);if(!on)document.querySelectorAll('.page').forEach(p=>p.id!=='login-screen'&&p.classList.remove('active'))}
-function setupNavigation(){['reception','dashboard','sale','products','admin'].forEach(s=>$('nav-'+s).classList.toggle('hidden',!moduleAllowed(s)));$('dash-export').classList.toggle('hidden',!has('dashboard.export'));const subPerm={reception:{entry:'reception.view',registration:'reception.register',password:'reception.password_reset'},products:{master:'products.view',mapping:'products.mapping',lookups:'products.lookups'},admin:{slots:'admin.slots',bookings:'admin.bookings',staff:'admin.staff',settings:'admin.settings'}};Object.entries(subPerm).forEach(([mod,map])=>Object.entries(map).forEach(([sub,perm])=>document.querySelector(`[data-module="${mod}"] [data-sub="${sub}"]`)?.classList.toggle('hidden',!has(perm))));$('staff-name').textContent=st.me.staffName+' · '+st.me.staffId;go(moduleAllowed(st.me.defaultSection)?st.me.defaultSection:(['sale','reception','dashboard','products','admin'].find(moduleAllowed)||'sale'))}
-function go(section){if(!moduleAllowed(section)){toast('You do not have access','error');return}st.section=section;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+section));document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.section===section));if(section==='reception')loadReception();if(section==='dashboard')loadDashboard();if(section==='sale')$('sale-search').focus();if(section==='products')loadProductsModule();if(section==='admin')loadAdminModule();window.scrollTo({top:0,behavior:'smooth'})}
-document.querySelectorAll('.nav-item').forEach(b=>b.onclick=()=>go(b.dataset.section));document.querySelectorAll('.segment[data-module]').forEach(seg=>seg.onclick=e=>{const b=e.target.closest('[data-sub]');if(!b)return;const mod=seg.dataset.module;st.sub[mod]=b.dataset.sub;seg.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('#page-'+mod+' .subpanel').forEach(x=>x.classList.toggle('hidden',x.id!==mod+'-'+b.dataset.sub));if(mod==='reception')loadReception();if(mod==='products')loadProductsModule();if(mod==='admin')loadAdminModule()});
-$('login-form').onsubmit=async e=>{e.preventDefault();try{loading(true,'Signing in…');const raw=$('login-id').value.trim().toLowerCase();const email=raw.includes('@')?raw:raw+'@'+STAFF_DOMAIN;const{error}=await sb.auth.signInWithPassword({email,password:$('login-password').value});if(error)throw error;await boot()}catch(e){toast(e.message,'error')}finally{loading(false)}};$('logout').onclick=async()=>{stopScanner();await sb.auth.signOut();st.me=null;setLogged(false)};
-async function boot(){st.me=await admin('whoami');setLogged(true);fillStates();await loadLookups();setupNavigation()}
-function fillStates(){$('reg-state').innerHTML='<option value="">Select state</option>'+STATES.map(s=>`<option>${s}</option>`).join('')}
-async function loadLookups(){try{const L=await rpc('list_lookups')||{};$('dl-city').innerHTML=(L.city||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-agent').innerHTML=(L.agent||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-category').innerHTML=(L.category||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-style').innerHTML=(L.style||[]).map(v=>`<option value="${esc(v)}">`).join('');$('dl-fabric').innerHTML=(L.fabric||[]).map(v=>`<option value="${esc(v)}">`).join('')}catch{}}
+const CONFIG = {
+  SUPABASE_URL: "https://ezmtiiftolcaslqfvozu.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",
+};
+const STAFF_DOMAIN = "staff.maitricarnival.app";
+const STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+const PERMISSIONS = {
+  "reception.view": "View customers",
+  "reception.checkin": "Check in / revoke",
+  "reception.register": "Register customers",
+  "reception.password_reset": "Reset customer passwords",
+  "reception.customer_control": "Pause / reactivate customers",
+  "dashboard.view": "View dashboard",
+  "dashboard.export": "Export dashboard",
+  "sale.view": "Open Sale Order",
+  "sale.write": "Create / edit orders",
+  "sale.previous": "View previous orders",
+  "sale.pdf": "Download sale-order PDF",
+  "sale.lock": "Lock / reopen orders",
+  "products.view": "View products",
+  "products.edit": "Edit products",
+  "products.mapping": "Barcode mapping",
+  "products.lookups": "Manage lookups",
+  "admin.slots": "Manage slots",
+  "admin.bookings": "Manage bookings",
+  "admin.staff": "Manage staff",
+  "admin.settings": "System settings",
+};
+const PRESETS = {
+  sales: [
+    "sale.view",
+    "sale.write",
+    "sale.previous",
+    "sale.pdf",
+    "reception.view",
+  ],
+  reception: [
+    "reception.view",
+    "reception.checkin",
+    "reception.register",
+    "reception.password_reset",
+    "reception.customer_control",
+    "admin.bookings",
+  ],
+  products: [
+    "products.view",
+    "products.edit",
+    "products.mapping",
+    "products.lookups",
+  ],
+  manager: Object.keys(PERMISSIONS).filter(
+    (k) => !["admin.staff", "admin.settings"].includes(k),
+  ),
+  administrator: Object.keys(PERMISSIONS),
+  custom: [],
+};
+const COLORS = [
+  "#225E63",
+  "#FF9700",
+  "#2B7379",
+  "#6B8E23",
+  "#8B5CF6",
+  "#DB2777",
+  "#0EA5E9",
+  "#F59E0B",
+  "#10B981",
+  "#6366F1",
+  "#E11D48",
+  "#64748B",
+  "#14B8A6",
+  "#A855F7",
+  "#84CC16",
+  "#F97316",
+];
+const $ = (id) => document.getElementById(id),
+  esc = (s) =>
+    String(s ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+const sb = supabase.createClient(
+    CONFIG.SUPABASE_URL,
+    CONFIG.SUPABASE_ANON_KEY,
+    { auth: { persistSession: true, autoRefreshToken: true } },
+  ),
+  API = CONFIG.SUPABASE_URL + "/functions/v1/admin-api";
+const st = {
+  me: null,
+  section: null,
+  sub: { reception: "entry", products: "master", admin: "slots" },
+  designs: [],
+  mappings: [],
+  lookups: [],
+  slots: [],
+  bookings: [],
+  staff: [],
+  sale: {
+    customer: null,
+    firm: "Maitri",
+    carts: { Maitri: [], Niharika: [] },
+    deleted: { Maitri: new Set(), Niharika: new Set() },
+  },
+  scanner: null,
+  scannerTarget: null,
+  detailOrder: null,
+  dashboard: null,
+  dtab: "overview",
+  filters: {},
+  charts: {},
+  modes: {
+    customer: "agentCustomers",
+    zone: "stateCustomers",
+    product: "category",
+  },
+  drill: null,
+  editStaff: null,
+  editProduct: null,
+  entryRows: [],
+  lookupData: {},
+  cache: { designsAt: 0, mappingsAt: 0, dashboardAt: 0 },
+};
+function toast(m, t = "") {
+  const e = $("toast");
+  e.textContent = m;
+  e.className = "toast open " + t;
+  clearTimeout(window.__toast);
+  window.__toast = setTimeout(() => (e.className = "toast"), 3200);
+}
+function loading(on, t = "Working…") {
+  $("loading-text").textContent = t;
+  $("loading").classList.toggle("open", on);
+}
+function fmt(v) {
+  return v
+    ? new Date(v).toLocaleString("en-IN", {
+        day: "numeric",
+        month: "short",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "—";
+}
+function ik(u, tr) {
+  return u ? u + (u.includes("?") ? "&" : "?") + "tr=" + tr : "";
+}
+function pass() {
+  const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  return Array.from(
+    crypto.getRandomValues(new Uint8Array(10)),
+    (b) => a[b % a.length],
+  ).join("");
+}
+function has(p) {
+  return !!st.me?.permissions?.[p];
+}
+function moduleAllowed(s) {
+  return s === "reception"
+    ? has("reception.view")
+    : s === "dashboard"
+      ? has("dashboard.view")
+      : s === "sale"
+        ? has("sale.view")
+        : s === "products"
+          ? has("products.view") ||
+            has("products.mapping") ||
+            has("products.lookups")
+          : Object.keys(st.me?.permissions || {}).some(
+              (k) => k.startsWith("admin.") && st.me.permissions[k],
+            );
+}
+async function token() {
+  let {
+    data: { session },
+  } = await sb.auth.getSession();
+  if (!session) throw Error("NO_SESSION");
+  if (session.expires_at && session.expires_at * 1000 - Date.now() < 90000) {
+    const { data } = await sb.auth.refreshSession();
+    if (data.session) session = data.session;
+  }
+  return session.access_token;
+}
+async function admin(action, payload = {}) {
+  const r = await fetch(API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + (await token()),
+      apikey: CONFIG.SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.ok) throw Error(j.error || "Request failed");
+  return j.data;
+}
+async function rpc(fn, args) {
+  const { data, error } = await sb.rpc(fn, args);
+  if (error) throw error;
+  return data;
+}
+function setLogged(on) {
+  $("login-screen").classList.toggle("active", !on);
+  $("top").classList.toggle("hidden", !on);
+  $("bottom-nav").classList.toggle("hidden", !on);
+  if (!on)
+    document
+      .querySelectorAll(".page")
+      .forEach((p) => p.id !== "login-screen" && p.classList.remove("active"));
+}
+function setupNavigation() {
+  ["reception", "dashboard", "sale", "products", "admin"].forEach((s) =>
+    $("nav-" + s).classList.toggle("hidden", !moduleAllowed(s)),
+  );
+  $("dash-export").classList.toggle("hidden", !has("dashboard.export"));
+  const subPerm = {
+    reception: {
+      entry: "reception.view",
+      registration: "reception.register",
+      password: "reception.password_reset",
+    },
+    products: {
+      master: "products.view",
+      mapping: "products.mapping",
+      lookups: "products.lookups",
+    },
+    admin: {
+      slots: "admin.slots",
+      bookings: "admin.bookings",
+      staff: "admin.staff",
+      settings: "admin.settings",
+    },
+  };
+  Object.entries(subPerm).forEach(([mod, map]) =>
+    Object.entries(map).forEach(([sub, perm]) =>
+      document
+        .querySelector(`[data-module="${mod}"] [data-sub="${sub}"]`)
+        ?.classList.toggle("hidden", !has(perm)),
+    ),
+  );
+  $("staff-name").textContent = st.me.staffName || "Staff";
+  go(
+    moduleAllowed(st.me.defaultSection)
+      ? st.me.defaultSection
+      : ["sale", "reception", "dashboard", "products", "admin"].find(
+          moduleAllowed,
+        ) || "sale",
+  );
+}
+function go(section) {
+  if (!moduleAllowed(section)) {
+    toast("You do not have access", "error");
+    return;
+  }
+  st.section = section;
+  document
+    .querySelectorAll(".page")
+    .forEach((p) => p.classList.toggle("active", p.id === "page-" + section));
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((n) =>
+      n.classList.toggle("active", n.dataset.section === section),
+    );
+  if (section === "reception") loadReception();
+  if (section === "dashboard") loadDashboard();
+  if (section === "sale") $("sale-search").focus();
+  if (section === "products") loadProductsModule();
+  if (section === "admin") loadAdminModule();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document
+  .querySelectorAll(".nav-item")
+  .forEach((b) => (b.onclick = () => go(b.dataset.section)));
+document.querySelectorAll(".segment[data-module]").forEach(
+  (seg) =>
+    (seg.onclick = (e) => {
+      const b = e.target.closest("[data-sub]");
+      if (!b) return;
+      const mod = seg.dataset.module;
+      st.sub[mod] = b.dataset.sub;
+      seg
+        .querySelectorAll("button")
+        .forEach((x) => x.classList.toggle("active", x === b));
+      document
+        .querySelectorAll("#page-" + mod + " .subpanel")
+        .forEach((x) =>
+          x.classList.toggle("hidden", x.id !== mod + "-" + b.dataset.sub),
+        );
+      if (mod === "reception") loadReception();
+      if (mod === "products") loadProductsModule();
+      if (mod === "admin") loadAdminModule();
+    }),
+);
+$("login-form").onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    loading(true, "Signing in…");
+    const raw = $("login-id").value.trim().toLowerCase();
+    const email = raw.includes("@") ? raw : raw + "@" + STAFF_DOMAIN;
+    const { error } = await sb.auth.signInWithPassword({
+      email,
+      password: $("login-password").value,
+    });
+    if (error) throw error;
+    await boot();
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+};
+$("logout").onclick = async () => {
+  stopScanner();
+  await sb.auth.signOut();
+  st.me = null;
+  setLogged(false);
+};
+async function boot() {
+  const data = await admin("bootstrap");
+  st.me = data.me;
+  st.lookupData = data.lookups || {};
+  setLogged(true);
+  fillStates();
+  applyLookups(st.lookupData);
+  setupNavigation();
+}
+function fillStates() {
+  $("reg-state").innerHTML =
+    '<option value="">Select state</option>' +
+    STATES.map((s) => `<option>${s}</option>`).join("");
+}
+function applyLookups(L = {}) {
+  st.lookupData = L || {};
+  $("dl-city").innerHTML = (L.city || []).map((v) => `<option value="${esc(v)}">`).join("");
+  $("dl-agent").innerHTML = (L.agent || []).map((v) => `<option value="${esc(v)}">`).join("");
+  $("dl-category").innerHTML = (L.category || []).map((v) => `<option value="${esc(v)}">`).join("");
+  $("dl-style").innerHTML = (L.style || []).map((v) => `<option value="${esc(v)}">`).join("");
+  $("dl-fabric").innerHTML = (L.fabric || []).map((v) => `<option value="${esc(v)}">`).join("");
+}
+async function loadLookups(force = false) {
+  try {
+    if (!force && Object.keys(st.lookupData || {}).length) {
+      applyLookups(st.lookupData);
+      return st.lookupData;
+    }
+    const L = (await rpc("list_lookups")) || {};
+    applyLookups(L);
+    return L;
+  } catch {
+    return st.lookupData || {};
+  }
+}
 /* Reception */
-let entryTimer;$('entry-search').oninput=()=>{clearTimeout(entryTimer);entryTimer=setTimeout(searchEntry,250)};async function loadReception(){const sub=st.sub.reception;if(sub==='entry'&&has('reception.view'))await searchEntry();if(sub==='registration'&&!has('reception.register'))denySub('reception','entry');if(sub==='password'&&!has('reception.password_reset'))denySub('reception','entry')}
-function denySub(module,sub){document.querySelector(`[data-module="${module}"] [data-sub="${sub}"]`)?.click();toast('You do not have access','error')}
-async function searchEntry(){try{const rows=await admin('directory',{query:$('entry-search').value.trim()});$('entry-list').innerHTML=rows.length?rows.map(c=>`<div class="list-row"><div><b>${esc(c.companyName)}</b><p>${esc(c.contactName)} · +${esc(c.phone)} · ${esc([c.city,c.state].filter(Boolean).join(', '))}${c.agent?' · '+esc(c.agent):''}<br>${c.checkedInAt?'<span class="badge ok">Checked in</span>':'<span class="badge wait">Not entered</span>'} ${c.booking?'<span class="badge info">'+esc(fmt(c.booking.startsAt))+'</span>':''} ${c.active?'':'<span class="badge off">Paused</span>'}</p></div><div class="row">${has('reception.checkin')?`<button class="btn small ${c.checkedInAt?'secondary':''}" data-entry="${c.checkedInAt?'revoke':'checkin'}" data-id="${c.id}">${c.checkedInAt?'Revoke':'Check in'}</button>`:''}${has('reception.customer_control')?`<button class="btn ghost small" data-entry="active" data-id="${c.id}" data-active="${c.active?'false':'true'}">${c.active?'Pause':'Activate'}</button>`:''}</div></div>`).join(''):'<div class="empty">No customers found</div>'}catch(e){toast(e.message,'error')}}
-$('entry-list').onclick=async e=>{const b=e.target.closest('[data-entry]');if(!b)return;try{loading(true);if(b.dataset.entry==='checkin')await admin('checkIn',{customerId:b.dataset.id});if(b.dataset.entry==='revoke')await admin('revokeEntry',{customerId:b.dataset.id});if(b.dataset.entry==='active')await admin('setCustomerActive',{customerId:b.dataset.id,active:b.dataset.active==='true'});await searchEntry();toast('Updated','success')}catch(e){toast(e.message,'error')}finally{loading(false)}};
-$('register-customer').onclick=async()=>{try{loading(true,'Registering…');const d=await admin('assistedRegister',{companyName:$('reg-company').value,contactName:$('reg-contact').value,city:$('reg-city').value,state:$('reg-state').value,agent:$('reg-agent').value,gstin:$('reg-gstin').value,phone:$('reg-phone').value,password:$('reg-pass').value});$('registration-result').innerHTML=`<div class="cred"><b>${esc(d.companyName)}</b><br>Login: <b>${esc(d.phone)}</b><br>Password: <b>${esc(d.password)}</b><br><button class="btn small" style="margin-top:8px" data-start-order='${esc(JSON.stringify({id:d.customerId,companyName:d.companyName,phone:d.phone}))}'>Create sale order</button></div>`;toast('Customer registered','success')}catch(e){toast(e.message,'error')}finally{loading(false)}};$('registration-result').onclick=e=>{const b=e.target.closest('[data-start-order]');if(!b)return;openSaleCustomer(JSON.parse(b.dataset.startOrder));go('sale')};$('generate-customer-pass').onclick=()=>{$('reset-password').value=pass()};$('reset-customer-pass').onclick=async()=>{try{const d=await admin('resetPassword',{phone:$('reset-phone').value,newPassword:$('reset-password').value});$('password-result').innerHTML=`<div class="cred">${esc(d.companyName)}<br>Temporary password: <b>${esc($('reset-password').value)}</b></div>`;toast('Password reset','success')}catch(e){toast(e.message,'error')}};
+let entryTimer;
+$("entry-search").oninput = () => {
+  clearTimeout(entryTimer);
+  entryTimer = setTimeout(searchEntry, 250);
+};
+async function loadReception() {
+  const sub = st.sub.reception;
+  if (sub === "entry" && has("reception.view")) await searchEntry();
+  if (sub === "registration" && !has("reception.register"))
+    denySub("reception", "entry");
+  if (sub === "password" && !has("reception.password_reset"))
+    denySub("reception", "entry");
+}
+function denySub(module, sub) {
+  document
+    .querySelector(`[data-module="${module}"] [data-sub="${sub}"]`)
+    ?.click();
+  toast("You do not have access", "error");
+}
+function entrySlotInfo(c) {
+  const now = Date.now(), b = c.booking;
+  if (!b?.startsAt) return { key: "none", rank: 3, time: Number.MAX_SAFE_INTEGER, label: "No slot" };
+  const start = new Date(b.startsAt).getTime();
+  const end = b.endsAt ? new Date(b.endsAt).getTime() : start + 60 * 60 * 1000;
+  const timeLabel = new Date(b.startsAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  if (start <= now && now < end) return { key: "current", rank: 0, time: start, label: `Current · ${timeLabel}` };
+  if (end <= now) return { key: "past", rank: 1, time: -end, label: `Past · ${timeLabel}` };
+  return { key: "future", rank: 2, time: start, label: `Upcoming · ${timeLabel}` };
+}
+function entryCard(c, completed = false) {
+  const slot = entrySlotInfo(c);
+  const location = [c.city, c.state].filter(Boolean).join(", ");
+  const contactLine = [c.contactName, c.phone ? `+${c.phone}` : ""].filter(Boolean).join(" · ");
+  const context = [location, c.agent ? `Agent: ${c.agent}` : ""].filter(Boolean).join(" · ");
+  const action = has("reception.checkin")
+    ? `<button class="btn small ${completed ? "secondary" : ""}" data-entry="${completed ? "revoke" : "checkin"}" data-id="${c.id}">${completed ? "Revoke" : "Check in"}</button>`
+    : "";
+  const control = has("reception.customer_control")
+    ? `<button class="btn ghost small" data-entry="active" data-id="${c.id}" data-active="${c.active ? "false" : "true"}">${c.active ? "Pause" : "Activate"}</button>`
+    : "";
+  return `<article class="entry-card ${slot.key === "current" ? "current" : ""}">
+    <div class="entry-card-main">
+      <div class="entry-card-title"><b>${esc(c.companyName)}</b><span class="entry-slot ${slot.key}">${esc(slot.label)}</span></div>
+      <div class="entry-primary">${esc(contactLine || "Contact not added")}</div>
+      <div class="entry-secondary">${esc(context || "No location or agent details")}${!c.active ? ' · <span class="badge off">Paused</span>' : ""}</div>
+      ${completed ? `<div class="entry-complete-mark">✓ Checked in ${esc(fmt(c.checkedInAt))}</div>` : ""}
+    </div>
+    <div class="entry-actions">${action}${control}</div>
+  </article>`;
+}
+function renderEntryLists(rows = st.entryRows) {
+  const pending = rows.filter((c) => !c.checkedInAt).sort((a, b) => {
+    const aa = entrySlotInfo(a), bb = entrySlotInfo(b);
+    return aa.rank - bb.rank || aa.time - bb.time || String(a.companyName).localeCompare(String(b.companyName));
+  });
+  const completed = rows.filter((c) => c.checkedInAt).sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt));
+  $("entry-pending-count").textContent = pending.length;
+  $("entry-completed-count").textContent = completed.length;
+  $("entry-pending").innerHTML = pending.length ? pending.map((c) => entryCard(c, false)).join("") : '<div class="empty">No pending customers match this search.</div>';
+  $("entry-completed").innerHTML = completed.length ? completed.map((c) => entryCard(c, true)).join("") : '<div class="empty">No completed entries match this search.</div>';
+}
+async function searchEntry() {
+  try {
+    st.entryRows = await admin("directory", { query: $("entry-search").value.trim() });
+    renderEntryLists();
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("reception-entry").onclick = async (e) => {
+  const b = e.target.closest("[data-entry]");
+  if (!b) return;
+  try {
+    b.disabled = true;
+    if (b.dataset.entry === "checkin") await admin("checkIn", { customerId: b.dataset.id });
+    if (b.dataset.entry === "revoke") await admin("revokeEntry", { customerId: b.dataset.id });
+    if (b.dataset.entry === "active") await admin("setCustomerActive", { customerId: b.dataset.id, active: b.dataset.active === "true" });
+    await searchEntry();
+    toast("Customer updated", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    b.disabled = false;
+  }
+};
+
+$("register-customer").onclick = async () => {
+  try {
+    loading(true, "Registering…");
+    const d = await admin("assistedRegister", {
+      companyName: $("reg-company").value,
+      contactName: $("reg-contact").value,
+      city: $("reg-city").value,
+      state: $("reg-state").value,
+      agent: $("reg-agent").value,
+      gstin: $("reg-gstin").value,
+      phone: $("reg-phone").value,
+      password: $("reg-pass").value,
+    });
+    $("registration-result").innerHTML =
+      `<div class="cred"><b>${esc(d.companyName)}</b><br>Login: <b>${esc(d.phone)}</b><br>Password: <b>${esc(d.password)}</b><br><button class="btn small" style="margin-top:8px" data-start-order='${esc(JSON.stringify({ id: d.customerId, companyName: d.companyName, phone: d.phone }))}'>Create sale order</button></div>`;
+    toast("Customer registered", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+};
+$("registration-result").onclick = (e) => {
+  const b = e.target.closest("[data-start-order]");
+  if (!b) return;
+  openSaleCustomer(JSON.parse(b.dataset.startOrder));
+  go("sale");
+};
+$("generate-customer-pass").onclick = () => {
+  $("reset-password").value = pass();
+};
+$("reset-customer-pass").onclick = async () => {
+  try {
+    const d = await admin("resetPassword", {
+      phone: $("reset-phone").value,
+      newPassword: $("reset-password").value,
+    });
+    $("password-result").innerHTML =
+      `<div class="cred">${esc(d.companyName)}<br>Temporary password: <b>${esc($("reset-password").value)}</b></div>`;
+    toast("Password reset", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
 /* Dashboard */
-function destroyCharts(){Object.values(st.charts).forEach(c=>{try{c.destroy()}catch{}});st.charts={}}
-function pieRows(rows){const clean=(rows||[]).filter(r=>Number(r.value)>0);if(clean.length<=50)return clean;const first=clean.slice(0,49),rest=clean.slice(49);first.push({label:'Others',value:rest.reduce((s,r)=>s+Number(r.value||0),0)});return first}
-function chart(key,id,rows,dim){const data=pieRows(rows);const cv=$(id);if(!cv)return;if(st.charts[key])st.charts[key].destroy();st.charts[key]=new Chart(cv,{type:'doughnut',data:{labels:data.map(r=>r.label),datasets:[{data:data.map(r=>r.value),backgroundColor:data.map((_,i)=>COLORS[i%COLORS.length]),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'56%',plugins:{legend:{position:'bottom',labels:{boxWidth:9,font:{size:9},padding:8}}},onClick:(_,els)=>{if(els[0])openDrill(dim,data[els[0].index])}}})}
-function ranking(id,rows,dim,limit=50){const data=(rows||[]).slice(0,limit);$(id).innerHTML=data.length?data.map((r,i)=>`<button class="rank-row" data-rank="${i}"><span class="rank-no">${i+1}</span><span class="rank-label">${esc(r.label)}<small class="rank-meta">${r.customers!=null?r.customers+' customers · ':''}${r.sets!=null?r.sets+' sets':''}</small></span><span class="rank-value">${Number(r.value).toLocaleString('en-IN')}</span></button>`).join(''):'<div class="empty">No data</div>';$(id).onclick=e=>{const b=e.target.closest('[data-rank]');if(b)openDrill(dim,data[Number(b.dataset.rank)])}}
-async function loadDashboard(force=false){if(!has('dashboard.view'))return;try{if(!st.dashboard||force){loading(true,'Loading dashboard…');st.dashboard=await rpc('admin_dashboard_v2',{p_filters:st.filters,p_search:$('dash-search').value.trim(),p_limit:100,p_offset:0})}renderDashboard()}catch(e){toast(e.message,'error')}finally{loading(false)}}
-function renderDashboard(){const d=st.dashboard||{},s=d.summary||{};$('dash-updated').textContent='Updated '+fmt(d.generatedAt);$('k-pieces').textContent=Number(s.totalPieces||0).toLocaleString('en-IN');$('k-sets').textContent=Number(s.totalSets||0).toLocaleString('en-IN');$('k-buyers').textContent=s.customersWithOrders||0;$('k-customers').textContent=s.totalCustomers||0;$('k-checkin').textContent=s.checkedInCustomers||0;$('k-orders').textContent=s.totalOrders||0;$('k-designs').textContent=s.uniqueDesigns||0;$('k-average').textContent=s.averagePiecesPerBuyer||0;renderFilterChips();renderDashboardTab()}
-function renderDashboardTab(){destroyCharts();document.querySelectorAll('.dashboard-panel').forEach(x=>x.hidden=x.id!=='dash-'+st.dtab);const c=st.dashboard?.charts||{};if(st.dtab==='overview'){chart('od','chart-overview-design',c.designs,'designNo');ranking('rank-overview-design',c.designs,'designNo',20);chart('oc','chart-overview-customer',c[st.modes.customer],st.modes.customer==='agentCustomers'?'agent':st.modes.customer==='stateCustomers'?'state':'city');chart('oz','chart-overview-zone',c[st.modes.zone],'state');chart('op','chart-overview-product',c[st.modes.product],st.modes.product==='firm'?'firm':st.modes.product)}if(st.dtab==='products'){chart('pd','chart-products-design',c.designs,'designNo');ranking('rank-products-design',c.designs,'designNo');chart('pc','chart-products-category',c.category,'category');chart('ps','chart-products-style',c.style,'style');chart('pf','chart-products-fabric',c.fabric,'fabric')}if(st.dtab==='customers'){chart('ct','chart-customers-top',c.customers,'companyName');ranking('rank-customers',c.customers,'companyName');chart('ca','chart-customers-agent',c.agentCustomers,'agent');chart('cs','chart-customers-state',c.stateCustomers,'state');chart('cx','chart-customers-source',c.source,'source')}if(st.dtab==='zones'){chart('zs','chart-zones-state',c[st.modes.zone],'state');ranking('rank-zones',c[st.modes.zone],'state')}}
-document.querySelector('.dashboard-subnav').onclick=e=>{const b=e.target.closest('[data-dtab]');if(!b)return;st.dtab=b.dataset.dtab;document.querySelectorAll('[data-dtab]').forEach(x=>x.classList.toggle('active',x===b));renderDashboardTab()};document.querySelectorAll('.mini-segment').forEach(seg=>seg.onclick=e=>{const b=e.target.closest('[data-mode]');if(!b)return;seg.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));if(seg.id==='mix-customer')st.modes.customer=b.dataset.mode;else st.modes.zone=seg.id==='mix-zone'||seg.id==='zones-mode'?b.dataset.mode:st.modes.zone;if(seg.id==='mix-product')st.modes.product=b.dataset.mode;renderDashboardTab()});$('dash-refresh').onclick=()=>loadDashboard(true);async function ensureXlsx(){if(window.XLSX)return;await new Promise((res,rej)=>{const x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';x.onload=res;x.onerror=rej;document.head.appendChild(x)})}$('dash-export').onclick=async()=>{try{loading(true,'Preparing Excel…');await ensureXlsx();const all=[];let offset=0,total=1;while(offset<total){const d=await rpc('admin_dashboard_v2',{p_filters:st.filters,p_search:$('dash-search').value.trim(),p_limit:200,p_offset:offset});all.push(...(d.orders||[]));total=Number(d.totalOrders)||0;offset+=200}const safe=v=>/^[=+\-@]/.test(String(v??''))?"'"+v:v;const rows=all.map(o=>({Company:safe(o.companyName),Contact:safe(o.contactName),Phone:safe(o.phone),City:safe(o.city),State:safe(o.state),Agent:safe(o.agent),Firm:o.firm,Status:o.status,Designs:o.designs,Sets:o.sets,Pieces:o.pieces,Updated:o.updatedAt}));const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Orders');XLSX.writeFile(wb,'Maitri-Carnival-Dashboard.xlsx')}catch(e){toast(e.message,'error')}finally{loading(false)}};let dashTimer;$('dash-search').oninput=()=>{clearTimeout(dashTimer);dashTimer=setTimeout(()=>loadDashboard(true),350)};
-const FILTER_LABELS={firm:'Firm',state:'State',city:'City',agent:'Agent',category:'Category',style:'Style',fabric:'Fabric',status:'Order status',source:'Order source',checkedIn:'Checked in'};$('filter-open').onclick=()=>openFilter();$('filter-clear').onclick=()=>{st.filters={};loadDashboard(true)};function renderFilterChips(){const chips=[];Object.entries(st.filters).forEach(([k,vals])=>(vals||[]).forEach(v=>chips.push({k,v})));$('filter-chips').innerHTML=chips.length?chips.map(x=>`<button class="chip" data-fk="${x.k}" data-fv="${esc(x.v)}">${esc(FILTER_LABELS[x.k]||x.k)}: ${esc(x.v)} ✕</button>`).join(''):'<span class="copy">All exhibition data</span>'}
-$('filter-chips').onclick=e=>{const b=e.target.closest('[data-fk]');if(!b)return;st.filters[b.dataset.fk]=(st.filters[b.dataset.fk]||[]).filter(v=>v!==b.dataset.fv);if(!st.filters[b.dataset.fk].length)delete st.filters[b.dataset.fk];loadDashboard(true)};function openFilter(){$('filter-fields').innerHTML=Object.entries(FILTER_LABELS).map(([k,v])=>`<button class="btn secondary" data-field="${k}">${v}</button>`).join('');$('filter-values').innerHTML='';openModal('filter-modal')}
-$('filter-fields').onclick=e=>{const b=e.target.closest('[data-field]');if(!b)return;const k=b.dataset.field,vals=st.dashboard?.options?.[k]||[];$('filter-title').textContent=FILTER_LABELS[k];$('filter-values').innerHTML=vals.map(v=>`<button class="list-row click" data-filter-value="${esc(v)}" data-filter-key="${k}"><b>${esc(v)}</b></button>`).join('')}
-$('filter-values').onclick=e=>{const b=e.target.closest('[data-filter-value]');if(!b)return;const k=b.dataset.filterKey,v=b.dataset.filterValue;st.filters[k]=[...new Set([...(st.filters[k]||[]),v])];closeModal('filter-modal');loadDashboard(true)};function openDrill(dim,row){st.drill={dim,row};$('drill-title').textContent=row.label;$('drill-sub').textContent=(FILTER_LABELS[dim]||dim)+' details';$('drill-body').innerHTML=`<div class="detail-metrics"><div class="metric"><b>${Number(row.value||0).toLocaleString('en-IN')}</b><span>Value</span></div><div class="metric"><b>${row.sets??'—'}</b><span>Sets</span></div><div class="metric"><b>${row.customers??'—'}</b><span>Customers</span></div></div><p class="copy">${esc([row.category,row.style,row.fabric,row.city,row.state,row.agent].filter(Boolean).join(' · '))}</p>`;openModal('drill-modal')}
-$('drill-apply').onclick=()=>{const{dim,row}=st.drill||{};if(dim&&row?.label){st.filters[dim]=[row.label];closeModal('drill-modal');loadDashboard(true)}};
+function destroyCharts() {
+  Object.values(st.charts).forEach((c) => {
+    try {
+      c.destroy();
+    } catch {}
+  });
+  st.charts = {};
+}
+function pieRows(rows) {
+  const clean = (rows || []).filter((r) => Number(r.value) > 0);
+  if (clean.length <= 50) return clean;
+  const first = clean.slice(0, 49),
+    rest = clean.slice(49);
+  first.push({
+    label: "Others",
+    value: rest.reduce((s, r) => s + Number(r.value || 0), 0),
+  });
+  return first;
+}
+function chart(key, id, rows, dim) {
+  const data = pieRows(rows);
+  const cv = $(id);
+  if (!cv) return;
+  if (st.charts[key]) st.charts[key].destroy();
+  st.charts[key] = new Chart(cv, {
+    type: "doughnut",
+    data: {
+      labels: data.map((r) => r.label),
+      datasets: [
+        {
+          data: data.map((r) => r.value),
+          backgroundColor: data.map((_, i) => COLORS[i % COLORS.length]),
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "56%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { boxWidth: 9, font: { size: 9 }, padding: 8 },
+        },
+      },
+      onClick: (_, els) => {
+        if (els[0]) openDrill(dim, data[els[0].index]);
+      },
+    },
+  });
+}
+function ranking(id, rows, dim, limit = 50) {
+  const data = (rows || []).slice(0, limit);
+  $(id).innerHTML = data.length
+    ? data
+        .map(
+          (r, i) =>
+            `<button class="rank-row" data-rank="${i}"><span class="rank-no">${i + 1}</span><span class="rank-label">${esc(r.label)}<small class="rank-meta">${r.customers != null ? r.customers + " customers · " : ""}${r.sets != null ? r.sets + " sets" : ""}</small></span><span class="rank-value">${Number(r.value).toLocaleString("en-IN")}</span></button>`,
+        )
+        .join("")
+    : '<div class="empty">No data</div>';
+  $(id).onclick = (e) => {
+    const b = e.target.closest("[data-rank]");
+    if (b) openDrill(dim, data[Number(b.dataset.rank)]);
+  };
+}
+async function loadDashboard(force = false) {
+  if (!has("dashboard.view")) return;
+  const fresh = st.dashboard && Date.now() - st.cache.dashboardAt < 45000;
+  try {
+    if (!fresh || force) {
+      if (!st.dashboard) loading(true, "Loading dashboard…");
+      st.dashboard = await rpc("admin_dashboard_v2", {
+        p_filters: st.filters,
+        p_search: $("dash-search").value.trim(),
+        p_limit: 100,
+        p_offset: 0,
+      });
+      st.cache.dashboardAt = Date.now();
+    }
+    renderDashboard();
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+function renderDashboard() {
+  const d = st.dashboard || {},
+    s = d.summary || {};
+  $("dash-updated").textContent = "Updated " + fmt(d.generatedAt);
+  $("k-pieces").textContent = Number(s.totalPieces || 0).toLocaleString(
+    "en-IN",
+  );
+  $("k-sets").textContent = Number(s.totalSets || 0).toLocaleString("en-IN");
+  $("k-buyers").textContent = s.customersWithOrders || 0;
+  $("k-customers").textContent = s.totalCustomers || 0;
+  $("k-checkin").textContent = s.checkedInCustomers || 0;
+  $("k-orders").textContent = s.totalOrders || 0;
+  $("k-designs").textContent = s.uniqueDesigns || 0;
+  $("k-average").textContent = s.averagePiecesPerBuyer || 0;
+  renderFilterChips();
+  renderDashboardTab();
+}
+function renderDashboardTab() {
+  destroyCharts();
+  document
+    .querySelectorAll(".dashboard-panel")
+    .forEach((x) => (x.hidden = x.id !== "dash-" + st.dtab));
+  const c = st.dashboard?.charts || {};
+  if (st.dtab === "overview") {
+    chart("od", "chart-overview-design", c.designs, "designNo");
+    ranking("rank-overview-design", c.designs, "designNo", 20);
+    chart(
+      "oc",
+      "chart-overview-customer",
+      c[st.modes.customer],
+      st.modes.customer === "agentCustomers"
+        ? "agent"
+        : st.modes.customer === "stateCustomers"
+          ? "state"
+          : "city",
+    );
+    chart("oz", "chart-overview-zone", c[st.modes.zone], "state");
+    chart(
+      "op",
+      "chart-overview-product",
+      c[st.modes.product],
+      st.modes.product === "firm" ? "firm" : st.modes.product,
+    );
+  }
+  if (st.dtab === "products") {
+    chart("pd", "chart-products-design", c.designs, "designNo");
+    ranking("rank-products-design", c.designs, "designNo");
+    chart("pc", "chart-products-category", c.category, "category");
+    chart("ps", "chart-products-style", c.style, "style");
+    chart("pf", "chart-products-fabric", c.fabric, "fabric");
+  }
+  if (st.dtab === "customers") {
+    chart("ct", "chart-customers-top", c.customers, "companyName");
+    ranking("rank-customers", c.customers, "companyName");
+    chart("ca", "chart-customers-agent", c.agentCustomers, "agent");
+    chart("cs", "chart-customers-state", c.stateCustomers, "state");
+    chart("cx", "chart-customers-source", c.source, "source");
+  }
+  if (st.dtab === "zones") {
+    chart("zs", "chart-zones-state", c[st.modes.zone], "state");
+    ranking("rank-zones", c[st.modes.zone], "state");
+  }
+}
+document.querySelector(".dashboard-subnav").onclick = (e) => {
+  const b = e.target.closest("[data-dtab]");
+  if (!b) return;
+  st.dtab = b.dataset.dtab;
+  document
+    .querySelectorAll("[data-dtab]")
+    .forEach((x) => x.classList.toggle("active", x === b));
+  renderDashboardTab();
+};
+document.querySelectorAll(".mini-segment").forEach(
+  (seg) =>
+    (seg.onclick = (e) => {
+      const b = e.target.closest("[data-mode]");
+      if (!b) return;
+      seg
+        .querySelectorAll("button")
+        .forEach((x) => x.classList.toggle("active", x === b));
+      if (seg.id === "mix-customer") st.modes.customer = b.dataset.mode;
+      else
+        st.modes.zone =
+          seg.id === "mix-zone" || seg.id === "zones-mode"
+            ? b.dataset.mode
+            : st.modes.zone;
+      if (seg.id === "mix-product") st.modes.product = b.dataset.mode;
+      renderDashboardTab();
+    }),
+);
+$("dash-refresh").onclick = () => loadDashboard(true);
+async function ensureXlsx() {
+  if (window.XLSX) return;
+  await new Promise((res, rej) => {
+    const x = document.createElement("script");
+    x.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    x.onload = res;
+    x.onerror = rej;
+    document.head.appendChild(x);
+  });
+}
+$("dash-export").onclick = async () => {
+  try {
+    loading(true, "Preparing Excel…");
+    await ensureXlsx();
+    const all = [];
+    let offset = 0,
+      total = 1;
+    while (offset < total) {
+      const d = await rpc("admin_dashboard_v2", {
+        p_filters: st.filters,
+        p_search: $("dash-search").value.trim(),
+        p_limit: 200,
+        p_offset: offset,
+      });
+      all.push(...(d.orders || []));
+      total = Number(d.totalOrders) || 0;
+      offset += 200;
+    }
+    const safe = (v) => (/^[=+\-@]/.test(String(v ?? "")) ? "'" + v : v);
+    const rows = all.map((o) => ({
+      Company: safe(o.companyName),
+      Contact: safe(o.contactName),
+      Phone: safe(o.phone),
+      City: safe(o.city),
+      State: safe(o.state),
+      Agent: safe(o.agent),
+      Firm: o.firm,
+      Status: o.status,
+      Designs: o.designs,
+      Sets: o.sets,
+      Pieces: o.pieces,
+      Updated: o.updatedAt,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows),
+      wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    XLSX.writeFile(wb, "Maitri-Carnival-Dashboard.xlsx");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+};
+let dashTimer;
+$("dash-search").oninput = () => {
+  clearTimeout(dashTimer);
+  dashTimer = setTimeout(() => loadDashboard(true), 350);
+};
+const FILTER_LABELS = {
+  firm: "Firm",
+  state: "State",
+  city: "City",
+  agent: "Agent",
+  category: "Category",
+  style: "Style",
+  fabric: "Fabric",
+  status: "Order status",
+  source: "Order source",
+  checkedIn: "Checked in",
+};
+$("filter-open").onclick = () => openFilter();
+$("filter-clear").onclick = () => {
+  st.filters = {};
+  loadDashboard(true);
+};
+function renderFilterChips() {
+  const chips = [];
+  Object.entries(st.filters).forEach(([k, vals]) =>
+    (vals || []).forEach((v) => chips.push({ k, v })),
+  );
+  $("filter-chips").innerHTML = chips.length
+    ? chips
+        .map(
+          (x) =>
+            `<button class="chip" data-fk="${x.k}" data-fv="${esc(x.v)}">${esc(FILTER_LABELS[x.k] || x.k)}: ${esc(x.v)} ✕</button>`,
+        )
+        .join("")
+    : '<span class="copy">All exhibition data</span>';
+}
+$("filter-chips").onclick = (e) => {
+  const b = e.target.closest("[data-fk]");
+  if (!b) return;
+  st.filters[b.dataset.fk] = (st.filters[b.dataset.fk] || []).filter(
+    (v) => v !== b.dataset.fv,
+  );
+  if (!st.filters[b.dataset.fk].length) delete st.filters[b.dataset.fk];
+  loadDashboard(true);
+};
+function openFilter() {
+  $("filter-fields").innerHTML = Object.entries(FILTER_LABELS)
+    .map(
+      ([k, v]) =>
+        `<button class="btn secondary" data-field="${k}">${v}</button>`,
+    )
+    .join("");
+  $("filter-values").innerHTML = "";
+  openModal("filter-modal");
+}
+$("filter-fields").onclick = (e) => {
+  const b = e.target.closest("[data-field]");
+  if (!b) return;
+  const k = b.dataset.field,
+    vals = st.dashboard?.options?.[k] || [];
+  $("filter-title").textContent = FILTER_LABELS[k];
+  $("filter-values").innerHTML = vals
+    .map(
+      (v) =>
+        `<button class="list-row click" data-filter-value="${esc(v)}" data-filter-key="${k}"><b>${esc(v)}</b></button>`,
+    )
+    .join("");
+};
+$("filter-values").onclick = (e) => {
+  const b = e.target.closest("[data-filter-value]");
+  if (!b) return;
+  const k = b.dataset.filterKey,
+    v = b.dataset.filterValue;
+  st.filters[k] = [...new Set([...(st.filters[k] || []), v])];
+  closeModal("filter-modal");
+  loadDashboard(true);
+};
+function openDrill(dim, row) {
+  st.drill = { dim, row };
+  $("drill-title").textContent = row.label;
+  $("drill-sub").textContent = (FILTER_LABELS[dim] || dim) + " details";
+  $("drill-body").innerHTML =
+    `<div class="detail-metrics"><div class="metric"><b>${Number(row.value || 0).toLocaleString("en-IN")}</b><span>Value</span></div><div class="metric"><b>${row.sets ?? "—"}</b><span>Sets</span></div><div class="metric"><b>${row.customers ?? "—"}</b><span>Customers</span></div></div><p class="copy">${esc([row.category, row.style, row.fabric, row.city, row.state, row.agent].filter(Boolean).join(" · "))}</p>`;
+  openModal("drill-modal");
+}
+$("drill-apply").onclick = () => {
+  const { dim, row } = st.drill || {};
+  if (dim && row?.label) {
+    st.filters[dim] = [row.label];
+    closeModal("drill-modal");
+    loadDashboard(true);
+  }
+};
 /* Sale order */
-let saleTimer;$('sale-search').oninput=()=>{clearTimeout(saleTimer);saleTimer=setTimeout(searchSaleCustomers,250)};async function searchSaleCustomers(){if(!has('sale.view'))return;try{const rows=await admin('directory',{query:$('sale-search').value.trim()});$('sale-results').innerHTML=rows.slice(0,50).map(c=>`<button class="list-row click" data-sale-customer='${esc(JSON.stringify({id:c.id,companyName:c.companyName,phone:c.phone,contactName:c.contactName}))}'><div><b>${esc(c.companyName)}</b><p>${esc(c.contactName)} · +${esc(c.phone)}</p></div><span class="badge info">Select</span></button>`).join('')||'<div class="empty">No customers found</div>'}catch(e){toast(e.message,'error')}}
-$('sale-results').onclick=e=>{const b=e.target.closest('[data-sale-customer]');if(b)openSaleCustomer(JSON.parse(b.dataset.saleCustomer))};function hydrate(i){return{...i,qty:Number(i.qty)||1,pcsPerSet:Number(i.pcsPerSet)||1,note:String(i.note||''),_dirty:false,_serverExists:true}}
-async function openSaleCustomer(c){st.sale.customer=c;st.sale.firm='Maitri';st.sale.carts={Maitri:[],Niharika:[]};st.sale.deleted={Maitri:new Set(),Niharika:new Set()};$('sale-builder').classList.remove('hidden');$('sale-party').textContent=c.companyName;try{loading(true,'Loading orders…');const d=await admin('getCustomerOrders',{customerId:c.id});(d.orders||[]).forEach(o=>st.sale.carts[o.firm]=(o.items||[]).map(hydrate));renderSale()}catch(e){toast(e.message,'error')}finally{loading(false)}}
-function saleCart(){return st.sale.carts[st.sale.firm]}
-function saleDeleted(){return st.sale.deleted[st.sale.firm]}
-function renderSale(){document.querySelectorAll('#sale-firms button').forEach(b=>b.classList.toggle('active',b.dataset.firm===st.sale.firm));const cart=saleCart(),sets=cart.reduce((s,i)=>s+Number(i.qty),0),pieces=cart.reduce((s,i)=>s+Number(i.qty)*(Number(i.pcsPerSet)||1),0);$('sale-summary').textContent=`${st.sale.firm} · ${cart.length} designs · ${sets} sets · ${pieces} pcs`;$('sale-cart').innerHTML=cart.length?cart.map((it,i)=>`<div class="list-row" style="align-items:start"><div style="display:flex;gap:8px;min-width:0">${it.imageUrl?`<img src="${esc(ik(it.imageUrl,'w-120,h-160,c-at_max,q-55'))}" style="width:44px;height:58px;border-radius:7px;object-fit:cover">`:''}<div><b>${esc(it.designNo)}</b><p>${esc([it.category,it.style,it.fabric].filter(Boolean).join(' · '))}<br>${it.pcsPerSet} pcs/set · ${it.qty*it.pcsPerSet} pcs</p><textarea data-sale="note" data-i="${i}" maxlength="500" placeholder="Design note (usually colour)" style="min-height:54px;margin-top:6px;font-size:12px">${esc(it.note)}</textarea></div></div><div class="row"><button class="btn ghost small" data-sale="minus" data-i="${i}">−</button><input data-sale="qty" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" style="width:60px;height:40px;text-align:center"><button class="btn ghost small" data-sale="plus" data-i="${i}">+</button><button class="btn ghost small" data-sale="remove" data-i="${i}" style="color:var(--error)">✕</button></div></div>`).join(''):'<div class="empty">Scan or type a barcode to begin</div>'}
-$('sale-firms').onclick=e=>{const b=e.target.closest('[data-firm]');if(b){st.sale.firm=b.dataset.firm;renderSale()}};$('sale-close').onclick=()=>{$('sale-builder').classList.add('hidden');st.sale.customer=null};$('sale-cart').onclick=e=>{const b=e.target.closest('[data-sale]');if(!b||['INPUT','TEXTAREA'].includes(b.tagName))return;const i=Number(b.dataset.i),it=saleCart()[i];if(!it)return;if(b.dataset.sale==='plus')it.qty=Math.min(9999,it.qty+1);if(b.dataset.sale==='minus')it.qty=Math.max(1,it.qty-1);if(b.dataset.sale==='remove'){const[x]=saleCart().splice(i,1);if(x._serverExists)saleDeleted().add(x.designNo)}else it._dirty=true;renderSale()};$('sale-cart').onchange=e=>{if(e.target.dataset.sale==='qty'){const it=saleCart()[Number(e.target.dataset.i)];it.qty=Math.max(1,Math.min(9999,Number(e.target.value)||1));it._dirty=true;renderSale()}};$('sale-cart').oninput=e=>{if(e.target.dataset.sale==='note'){const it=saleCart()[Number(e.target.dataset.i)];it.note=e.target.value.slice(0,500);it._dirty=true}};
-async function saleAdd(raw){try{const data=await rpc('lookup_barcode',{p_barcode:String(raw||'').trim()}),r=Array.isArray(data)?data[0]:data;if(!r)throw Error('Barcode not mapped');if(![st.sale.firm,'Both'].includes(r.firm))throw Error(`${r.design_no} belongs to ${r.firm}`);if(saleCart().some(x=>x.designNo===r.design_no))throw Error('Design already added');saleDeleted().delete(r.design_no);saleCart().push({barcode:r.barcode,designNo:r.design_no,imageUrl:r.image_url||'',category:r.category,style:r.style,fabric:r.fabric,pcsPerSet:Number(r.pcs_per_set)||1,description:r.description||'',note:'',qty:1,_dirty:true,_serverExists:false});$('sale-barcode').value='';renderSale();toast('Design added','success')}catch(e){toast(e.message,'error')}}
-$('sale-add').onclick=()=>saleAdd($('sale-barcode').value);$('sale-barcode').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();saleAdd(e.target.value)}};$('sale-save').onclick=async()=>{if(!st.sale.customer)return;const items=saleCart().filter(x=>x._dirty).map(x=>({_op:'upsert',barcode:x.barcode,designNo:x.designNo,qty:x.qty,note:x.note})).concat([...saleDeleted()].map(designNo=>({_op:'delete',designNo,_delete:true})));if(!items.length){toast('No unsaved changes');return}try{loading(true,'Saving and merging…');const d=await admin('assistedSaveOrder',{customerId:st.sale.customer.id,firm:st.sale.firm,items});st.sale.carts[st.sale.firm]=(d.order?.items||[]).map(hydrate);st.sale.deleted[st.sale.firm].clear();renderSale();toast('Order saved and merged','success')}catch(e){toast(e.message,'error')}finally{loading(false)}};
-$('previous-orders').onclick=async()=>{openModal('previous-modal');await loadPrevious()};let prevTimer;$('previous-search').oninput=()=>{clearTimeout(prevTimer);prevTimer=setTimeout(loadPrevious,300)};async function loadPrevious(){try{const rows=await admin('recentOrders',{query:$('previous-search').value.trim()});$('previous-list').innerHTML=rows.map(o=>`<div class="list-row"><div><b>${esc(o.companyName)} · ${esc(o.firm)}</b><p>${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs · ${fmt(o.updatedAt)}</p></div><div class="row"><button class="btn ghost small" data-view-prev='${esc(JSON.stringify(o))}'>View</button><button class="btn small" data-prev='${esc(JSON.stringify(o))}'>Edit</button></div></div>`).join('')||'<div class="empty">No orders</div>'}catch(e){toast(e.message,'error')}}
-$('previous-list').onclick=e=>{const view=e.target.closest('[data-view-prev]');if(view){const o=JSON.parse(view.dataset.viewPrev);closeModal('previous-modal');openOrder(o.customerId,o.firm);return}const b=e.target.closest('[data-prev]');if(!b)return;const o=JSON.parse(b.dataset.prev);closeModal('previous-modal');go('sale');openSaleCustomer({id:o.customerId,companyName:o.companyName,phone:o.phone}).then(()=>{st.sale.firm=o.firm;renderSale()})};
+let saleTimer;
+$("sale-search").oninput = () => {
+  clearTimeout(saleTimer);
+  saleTimer = setTimeout(searchSaleCustomers, 250);
+};
+async function searchSaleCustomers() {
+  if (!has("sale.view")) return;
+  try {
+    const rows = await admin("directory", {
+      query: $("sale-search").value.trim(),
+    });
+    $("sale-results").innerHTML =
+      rows
+        .slice(0, 50)
+        .map(
+          (c) =>
+            `<button class="list-row click customer-choice" data-sale-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div><b>${esc(c.companyName)}</b><p>${esc([c.contactName, c.phone ? "+" + c.phone : "", [c.city,c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</p></div><span class="badge info">Use</span></button>`,
+        )
+        .join("") || '<div class="empty">No customers found</div>';
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("sale-results").onclick = (e) => {
+  const b = e.target.closest("[data-sale-customer]");
+  if (b) openSaleCustomer(JSON.parse(b.dataset.saleCustomer));
+};
+function hydrate(i) {
+  return {
+    ...i,
+    qty: Number(i.qty) || 1,
+    pcsPerSet: Number(i.pcsPerSet) || 1,
+    note: String(i.note || ""),
+    _dirty: false,
+    _serverExists: true,
+  };
+}
+async function openSaleCustomer(c) {
+  st.sale.customer = c;
+  st.sale.firm = "Maitri";
+  st.sale.carts = { Maitri: [], Niharika: [] };
+  st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
+  $("sale-find-card").classList.add("hidden");
+  $("sale-results").innerHTML = "";
+  $("sale-builder").classList.remove("hidden");
+  $("sale-party").textContent = c.companyName;
+  $("sale-customer-meta").textContent = [c.contactName, c.phone ? `+${c.phone}` : "", [c.city,c.state].filter(Boolean).join(", "), c.agent ? `Agent: ${c.agent}` : ""].filter(Boolean).join(" · ");
+  try {
+    loading(true, "Opening customer order…");
+    const d = await admin("getCustomerOrders", { customerId: c.id });
+    if (d.customer) {
+      st.sale.customer = { ...c, ...d.customer, id: c.id, companyName: d.customer.companyName || c.companyName, phone: d.customer.phone || c.phone };
+      $("sale-customer-meta").textContent = [d.customer.contactName, d.customer.phone ? `+${d.customer.phone}` : "", [d.customer.city,d.customer.state].filter(Boolean).join(", "), d.customer.agent ? `Agent: ${d.customer.agent}` : ""].filter(Boolean).join(" · ");
+    }
+    (d.orders || []).forEach((o) => (st.sale.carts[o.firm] = (o.items || []).map(hydrate)));
+    renderSale();
+    setTimeout(() => $("sale-barcode").focus(), 80);
+  } catch (e) {
+    $("sale-find-card").classList.remove("hidden");
+    $("sale-builder").classList.add("hidden");
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+function saleCart() {
+  return st.sale.carts[st.sale.firm];
+}
+function saleDeleted() {
+  return st.sale.deleted[st.sale.firm];
+}
+function renderSale() {
+  document.querySelectorAll("#sale-firms button").forEach((b) => b.classList.toggle("active", b.dataset.firm === st.sale.firm));
+  const cart = saleCart(),
+    sets = cart.reduce((s, i) => s + Number(i.qty), 0),
+    pieces = cart.reduce((s, i) => s + Number(i.qty) * (Number(i.pcsPerSet) || 1), 0);
+  $("sale-summary").textContent = `${st.sale.firm} · ${cart.length} designs · ${sets} sets · ${pieces} pieces`;
+  $("sale-cart").className = "sale-cart-list";
+  $("sale-cart").innerHTML = cart.length
+    ? cart.map((it, i) => {
+        const linePieces = Number(it.qty) * (Number(it.pcsPerSet) || 1);
+        return `<article class="sale-item">
+          ${it.imageUrl ? `<img class="sale-item-thumb" src="${esc(ik(it.imageUrl, "w-160,h-220,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy">` : '<div class="sale-item-thumb"></div>'}
+          <div class="sale-item-main">
+            <div class="sale-item-head"><div><div class="sale-item-title">${esc(it.designNo)}</div><div class="sale-item-meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(" · ") || "Product details not added")}</div></div></div>
+            <span class="line-piece-pill">${it.qty} set${Number(it.qty) === 1 ? "" : "s"} × ${it.pcsPerSet} = ${linePieces} pieces</span>
+            <div class="sale-qty-row">
+              <button class="btn ghost small" data-sale="minus" data-i="${i}" aria-label="Reduce sets">−</button>
+              <input class="sale-qty-input" data-sale="qty" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" aria-label="Sets for ${esc(it.designNo)}">
+              <button class="btn ghost small" data-sale="plus" data-i="${i}" aria-label="Increase sets">+</button>
+              <button class="btn ghost small sale-remove" data-sale="remove" data-i="${i}" aria-label="Remove ${esc(it.designNo)}">Remove</button>
+            </div>
+          </div>
+          <div class="sale-note-wrap">
+            <label class="sale-note-label" for="sale-note-${i}"><span>Notes for this design</span><span class="sale-note-help">optional</span></label>
+            <textarea id="sale-note-${i}" class="sale-item-note" data-sale="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction the team should remember">${esc(it.note)}</textarea>
+          </div>
+        </article>`;
+      }).join("")
+    : '<div class="empty">Select a firm, then scan or type the first barcode.</div>';
+}
+$("sale-firms").onclick = (e) => {
+  const b = e.target.closest("[data-firm]");
+  if (b) {
+    st.sale.firm = b.dataset.firm;
+    renderSale();
+  }
+};
+$("sale-close").onclick = () => {
+  $("sale-builder").classList.add("hidden");
+  $("sale-find-card").classList.remove("hidden");
+  $("sale-search").value = "";
+  $("sale-results").innerHTML = "";
+  st.sale.customer = null;
+  setTimeout(() => $("sale-search").focus(), 80);
+};
+$("sale-cart").onclick = (e) => {
+  const b = e.target.closest("[data-sale]");
+  if (!b || ["INPUT", "TEXTAREA"].includes(b.tagName)) return;
+  const i = Number(b.dataset.i),
+    it = saleCart()[i];
+  if (!it) return;
+  if (b.dataset.sale === "plus") it.qty = Math.min(9999, it.qty + 1);
+  if (b.dataset.sale === "minus") it.qty = Math.max(1, it.qty - 1);
+  if (b.dataset.sale === "remove") {
+    const [x] = saleCart().splice(i, 1);
+    if (x._serverExists) saleDeleted().add(x.designNo);
+  } else it._dirty = true;
+  renderSale();
+};
+$("sale-cart").onchange = (e) => {
+  if (e.target.dataset.sale === "qty") {
+    const it = saleCart()[Number(e.target.dataset.i)];
+    it.qty = Math.max(1, Math.min(9999, Number(e.target.value) || 1));
+    it._dirty = true;
+    renderSale();
+  }
+};
+$("sale-cart").oninput = (e) => {
+  if (e.target.dataset.sale === "note") {
+    const it = saleCart()[Number(e.target.dataset.i)];
+    it.note = e.target.value.slice(0, 500);
+    it._dirty = true;
+  }
+};
+async function saleAdd(raw) {
+  try {
+    const data = await rpc("lookup_barcode", {
+        p_barcode: String(raw || "").trim(),
+      }),
+      r = Array.isArray(data) ? data[0] : data;
+    if (!r) throw Error("Barcode not mapped");
+    if (![st.sale.firm, "Both"].includes(r.firm))
+      throw Error(`${r.design_no} belongs to ${r.firm}`);
+    if (saleCart().some((x) => x.designNo === r.design_no))
+      throw Error("Design already added");
+    saleDeleted().delete(r.design_no);
+    saleCart().push({
+      barcode: r.barcode,
+      designNo: r.design_no,
+      imageUrl: r.image_url || "",
+      category: r.category,
+      style: r.style,
+      fabric: r.fabric,
+      pcsPerSet: Number(r.pcs_per_set) || 1,
+      description: r.description || "",
+      note: "",
+      qty: 1,
+      _dirty: true,
+      _serverExists: false,
+    });
+    $("sale-barcode").value = "";
+    renderSale();
+    toast("Design added", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("sale-add").onclick = () => saleAdd($("sale-barcode").value);
+$("sale-barcode").onkeydown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    saleAdd(e.target.value);
+  }
+};
+$("sale-save").onclick = async () => {
+  if (!st.sale.customer) return;
+  const items = saleCart()
+    .filter((x) => x._dirty)
+    .map((x) => ({
+      _op: "upsert",
+      barcode: x.barcode,
+      designNo: x.designNo,
+      qty: x.qty,
+      note: x.note,
+    }))
+    .concat(
+      [...saleDeleted()].map((designNo) => ({
+        _op: "delete",
+        designNo,
+        _delete: true,
+      })),
+    );
+  if (!items.length) {
+    toast("No unsaved changes");
+    return;
+  }
+  const saveButton = $("sale-save"), oldText = saveButton.textContent;
+  try {
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving…";
+    const d = await admin("assistedSaveOrder", { customerId: st.sale.customer.id, firm: st.sale.firm, items });
+    st.sale.carts[st.sale.firm] = (d.order?.items || []).map(hydrate);
+    st.sale.deleted[st.sale.firm].clear();
+    renderSale();
+    toast("Order saved", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent = oldText;
+  }
+};
+$("previous-orders").onclick = async () => {
+  openModal("previous-modal");
+  await loadPrevious();
+};
+let prevTimer;
+$("previous-search").oninput = () => {
+  clearTimeout(prevTimer);
+  prevTimer = setTimeout(loadPrevious, 300);
+};
+async function loadPrevious() {
+  try {
+    const rows = await admin("recentOrders", {
+      query: $("previous-search").value.trim(),
+    });
+    $("previous-list").innerHTML =
+      rows
+        .map(
+          (o) =>
+            `<div class="list-row"><div><b>${esc(o.companyName)} · ${esc(o.firm)}</b><p>${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs · ${fmt(o.updatedAt)}</p></div><div class="row"><button class="btn ghost small" data-view-prev='${esc(JSON.stringify(o))}'>View</button><button class="btn small" data-prev='${esc(JSON.stringify(o))}'>Edit</button></div></div>`,
+        )
+        .join("") || '<div class="empty">No orders</div>';
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("previous-list").onclick = (e) => {
+  const view = e.target.closest("[data-view-prev]");
+  if (view) {
+    const o = JSON.parse(view.dataset.viewPrev);
+    closeModal("previous-modal");
+    openOrder(o.customerId, o.firm);
+    return;
+  }
+  const b = e.target.closest("[data-prev]");
+  if (!b) return;
+  const o = JSON.parse(b.dataset.prev);
+  closeModal("previous-modal");
+  go("sale");
+  openSaleCustomer({
+    id: o.customerId,
+    companyName: o.companyName,
+    phone: o.phone,
+  }).then(() => {
+    st.sale.firm = o.firm;
+    renderSale();
+  });
+};
 /* Scanner */
-async function ensureScanner(){if(window.Html5Qrcode)return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
-async function startScanner(target){await stopScanner();await ensureScanner();st.scannerTarget=target;const id=target==='sale'?'sale-reader':'map-reader';$(id).classList.add('open');st.scanner=new Html5Qrcode(id);await st.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:120}},code=>{navigator.vibrate?.(70);if(target==='sale')saleAdd(code);else $('map-barcode').value=code;stopScanner()},()=>{})}
-async function stopScanner(){if(st.scanner){try{await st.scanner.stop()}catch{}try{await st.scanner.clear()}catch{}}st.scanner=null;['sale-reader','map-reader'].forEach(id=>$(id)?.classList.remove('open'))}
-$('sale-camera').onclick=()=>startScanner('sale').catch(e=>toast(e.message,'error'));
+async function ensureScanner() {
+  if (window.Html5Qrcode) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src =
+      "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+    s.onload = res;
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+async function startScanner(target) {
+  await stopScanner();
+  await ensureScanner();
+  st.scannerTarget = target;
+  const id = target === "sale" ? "sale-reader" : "map-reader";
+  $(id).classList.add("open");
+  st.scanner = new Html5Qrcode(id);
+  await st.scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 120 } },
+    (code) => {
+      navigator.vibrate?.(70);
+      if (target === "sale") saleAdd(code);
+      else $("map-barcode").value = code;
+      stopScanner();
+    },
+    () => {},
+  );
+}
+async function stopScanner() {
+  if (st.scanner) {
+    try {
+      await st.scanner.stop();
+    } catch {}
+    try {
+      await st.scanner.clear();
+    } catch {}
+  }
+  st.scanner = null;
+  ["sale-reader", "map-reader"].forEach((id) =>
+    $(id)?.classList.remove("open"),
+  );
+}
+$("sale-camera").onclick = () =>
+  startScanner("sale").catch((e) => toast(e.message, "error"));
 /* Products */
-async function loadProductsModule(){const sub=st.sub.products;if(sub==='master'){if(!has('products.view'))return denySub('products',has('products.mapping')?'mapping':'lookups');await loadProducts()}if(sub==='mapping'){if(!has('products.mapping'))return denySub('products',has('products.view')?'master':'lookups');await loadMapping()}if(sub==='lookups'){if(!has('products.lookups'))return denySub('products',has('products.view')?'master':'mapping');await loadAdminLookups()}}
-async function loadProducts(){st.designs=await admin('listDesigns');$('dl-design').innerHTML=st.designs.filter(d=>d.active).map(d=>`<option value="${esc(d.designNo)}">`).join('');renderProducts()}
-function renderProducts(){const q=$('product-search').value.toLowerCase(),g=$('product-group').value;const rows=st.designs.filter(d=>!q||[d.designNo,d.firm,d.category,d.style,d.fabric,d.description].join(' ').toLowerCase().includes(q));if(!g){$('product-list').innerHTML=rows.map(productRow).join('')||'<div class="empty">No products</div>';return}const groups={};rows.forEach(d=>(groups[d[g]||'Not specified']??=[]).push(d));$('product-list').innerHTML=Object.entries(groups).sort().map(([k,v])=>`<details><summary class="list-row click"><b>${esc(k)}</b><span class="badge info">${v.length}</span></summary><div class="list">${v.map(productRow).join('')}</div></details>`).join('')}
-function productRow(d){return `<button class="list-row click" data-product="${esc(d.designNo)}"><div><b>${esc(d.designNo)}</b><p>${esc([d.firm,d.category,d.style,d.fabric].filter(Boolean).join(' · '))} · ${d.pcsPerSet} pcs/set</p></div><span class="badge ${d.active?'ok':'off'}">${d.active?'Active':'Inactive'}</span></button>`}
-$('product-search').oninput=renderProducts;$('product-group').onchange=renderProducts;$('product-list').onclick=e=>{const b=e.target.closest('[data-product]');if(b)openProduct(b.dataset.product)};async function openProduct(dn){const d=await admin('getProductDetail',{designNo:dn});st.editProduct=dn;const p=d.design;$('pm-title').textContent=p.designNo;$('pm-sub').textContent='Updated '+fmt(p.updatedAt);$('pm-firm').value=p.firm;$('pm-pcs').value=p.pcsPerSet;$('pm-category').value=p.category;$('pm-style').value=p.style;$('pm-fabric').value=p.fabric;$('pm-active').value=String(p.active);$('pm-description').value=p.description;$('pm-barcodes').textContent='Barcodes: '+(d.barcodes.map(x=>x.barcode+(x.active?'':' (inactive)')).join(', ')||'none');openModal('product-modal')}
-$('pm-save').onclick=async()=>{try{await admin('updateProduct',{designNo:st.editProduct,firm:$('pm-firm').value,pcsPerSet:Number($('pm-pcs').value),category:$('pm-category').value,style:$('pm-style').value,fabric:$('pm-fabric').value,active:$('pm-active').value==='true',description:$('pm-description').value});closeModal('product-modal');await loadProducts();toast('Product updated','success')}catch(e){toast(e.message,'error')}};
-async function loadMapping(){[st.designs,st.mappings]=await Promise.all([admin('listDesigns'),admin('listMappings')]);$('dl-design').innerHTML=st.designs.filter(d=>d.active).map(d=>`<option value="${esc(d.designNo)}">`).join('');renderMappings()}
-function renderMappings(){const q=$('map-search').value.toLowerCase();const rows=st.mappings.filter(x=>!q||[x.barcode,x.designNo,x.category,x.style,x.fabric].join(' ').toLowerCase().includes(q)).slice(0,250);$('mapping-list').innerHTML=rows.map(x=>`<div class="list-row"><div><b>${esc(x.barcode)} → ${esc(x.designNo)}</b><p>${esc([x.firm,x.category,x.style,x.fabric].filter(Boolean).join(' · '))}</p></div>${x.active?`<button class="btn ghost small" data-deactivate="${esc(x.barcode)}">Deactivate</button>`:'<span class="badge off">Inactive</span>'}</div>`).join('')||'<div class="empty">No mappings</div>'}
-$('map-search').oninput=renderMappings;$('map-save').onclick=async()=>{try{await admin('mapBarcode',{barcode:$('map-barcode').value,designNo:$('map-design').value});$('map-barcode').value='';await loadMapping();toast('Mapping saved','success')}catch(e){toast(e.message,'error')}};$('map-camera').onclick=()=>startScanner('map').catch(e=>toast(e.message,'error'));$('mapping-list').onclick=async e=>{const b=e.target.closest('[data-deactivate]');if(!b)return;await admin('deactivateBarcode',{barcode:b.dataset.deactivate});await loadMapping()};$('map-batch-save').onclick=async()=>{const items=$('map-batch').value.split(/\n/).map(x=>x.split(',')).filter(x=>x.length>=2).map(([barcode,designNo])=>({barcode:barcode.trim(),designNo:designNo.trim()}));try{const d=await admin('mapBatch',{items});const bad=d.results.filter(x=>!x.ok);$('map-batch').value='';await loadMapping();toast(bad.length?`${items.length-bad.length} saved, ${bad.length} failed`:'Batch saved',bad.length?'error':'success')}catch(e){toast(e.message,'error')}};
-async function loadAdminLookups(){st.lookups=await admin('listLookupsAdmin');renderAdminLookups()}
-function renderAdminLookups(){const k=$('lookup-kind').value;$('lookup-list').innerHTML=st.lookups.filter(x=>x.kind===k).map(x=>`<div class="list-row"><b>${esc(x.value)}</b><button class="btn ghost small" data-del-lookup="${esc(x.kind)}" data-del-value="${esc(x.value)}" style="color:var(--error)">Delete</button></div>`).join('')||'<div class="empty">No values</div>'}
-$('lookup-kind').onchange=renderAdminLookups;$('lookup-add').onclick=async()=>{try{await admin('upsertLookup',{kind:$('lookup-kind').value,value:$('lookup-value').value});$('lookup-value').value='';await loadAdminLookups();await loadLookups();toast('Lookup added','success')}catch(e){toast(e.message,'error')}};$('lookup-list').onclick=async e=>{const b=e.target.closest('[data-del-lookup]');if(!b)return;await admin('deleteLookup',{kind:b.dataset.delLookup,value:b.dataset.delValue});await loadAdminLookups();await loadLookups()};
+async function loadProductsModule() {
+  const sub = st.sub.products;
+  if (sub === "master") {
+    if (!has("products.view"))
+      return denySub(
+        "products",
+        has("products.mapping") ? "mapping" : "lookups",
+      );
+    await loadProducts();
+  }
+  if (sub === "mapping") {
+    if (!has("products.mapping"))
+      return denySub("products", has("products.view") ? "master" : "lookups");
+    await loadMapping();
+  }
+  if (sub === "lookups") {
+    if (!has("products.lookups"))
+      return denySub("products", has("products.view") ? "master" : "mapping");
+    await loadAdminLookups();
+  }
+}
+async function loadProducts(force = false) {
+  const fresh = st.designs.length && Date.now() - st.cache.designsAt < 120000;
+  if (!fresh || force) {
+    st.designs = await admin("listDesigns");
+    st.cache.designsAt = Date.now();
+  }
+  $("dl-design").innerHTML = st.designs.filter((d) => d.active).map((d) => `<option value="${esc(d.designNo)}">`).join("");
+  renderProducts();
+}
+function renderProducts() {
+  const q = $("product-search").value.trim().toLowerCase(),
+    g = $("product-group").value || "category";
+  const rows = st.designs.filter((d) => !q || [d.designNo,d.firm,d.category,d.style,d.fabric,d.description].join(" ").toLowerCase().includes(q));
+  const groups = {};
+  rows.forEach((d) => (groups[g ? d[g] || "Not specified" : "All products"] ??= []).push(d));
+  $("product-list").innerHTML = Object.entries(groups).sort(([a],[b]) => a.localeCompare(b)).map(([name, items]) => `
+    <section class="catalogue-group">
+      <div class="catalogue-group-head"><h2>${esc(name)}</h2><span class="badge info">${items.length}</span></div>
+      <div class="catalogue-grid">${items.sort((a,b) => String(a.designNo).localeCompare(String(b.designNo))).map(productTile).join("")}</div>
+    </section>`).join("") || '<div class="empty">No products match this search.</div>';
+}
+function productTile(d) {
+  const image = d.imageUrl ? `<img class="catalogue-thumb" src="${esc(ik(d.imageUrl,"w-180,h-240,c-at_max,q-50"))}" alt="${esc(d.designNo)}" loading="lazy">` : '<div class="catalogue-thumb"></div>';
+  return `<button class="catalogue-card ${d.active ? "" : "inactive"}" data-product="${esc(d.designNo)}">${image}<span class="catalogue-state-dot"></span><span class="catalogue-design">${esc(d.designNo)}</span></button>`;
+}
+$("product-search").oninput = renderProducts;
+$("product-group").onchange = renderProducts;
+$("product-list").onclick = (e) => {
+  const b = e.target.closest("[data-product]");
+  if (b) openProduct(b.dataset.product);
+};
+async function openProduct(dn) {
+  const d = await admin("getProductDetail", { designNo: dn });
+  st.editProduct = dn;
+  const p = d.design;
+  $("pm-title").textContent = p.designNo;
+  $("pm-sub").textContent = "Updated " + fmt(p.updatedAt);
+  $("pm-firm").value = p.firm;
+  $("pm-pcs").value = p.pcsPerSet;
+  $("pm-category").value = p.category;
+  $("pm-style").value = p.style;
+  $("pm-fabric").value = p.fabric;
+  $("pm-active").value = String(p.active);
+  $("pm-description").value = p.description;
+  $("pm-barcodes").textContent =
+    "Barcodes: " +
+    (d.barcodes
+      .map((x) => x.barcode + (x.active ? "" : " (inactive)"))
+      .join(", ") || "none");
+  openModal("product-modal");
+}
+$("pm-save").onclick = async () => {
+  try {
+    await admin("updateProduct", {
+      designNo: st.editProduct,
+      firm: $("pm-firm").value,
+      pcsPerSet: Number($("pm-pcs").value),
+      category: $("pm-category").value,
+      style: $("pm-style").value,
+      fabric: $("pm-fabric").value,
+      active: $("pm-active").value === "true",
+      description: $("pm-description").value,
+    });
+    closeModal("product-modal");
+    st.cache.designsAt = 0;
+    await loadProducts(true);
+    toast("Product updated", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+async function loadMapping(force = false) {
+  const designFresh = st.designs.length && Date.now() - st.cache.designsAt < 120000;
+  const mappingFresh = st.mappings.length && Date.now() - st.cache.mappingsAt < 45000;
+  const jobs = [];
+  if (!designFresh || force) jobs.push(admin("listDesigns").then((rows) => { st.designs = rows; st.cache.designsAt = Date.now(); }));
+  if (!mappingFresh || force) jobs.push(admin("listMappings").then((rows) => { st.mappings = rows; st.cache.mappingsAt = Date.now(); }));
+  if (jobs.length) await Promise.all(jobs);
+  $("dl-design").innerHTML = st.designs.filter((d) => d.active).map((d) => `<option value="${esc(d.designNo)}">`).join("");
+  renderMappings();
+}
+function renderMappings() {
+  const q = $("map-search").value.toLowerCase();
+  const rows = st.mappings
+    .filter(
+      (x) =>
+        !q ||
+        [x.barcode, x.designNo, x.category, x.style, x.fabric]
+          .join(" ")
+          .toLowerCase()
+          .includes(q),
+    )
+    .slice(0, 250);
+  $("mapping-list").innerHTML =
+    rows
+      .map(
+        (x) =>
+          `<div class="list-row"><div><b>${esc(x.barcode)} → ${esc(x.designNo)}</b><p>${esc([x.firm, x.category, x.style, x.fabric].filter(Boolean).join(" · "))}</p></div>${x.active ? `<button class="btn ghost small" data-deactivate="${esc(x.barcode)}">Deactivate</button>` : '<span class="badge off">Inactive</span>'}</div>`,
+      )
+      .join("") || '<div class="empty">No mappings</div>';
+}
+$("map-search").oninput = renderMappings;
+$("map-save").onclick = async () => {
+  try {
+    await admin("mapBarcode", {
+      barcode: $("map-barcode").value,
+      designNo: $("map-design").value,
+    });
+    $("map-barcode").value = "";
+    await loadMapping();
+    toast("Mapping saved", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+$("map-camera").onclick = () =>
+  startScanner("map").catch((e) => toast(e.message, "error"));
+$("mapping-list").onclick = async (e) => {
+  const b = e.target.closest("[data-deactivate]");
+  if (!b) return;
+  await admin("deactivateBarcode", { barcode: b.dataset.deactivate });
+  await loadMapping();
+};
+$("map-batch-save").onclick = async () => {
+  const items = $("map-batch")
+    .value.split(/\n/)
+    .map((x) => x.split(","))
+    .filter((x) => x.length >= 2)
+    .map(([barcode, designNo]) => ({
+      barcode: barcode.trim(),
+      designNo: designNo.trim(),
+    }));
+  try {
+    const d = await admin("mapBatch", { items });
+    const bad = d.results.filter((x) => !x.ok);
+    $("map-batch").value = "";
+    await loadMapping();
+    toast(
+      bad.length
+        ? `${items.length - bad.length} saved, ${bad.length} failed`
+        : "Batch saved",
+      bad.length ? "error" : "success",
+    );
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+async function loadAdminLookups() {
+  st.lookups = await admin("listLookupsAdmin");
+  renderAdminLookups();
+}
+function renderAdminLookups() {
+  const k = $("lookup-kind").value;
+  $("lookup-list").innerHTML =
+    st.lookups
+      .filter((x) => x.kind === k)
+      .map(
+        (x) =>
+          `<div class="list-row"><b>${esc(x.value)}</b><button class="btn ghost small" data-del-lookup="${esc(x.kind)}" data-del-value="${esc(x.value)}" style="color:var(--error)">Delete</button></div>`,
+      )
+      .join("") || '<div class="empty">No values</div>';
+}
+$("lookup-kind").onchange = renderAdminLookups;
+$("lookup-add").onclick = async () => {
+  try {
+    await admin("upsertLookup", {
+      kind: $("lookup-kind").value,
+      value: $("lookup-value").value,
+    });
+    $("lookup-value").value = "";
+    await loadAdminLookups();
+    await loadLookups();
+    toast("Lookup added", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+$("lookup-list").onclick = async (e) => {
+  const b = e.target.closest("[data-del-lookup]");
+  if (!b) return;
+  await admin("deleteLookup", {
+    kind: b.dataset.delLookup,
+    value: b.dataset.delValue,
+  });
+  await loadAdminLookups();
+  await loadLookups();
+};
 /* Admin */
-async function loadAdminModule(){const sub=st.sub.admin;if(sub==='slots'){if(!has('admin.slots'))return denySub('admin',has('admin.bookings')?'bookings':has('admin.staff')?'staff':'settings');await loadSlots()}if(sub==='bookings'){if(!has('admin.bookings'))return denySub('admin',has('admin.slots')?'slots':has('admin.staff')?'staff':'settings');await loadBookings()}if(sub==='staff'){if(!has('admin.staff'))return denySub('admin',has('admin.slots')?'slots':'bookings');await loadStaff()}if(sub==='settings'){if(!has('admin.settings'))return denySub('admin',has('admin.slots')?'slots':'bookings');await loadSettings()}}
-async function loadSlots(){st.slots=await admin('listSlots');$('slot-list').innerHTML=st.slots.map(s=>`<div class="list-row"><div><b>${esc(s.label||fmt(s.startsAt))}</b><p>${fmt(s.startsAt)} – ${fmt(s.endsAt)} · ${s.booked} / ${s.capacity??'∞'} parties</p></div><button class="btn ghost small" data-slot-del="${s.id}">${s.booked?'Deactivate':'Delete'}</button></div>`).join('')||'<div class="empty">No slots</div>'}
-$('slot-add').onclick=async()=>{try{await admin('upsertSlot',{startsAt:new Date($('slot-start').value).toISOString(),endsAt:new Date($('slot-end').value).toISOString(),label:$('slot-label').value,capacity:$('slot-cap').value});await loadSlots();toast('Slot added','success')}catch(e){toast(e.message,'error')}};$('slot-list').onclick=async e=>{const b=e.target.closest('[data-slot-del]');if(!b)return;await admin('deleteSlot',{id:b.dataset.slotDel});await loadSlots()};
-async function loadBookings(){[st.bookings,st.slots]=await Promise.all([admin('listBookings'),admin('listSlots')]);renderBookings()}
-function renderBookings(){const q=$('booking-search').value.toLowerCase();const rows=st.bookings.filter(b=>!q||[b.companyName,b.contactName,b.phone,b.slotLabel,fmt(b.startsAt)].join(' ').toLowerCase().includes(q));$('booking-list').innerHTML=rows.map(b=>`<div class="list-row"><div><b>${esc(b.companyName)}</b><p>${esc(b.contactName)} · +${esc(b.phone)}<br>${esc(b.slotLabel||'Slot')} · ${fmt(b.startsAt)} · ${b.partySize} people ${b.checkedIn?'· Checked in':''}${b.note?'<br>'+esc(b.note):''}</p></div><div class="row"><select data-book-slot="${b.id}" style="width:150px;height:40px">${st.slots.map(s=>`<option value="${s.id}" ${s.startsAt===b.startsAt?'selected':''}>${esc(s.label||fmt(s.startsAt))}</option>`).join('')}</select><button class="btn ghost small" data-cancel-booking="${b.id}">Cancel</button></div></div>`).join('')||'<div class="empty">No bookings</div>'}
-$('booking-search').oninput=renderBookings;$('bookings-refresh').onclick=loadBookings;$('booking-list').onchange=async e=>{if(e.target.dataset.bookSlot){await admin('updateBooking',{id:e.target.dataset.bookSlot,slotId:e.target.value});await loadBookings()}};$('booking-list').onclick=async e=>{const b=e.target.closest('[data-cancel-booking]');if(b){await admin('updateBooking',{id:b.dataset.cancelBooking,status:'Cancelled'});await loadBookings()}};
-function permissionChecks(container,values={}){$(container).innerHTML=Object.entries(PERMISSIONS).map(([k,v])=>`<label class="perm"><input type="checkbox" data-perm="${k}" ${values[k]?'checked':''}> ${esc(v)}</label>`).join('')}
-function readPermissions(container){const out={};$(container).querySelectorAll('[data-perm]').forEach(x=>out[x.dataset.perm]=x.checked);return out}
-function applyPreset(container,preset){const set=new Set(PRESETS[preset]||[]);$(container).querySelectorAll('[data-perm]').forEach(x=>x.checked=set.has(x.dataset.perm))}
-permissionChecks('permission-grid');$('staff-preset').onchange=()=>applyPreset('permission-grid',$('staff-preset').value);applyPreset('permission-grid','sales');
-$('staff-create').onclick=async()=>{try{const d=await admin('createStaff',{staffName:$('staff-fullname').value,staffId:$('staff-id').value,password:$('staff-pass').value,preset:$('staff-preset').value,defaultSection:$('staff-default').value,permissions:readPermissions('permission-grid')});$('staff-result').innerHTML=`<div class="cred">Staff ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br>Login email is hidden from staff.</div>`;await loadStaff();toast('Staff account created','success')}catch(e){toast(e.message,'error')}};async function loadStaff(){st.staff=await admin('listStaff');$('staff-list').innerHTML=st.staff.map(s=>`<button class="list-row click" data-staff="${s.authUserId}"><div><b>${esc(s.staffName)} · ${esc(s.staffId)}</b><p>${esc(s.preset)} · opens ${esc(s.defaultSection)}</p></div><span class="badge ${s.active?'ok':'off'}">${s.active?'Active':'Disabled'}</span></button>`).join('')||'<div class="empty">No staff accounts</div>'}
-$('staff-list').onclick=e=>{const b=e.target.closest('[data-staff]');if(b)openStaff(b.dataset.staff)};function openStaff(id){const s=st.staff.find(x=>x.authUserId===id);if(!s)return;st.editStaff=s;$('staff-modal-title').textContent=s.staffName;$('staff-modal-sub').textContent=s.staffId;$('edit-staff-name').value=s.staffName;$('edit-staff-preset').value=s.preset;$('edit-staff-default').value=s.defaultSection;$('edit-staff-active').checked=s.active;permissionChecks('edit-permission-grid',s.permissions);openModal('staff-modal')}
-$('edit-staff-preset').onchange=()=>applyPreset('edit-permission-grid',$('edit-staff-preset').value);$('edit-staff-save').onclick=async()=>{try{await admin('updateStaff',{authUserId:st.editStaff.authUserId,staffName:$('edit-staff-name').value,preset:$('edit-staff-preset').value,defaultSection:$('edit-staff-default').value,active:$('edit-staff-active').checked,permissions:readPermissions('edit-permission-grid')});closeModal('staff-modal');await loadStaff();toast('Staff updated','success')}catch(e){toast(e.message,'error')}};$('edit-staff-reset').onclick=async()=>{const d=await admin('resetStaffPassword',{authUserId:st.editStaff.authUserId});$('edit-staff-result').innerHTML=`<div class="cred">New password: <b>${esc(d.password)}</b></div>`};
-async function loadSettings(){const s=await admin('getSettings');$('set-event').value=s.eventName;$('set-start').value=s.eventStartDate;$('set-end').value=s.eventEndDate;$('set-registration').value=String(s.registrationEnabled);$('set-hours').value=s.editWindowHours;$('set-clear-code').checked=false;$('set-code').placeholder=s.accessCodeEnabled?'Access code is currently enabled':'No access code enabled'}
-$('settings-save').onclick=async()=>{try{await admin('updateSettings',{eventName:$('set-event').value,eventStartDate:$('set-start').value,eventEndDate:$('set-end').value,registrationEnabled:$('set-registration').value==='true',editWindowHours:Number($('set-hours').value),accessCode:$('set-code').value,clearAccessCode:$('set-clear-code').checked});toast('Settings saved','success');await loadSettings()}catch(e){toast(e.message,'error')}};
+async function loadAdminModule() {
+  const sub = st.sub.admin;
+  if (sub === "slots") {
+    if (!has("admin.slots"))
+      return denySub(
+        "admin",
+        has("admin.bookings")
+          ? "bookings"
+          : has("admin.staff")
+            ? "staff"
+            : "settings",
+      );
+    await loadSlots();
+  }
+  if (sub === "bookings") {
+    if (!has("admin.bookings"))
+      return denySub(
+        "admin",
+        has("admin.slots")
+          ? "slots"
+          : has("admin.staff")
+            ? "staff"
+            : "settings",
+      );
+    await loadBookings();
+  }
+  if (sub === "staff") {
+    if (!has("admin.staff"))
+      return denySub("admin", has("admin.slots") ? "slots" : "bookings");
+    await loadStaff();
+  }
+  if (sub === "settings") {
+    if (!has("admin.settings"))
+      return denySub("admin", has("admin.slots") ? "slots" : "bookings");
+    await loadSettings();
+  }
+}
+async function loadSlots() {
+  st.slots = await admin("listSlots");
+  $("slot-list").innerHTML =
+    st.slots
+      .map(
+        (s) =>
+          `<div class="list-row"><div><b>${esc(s.label || fmt(s.startsAt))}</b><p>${fmt(s.startsAt)} – ${fmt(s.endsAt)} · ${s.booked} / ${s.capacity ?? "∞"} parties</p></div><button class="btn ghost small" data-slot-del="${s.id}">${s.booked ? "Deactivate" : "Delete"}</button></div>`,
+      )
+      .join("") || '<div class="empty">No slots</div>';
+}
+$("slot-add").onclick = async () => {
+  try {
+    await admin("upsertSlot", {
+      startsAt: new Date($("slot-start").value).toISOString(),
+      endsAt: new Date($("slot-end").value).toISOString(),
+      label: $("slot-label").value,
+      capacity: $("slot-cap").value,
+    });
+    await loadSlots();
+    toast("Slot added", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+$("slot-list").onclick = async (e) => {
+  const b = e.target.closest("[data-slot-del]");
+  if (!b) return;
+  await admin("deleteSlot", { id: b.dataset.slotDel });
+  await loadSlots();
+};
+async function loadBookings() {
+  [st.bookings, st.slots] = await Promise.all([
+    admin("listBookings"),
+    admin("listSlots"),
+  ]);
+  renderBookings();
+}
+function renderBookings() {
+  const q = $("booking-search").value.toLowerCase();
+  const rows = st.bookings.filter(
+    (b) =>
+      !q ||
+      [b.companyName, b.contactName, b.phone, b.slotLabel, fmt(b.startsAt)]
+        .join(" ")
+        .toLowerCase()
+        .includes(q),
+  );
+  $("booking-list").innerHTML =
+    rows
+      .map(
+        (b) =>
+          `<div class="list-row"><div><b>${esc(b.companyName)}</b><p>${esc(b.contactName)} · +${esc(b.phone)}<br>${esc(b.slotLabel || "Slot")} · ${fmt(b.startsAt)} · ${b.partySize} people ${b.checkedIn ? "· Checked in" : ""}${b.note ? "<br>" + esc(b.note) : ""}</p></div><div class="row"><select data-book-slot="${b.id}" style="width:150px;height:40px">${st.slots.map((s) => `<option value="${s.id}" ${s.startsAt === b.startsAt ? "selected" : ""}>${esc(s.label || fmt(s.startsAt))}</option>`).join("")}</select><button class="btn ghost small" data-cancel-booking="${b.id}">Cancel</button></div></div>`,
+      )
+      .join("") || '<div class="empty">No bookings</div>';
+}
+$("booking-search").oninput = renderBookings;
+$("bookings-refresh").onclick = loadBookings;
+$("booking-list").onchange = async (e) => {
+  if (e.target.dataset.bookSlot) {
+    await admin("updateBooking", {
+      id: e.target.dataset.bookSlot,
+      slotId: e.target.value,
+    });
+    await loadBookings();
+  }
+};
+$("booking-list").onclick = async (e) => {
+  const b = e.target.closest("[data-cancel-booking]");
+  if (b) {
+    await admin("updateBooking", {
+      id: b.dataset.cancelBooking,
+      status: "Cancelled",
+    });
+    await loadBookings();
+  }
+};
+function permissionChecks(container, values = {}) {
+  $(container).innerHTML = Object.entries(PERMISSIONS)
+    .map(
+      ([k, v]) =>
+        `<label class="perm"><input type="checkbox" data-perm="${k}" ${values[k] ? "checked" : ""}> ${esc(v)}</label>`,
+    )
+    .join("");
+}
+function readPermissions(container) {
+  const out = {};
+  $(container)
+    .querySelectorAll("[data-perm]")
+    .forEach((x) => (out[x.dataset.perm] = x.checked));
+  return out;
+}
+function applyPreset(container, preset) {
+  const set = new Set(PRESETS[preset] || []);
+  $(container)
+    .querySelectorAll("[data-perm]")
+    .forEach((x) => (x.checked = set.has(x.dataset.perm)));
+}
+permissionChecks("permission-grid");
+$("staff-preset").onchange = () =>
+  applyPreset("permission-grid", $("staff-preset").value);
+applyPreset("permission-grid", "sales");
+$("staff-create").onclick = async () => {
+  try {
+    const d = await admin("createStaff", {
+      staffName: $("staff-fullname").value,
+      staffId: $("staff-id").value,
+      password: $("staff-pass").value,
+      preset: $("staff-preset").value,
+      defaultSection: $("staff-default").value,
+      permissions: readPermissions("permission-grid"),
+    });
+    $("staff-result").innerHTML =
+      `<div class="cred">Staff ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br>Login email is hidden from staff.</div>`;
+    await loadStaff();
+    toast("Staff account created", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+async function loadStaff() {
+  st.staff = await admin("listStaff");
+  $("staff-list").innerHTML =
+    st.staff
+      .map(
+        (s) =>
+          `<button class="list-row click" data-staff="${s.authUserId}"><div><b>${esc(s.staffName)} · ${esc(s.staffId)}</b><p>${esc(s.preset)} · opens ${esc(s.defaultSection)}</p></div><span class="badge ${s.active ? "ok" : "off"}">${s.active ? "Active" : "Disabled"}</span></button>`,
+      )
+      .join("") || '<div class="empty">No staff accounts</div>';
+}
+$("staff-list").onclick = (e) => {
+  const b = e.target.closest("[data-staff]");
+  if (b) openStaff(b.dataset.staff);
+};
+function openStaff(id) {
+  const s = st.staff.find((x) => x.authUserId === id);
+  if (!s) return;
+  st.editStaff = s;
+  $("staff-modal-title").textContent = s.staffName;
+  $("staff-modal-sub").textContent = s.staffId;
+  $("edit-staff-name").value = s.staffName;
+  $("edit-staff-preset").value = s.preset;
+  $("edit-staff-default").value = s.defaultSection;
+  $("edit-staff-active").checked = s.active;
+  permissionChecks("edit-permission-grid", s.permissions);
+  openModal("staff-modal");
+}
+$("edit-staff-preset").onchange = () =>
+  applyPreset("edit-permission-grid", $("edit-staff-preset").value);
+$("edit-staff-save").onclick = async () => {
+  try {
+    await admin("updateStaff", {
+      authUserId: st.editStaff.authUserId,
+      staffName: $("edit-staff-name").value,
+      preset: $("edit-staff-preset").value,
+      defaultSection: $("edit-staff-default").value,
+      active: $("edit-staff-active").checked,
+      permissions: readPermissions("edit-permission-grid"),
+    });
+    closeModal("staff-modal");
+    await loadStaff();
+    toast("Staff updated", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+$("edit-staff-reset").onclick = async () => {
+  const d = await admin("resetStaffPassword", {
+    authUserId: st.editStaff.authUserId,
+  });
+  $("edit-staff-result").innerHTML =
+    `<div class="cred">New password: <b>${esc(d.password)}</b></div>`;
+};
+async function loadSettings() {
+  const s = await admin("getSettings");
+  $("set-event").value = s.eventName;
+  $("set-start").value = s.eventStartDate;
+  $("set-end").value = s.eventEndDate;
+  $("set-registration").value = String(s.registrationEnabled);
+  $("set-hours").value = s.editWindowHours;
+  $("set-clear-code").checked = false;
+  $("set-code").placeholder = s.accessCodeEnabled
+    ? "Access code is currently enabled"
+    : "No access code enabled";
+}
+$("settings-save").onclick = async () => {
+  try {
+    await admin("updateSettings", {
+      eventName: $("set-event").value,
+      eventStartDate: $("set-start").value,
+      eventEndDate: $("set-end").value,
+      registrationEnabled: $("set-registration").value === "true",
+      editWindowHours: Number($("set-hours").value),
+      accessCode: $("set-code").value,
+      clearAccessCode: $("set-clear-code").checked,
+    });
+    toast("Settings saved", "success");
+    await loadSettings();
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
 /* Order detail */
-async function ensureJsPdf(){if(window.jspdf?.jsPDF)return;await new Promise((res,rej)=>{const x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';x.onload=res;x.onerror=rej;document.head.appendChild(x)})}
-async function downloadAdminOrderPdf(){const d=st.detailOrder;if(!d)return;try{loading(true,'Preparing PDF…');await ensureJsPdf();const{jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'}),c=d.customer,o=d.order;let y=18;doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('EKUM · '+d.firm+' Sale Order',14,y);y+=8;doc.setTextColor(51,39,27);doc.setFontSize(10);doc.text(c.companyName||'-',14,y);y+=5;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text([c.contactName,c.phone,c.city,c.state,c.agent].filter(Boolean).join(' · '),14,y);y+=9;doc.setFillColor(232,242,241);doc.rect(14,y,182,8,'F');doc.setFont('helvetica','bold');doc.text('DESIGN',16,y+5.3);doc.text('DETAILS / NOTE',50,y+5.3);doc.text('SETS',150,y+5.3);doc.text('PCS/SET',166,y+5.3);doc.text('PCS',194,y+5.3,{align:'right'});y+=8;for(const i of o.items||[]){const details=[i.category,i.style,i.fabric,i.note?'Note: '+i.note:''].filter(Boolean).join(' · ');const lines=doc.splitTextToSize(details,94),h=Math.max(12,5+lines.length*4);if(y+h>282){doc.addPage();y=18}doc.setFont('helvetica','bold');doc.text(String(i.designNo),16,y+6);doc.setFont('helvetica','normal');doc.text(lines,50,y+5);doc.text(String(i.qty),156,y+6,{align:'right'});doc.text(String(i.pcsPerSet),178,y+6,{align:'right'});doc.text(String(i.qty*i.pcsPerSet),194,y+6,{align:'right'});doc.setDrawColor(235);doc.line(14,y+h,196,y+h);y+=h}if(y+20>282){doc.addPage();y=18}doc.setFillColor(245,248,247);doc.roundedRect(14,y+4,182,14,2,2,'F');doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`Designs: ${o.totalDesigns}   Sets: ${o.totalSets}`,18,y+12);doc.text(`Total pieces: ${o.totalPieces}`,192,y+12,{align:'right'});doc.save(`${(c.companyName||'order').replace(/[^a-z0-9]+/gi,'-')}-${d.firm}-Sale-Order.pdf`)}catch(e){toast(e.message,'error')}finally{loading(false)}}
-async function openOrder(customerId,firm){try{loading(true,'Loading order…');const d=await admin('getCustomerOrders',{customerId}),o=(d.orders||[]).find(x=>x.firm===firm),c=d.customer;if(!o)throw Error('Order not found');st.detailOrder={customer:c,order:o,firm};$('order-modal-title').textContent=c.companyName+' · '+firm;$('order-modal-sub').textContent=[c.contactName,'+'+c.phone,c.city,c.state,c.agent].filter(Boolean).join(' · ');$('order-modal-body').innerHTML=`<div class="detail-metrics"><div class="metric"><b>${o.totalDesigns}</b><span>Designs</span></div><div class="metric"><b>${o.totalSets}</b><span>Sets</span></div><div class="metric"><b>${o.totalPieces}</b><span>Pieces</span></div></div>`+(o.items||[]).map(i=>`<div class="product-line">${i.imageUrl?`<img src="${esc(ik(i.imageUrl,'w-120,h-160,c-at_max,q-55'))}">`:'<span></span>'}<div><b>${esc(i.designNo)}</b><p>${esc([i.category,i.style,i.fabric].filter(Boolean).join(' · '))}<br>${i.qty} sets × ${i.pcsPerSet} = ${i.qty*i.pcsPerSet} pcs${i.note?'<br>Note: '+esc(i.note):''}</p></div><span class="badge info">${esc(i.lastModifiedByType||'unknown')}</span></div>`).join('');$('order-modal-actions').innerHTML=`${has('sale.write')?'<button class="btn" id="detail-edit">Open in Sale Order</button>':''}${has('sale.pdf')?'<button class="btn secondary" id="detail-pdf">Download PDF</button>':''}${has('sale.lock')?`<button class="btn secondary" id="detail-lock">${o.status==='Locked'?'Reopen':'Lock'} order</button>`:''}`;openModal('order-modal');$('detail-pdf')?.addEventListener('click',downloadAdminOrderPdf);$('detail-edit')?.addEventListener('click',()=>{closeModal('order-modal');go('sale');openSaleCustomer({id:customerId,companyName:c.companyName,phone:c.phone}).then(()=>{st.sale.firm=firm;renderSale()})});$('detail-lock')?.addEventListener('click',async()=>{await admin('setOrderLocked',{orderId:o.id,locked:o.status!=='Locked'});closeModal('order-modal');toast('Order updated','success')})}catch(e){toast(e.message,'error')}finally{loading(false)}}
-function openModal(id){$(id).classList.add('open')}
-function closeModal(id){$(id).classList.remove('open')}
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));document.querySelectorAll('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});
-(async()=>{const{data}=await sb.auth.getSession();if(data.session){try{loading(true);await boot()}catch(e){await sb.auth.signOut();setLogged(false);toast(e.message,'error')}finally{loading(false)}}else setLogged(false)})();
+async function ensureJsPdf() {
+  if (window.jspdf?.jsPDF) return;
+  await new Promise((res, rej) => {
+    const x = document.createElement("script");
+    x.src = "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js";
+    x.onload = res;
+    x.onerror = rej;
+    document.head.appendChild(x);
+  });
+}
+async function downloadAdminOrderPdf() {
+  const d = st.detailOrder;
+  if (!d) return;
+  try {
+    loading(true, "Preparing PDF…");
+    await ensureJsPdf();
+    const { jsPDF } = window.jspdf,
+      doc = new jsPDF({ unit: "mm", format: "a4" }),
+      c = d.customer,
+      o = d.order;
+    let y = 18;
+    doc.setTextColor(34, 94, 99);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("EKUM · " + d.firm + " Sale Order", 14, y);
+    y += 8;
+    doc.setTextColor(51, 39, 27);
+    doc.setFontSize(10);
+    doc.text(c.companyName || "-", 14, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(
+      [c.contactName, c.phone, c.city, c.state, c.agent]
+        .filter(Boolean)
+        .join(" · "),
+      14,
+      y,
+    );
+    y += 9;
+    doc.setFillColor(232, 242, 241);
+    doc.rect(14, y, 182, 8, "F");
+    doc.setFont("helvetica", "bold");
+    doc.text("DESIGN", 16, y + 5.3);
+    doc.text("DETAILS / NOTE", 50, y + 5.3);
+    doc.text("SETS", 150, y + 5.3);
+    doc.text("PCS/SET", 166, y + 5.3);
+    doc.text("PCS", 194, y + 5.3, { align: "right" });
+    y += 8;
+    for (const i of o.items || []) {
+      const details = [
+        i.category,
+        i.style,
+        i.fabric,
+        i.note ? "Note: " + i.note : "",
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      const lines = doc.splitTextToSize(details, 94),
+        h = Math.max(12, 5 + lines.length * 4);
+      if (y + h > 282) {
+        doc.addPage();
+        y = 18;
+      }
+      doc.setFont("helvetica", "bold");
+      doc.text(String(i.designNo), 16, y + 6);
+      doc.setFont("helvetica", "normal");
+      doc.text(lines, 50, y + 5);
+      doc.text(String(i.qty), 156, y + 6, { align: "right" });
+      doc.text(String(i.pcsPerSet), 178, y + 6, { align: "right" });
+      doc.text(String(i.qty * i.pcsPerSet), 194, y + 6, { align: "right" });
+      doc.setDrawColor(235);
+      doc.line(14, y + h, 196, y + h);
+      y += h;
+    }
+    if (y + 20 > 282) {
+      doc.addPage();
+      y = 18;
+    }
+    doc.setFillColor(245, 248, 247);
+    doc.roundedRect(14, y + 4, 182, 14, 2, 2, "F");
+    doc.setTextColor(34, 94, 99);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(`Designs: ${o.totalDesigns}   Sets: ${o.totalSets}`, 18, y + 12);
+    doc.text(`Total pieces: ${o.totalPieces}`, 192, y + 12, { align: "right" });
+    doc.save(
+      `${(c.companyName || "order").replace(/[^a-z0-9]+/gi, "-")}-${d.firm}-Sale-Order.pdf`,
+    );
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+async function openOrder(customerId, firm) {
+  try {
+    loading(true, "Loading order…");
+    const d = await admin("getCustomerOrders", { customerId }),
+      o = (d.orders || []).find((x) => x.firm === firm),
+      c = d.customer;
+    if (!o) throw Error("Order not found");
+    st.detailOrder = { customer: c, order: o, firm };
+    $("order-modal-title").textContent = c.companyName + " · " + firm;
+    $("order-modal-sub").textContent = [
+      c.contactName,
+      "+" + c.phone,
+      c.city,
+      c.state,
+      c.agent,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    $("order-modal-body").innerHTML =
+      `<div class="detail-metrics"><div class="metric"><b>${o.totalDesigns}</b><span>Designs</span></div><div class="metric"><b>${o.totalSets}</b><span>Sets</span></div><div class="metric"><b>${o.totalPieces}</b><span>Pieces</span></div></div>` +
+      (o.items || [])
+        .map(
+          (i) =>
+            `<div class="product-line">${i.imageUrl ? `<img src="${esc(ik(i.imageUrl, "w-120,h-160,c-at_max,q-55"))}">` : "<span></span>"}<div><b>${esc(i.designNo)}</b><p>${esc([i.category, i.style, i.fabric].filter(Boolean).join(" · "))}<br>${i.qty} sets × ${i.pcsPerSet} = ${i.qty * i.pcsPerSet} pcs${i.note ? "<br>Note: " + esc(i.note) : ""}</p></div><span class="badge info">${esc(i.lastModifiedByType || "unknown")}</span></div>`,
+        )
+        .join("");
+    $("order-modal-actions").innerHTML =
+      `${has("sale.write") ? '<button class="btn" id="detail-edit">Open in Sale Order</button>' : ""}${has("sale.pdf") ? '<button class="btn secondary" id="detail-pdf">Download PDF</button>' : ""}${has("sale.lock") ? `<button class="btn secondary" id="detail-lock">${o.status === "Locked" ? "Reopen" : "Lock"} order</button>` : ""}`;
+    openModal("order-modal");
+    $("detail-pdf")?.addEventListener("click", downloadAdminOrderPdf);
+    $("detail-edit")?.addEventListener("click", () => {
+      closeModal("order-modal");
+      go("sale");
+      openSaleCustomer({
+        id: customerId,
+        companyName: c.companyName,
+        phone: c.phone,
+      }).then(() => {
+        st.sale.firm = firm;
+        renderSale();
+      });
+    });
+    $("detail-lock")?.addEventListener("click", async () => {
+      await admin("setOrderLocked", {
+        orderId: o.id,
+        locked: o.status !== "Locked",
+      });
+      closeModal("order-modal");
+      toast("Order updated", "success");
+    });
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+function openModal(id) {
+  $(id).classList.add("open");
+}
+function closeModal(id) {
+  $(id).classList.remove("open");
+}
+document
+  .querySelectorAll("[data-close]")
+  .forEach((b) => (b.onclick = () => closeModal(b.dataset.close)));
+document.querySelectorAll(".modal").forEach(
+  (m) =>
+    (m.onclick = (e) => {
+      if (e.target === m) closeModal(m.id);
+    }),
+);
+let __layoutViewportHeight = window.innerHeight;
+window.visualViewport?.addEventListener("resize", () => {
+  const h = window.visualViewport.height;
+  if (h > __layoutViewportHeight * 0.82) {
+    setTimeout(() => window.scrollTo({ top: window.scrollY, left: 0, behavior: "auto" }), 50);
+  }
+  __layoutViewportHeight = Math.max(__layoutViewportHeight, h);
+});
+
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    try {
+      loading(true);
+      await boot();
+    } catch (e) {
+      await sb.auth.signOut();
+      setLogged(false);
+      toast(e.message, "error");
+    } finally {
+      loading(false);
+    }
+  } else setLogged(false);
+})();
+
 </script>
 </body>
 </html>

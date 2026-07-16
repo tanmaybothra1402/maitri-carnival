@@ -397,19 +397,30 @@ Deno.serve(async (request: Request) => {
     const action = clean(body.action);
     const staff = await loadStaffContext(db, admin);
 
+    const me = {
+      id: admin.id,
+      role: clean(admin.app_metadata?.role) || "staff",
+      staffId: staff.staffId,
+      staffName: staff.staffName,
+      preset: staff.preset,
+      permissions: staff.permissions,
+      defaultSection: staff.defaultSection,
+      active: staff.active,
+    };
+
     if (action === "whoami") {
       if (!staff.active) throw new Error("STAFF_ACCOUNT_DISABLED");
-      return jsonResponse(request, { ok: true, data: {
-        id: admin.id,
-        email: admin.email,
-        role: clean(admin.app_metadata?.role) || "staff",
-        staffId: staff.staffId,
-        staffName: staff.staffName,
-        preset: staff.preset,
-        permissions: staff.permissions,
-        defaultSection: staff.defaultSection,
-        active: staff.active,
-      } });
+      return jsonResponse(request, { ok: true, data: me });
+    }
+
+    if (action === "bootstrap") {
+      if (!staff.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+      const { data: lookups, error: lookupError } = await db.rpc("list_lookups");
+      if (lookupError) throw lookupError;
+      return jsonResponse(request, {
+        ok: true,
+        data: { me, lookups: lookups ?? {} },
+      });
     }
 
     requireActionPermission(staff, action);
@@ -515,58 +526,12 @@ Deno.serve(async (request: Request) => {
 
     // ---- Entry gate ----------------------------------------------------
     if (action === "directory") {
-      const q = clean(body.query);
-      let query = db
-        .from("customers")
-        .select("id,phone_e164,company_name,contact_name,city,state,gstin,agent,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
-        .order("created_at", { ascending: false })
-        .limit(400);
-      if (q) {
-        const like = `%${q}%`;
-        // Search across every customer field.
-        query = query.or(
-          `phone_e164.ilike.${like},company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like},gstin.ilike.${like},agent.ilike.${like}`,
-        );
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-      // Attach each customer's booked slot.
-      const ids = (data ?? []).map((r) => r.id);
-      const bookingByCust = new Map<string, any>();
-      if (ids.length) {
-        const { data: bks, error: bErr } = await db
-          .from("bookings")
-          .select("customer_id,party_size,slots(starts_at,ends_at,label)")
-          .eq("status", "Booked")
-          .in("customer_id", ids);
-        if (bErr) throw bErr;
-        for (const b of bks ?? []) {
-          bookingByCust.set(b.customer_id, {
-            startsAt: (b as any).slots?.starts_at ?? null,
-            endsAt: (b as any).slots?.ends_at ?? null,
-            label: (b as any).slots?.label ?? "",
-            partySize: b.party_size,
-          });
-        }
-      }
-      return jsonResponse(request, {
-        ok: true,
-        data: (data ?? []).map((r) => ({
-          id: r.id,
-          phone: r.phone_e164,
-          companyName: r.company_name,
-          contactName: r.contact_name,
-          city: r.city,
-          state: r.state,
-          gstin: r.gstin,
-          agent: r.agent,
-          active: r.active,
-          checkedInAt: r.checked_in_at,
-          orderingStartedAt: r.ordering_started_at,
-          editDeadline: r.edit_deadline,
-          booking: bookingByCust.get(r.id) ?? null,
-        })),
+      const { data, error } = await db.rpc("admin_directory", {
+        p_query: clean(body.query),
+        p_limit: 400,
       });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: data ?? [] });
     }
 
     if (action === "getProductDetail") {
@@ -901,26 +866,14 @@ Deno.serve(async (request: Request) => {
 
     if (action === "assistedSaveOrder") {
       const items = Array.isArray(body.items) ? body.items : [];
-      const { data, error } = await db.rpc("admin_save_order", {
+      const { data, error } = await db.rpc("admin_save_order_with_actor", {
         p_customer_id: clean(body.customerId),
         p_firm: clean(body.firm),
         p_items: items,
         p_request_id: crypto.randomUUID(),
+        p_admin_user_id: admin.id,
       });
       if (error) throw error;
-      const orderId = clean((data as any)?.order?.id);
-      const touched = items.filter((item: any) => !item?._delete && !item?.delete).map((item: any) => clean(item.designNo || item.design_no)).filter(Boolean);
-      if (orderId && touched.length) {
-        const { data: rows } = await db.from("order_items").select("id,created_by_type").eq("order_id",orderId).in("design_no",touched);
-        for (const row of rows ?? []) {
-          const patch: Record<string,unknown> = { last_modified_by_user_id: admin.id, last_modified_by_type: "staff" };
-          if (!row.created_by_type || row.created_by_type === "unknown") {
-            patch.created_by_user_id = admin.id;
-            patch.created_by_type = "staff";
-          }
-          await db.from("order_items").update(patch).eq("id",row.id);
-        }
-      }
       return jsonResponse(request, { ok: true, data });
     }
 
