@@ -54,6 +54,20 @@
     .traffic{display:grid;gap:6px;margin-top:10px}
     .bar{display:grid;grid-template-columns:150px 1fr 44px;gap:8px;align-items:center;font-size:11.5px}
     .bar .fill{height:22px;border-radius:6px;background:linear-gradient(90deg,var(--teal),var(--teal-deep));min-width:2px}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .chip{padding:6px 11px;border:1px solid var(--teal-deep);border-radius:20px;background:var(--foam);color:var(--teal-deep);font-size:11px;font-weight:700;cursor:pointer}
+    .chip.clear{background:#fff;border-color:var(--border);color:var(--slate)}
+    .scrollbox{max-height:440px;overflow:auto;display:grid;gap:6px;margin-top:6px}
+    .drill{display:grid;grid-template-columns:minmax(84px,150px) 1fr auto;gap:9px;align-items:center;width:100%;text-align:left;border:1px solid var(--border);border-radius:9px;background:#fff;padding:8px 10px;cursor:pointer;font-size:11.5px}
+    .drill:hover{background:#F8FBFA}
+    .drill .bl{font-weight:700;color:var(--charcoal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .drill .bv{color:var(--muted);font-size:10px;white-space:nowrap}
+    .drill .fill{height:16px;border-radius:5px;background:linear-gradient(90deg,var(--teal),var(--teal-deep));min-width:3px}
+    .grouphdr{display:flex;align-items:center;gap:8px;margin-top:8px;padding:11px;border:1px solid var(--border);border-radius:11px;background:#fff;cursor:pointer;font-weight:700;color:var(--teal-deep);font-size:12.5px}
+    .grouphdr:hover{background:#F8FBFA}.grouphdr .cnt{margin-left:auto;color:var(--muted);font-size:11px;font-weight:600}
+    .groupbody{display:none;gap:6px;padding:6px 0 4px 10px}.groupbody.open{display:grid}
+    .li.drilldown{cursor:pointer}.li.drilldown:hover{background:#F8FBFA}
+    .subrow{margin-top:8px;padding:8px 11px;border:1px dashed var(--border);border-radius:9px;background:#F8FBFA;font-size:11px;color:var(--slate);line-height:1.5}
     .cart-item{display:grid;grid-template-columns:52px 1fr auto;gap:9px;align-items:center;padding:9px;border:1px solid var(--border);border-radius:10px}
     .cart-item img{width:52px;height:68px;border-radius:7px;object-fit:cover;background:#EEF2F0}
     .cart-item .q{display:flex;align-items:center;gap:4px}.cart-item .q button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--teal-deep);font-weight:800;cursor:pointer}.cart-item .q input{width:52px;height:32px;min-height:32px;text-align:center;padding:0;font-weight:800}
@@ -97,10 +111,11 @@
   <!-- DASHBOARD -->
   <div id="panel-dashboard" class="panel">
     <div class="card"><div class="toolbar"><h2>Exhibition orders</h2><p class="copy" id="updated">Not loaded</p></div>
-      <div class="grid4"><div><label>Search</label><input id="d-search" placeholder="Customer / phone / design"></div><div><label>Firm</label><select id="d-firm"><option value="">All firms</option><option>Maitri</option><option>Niharika</option></select></div><div><label>State</label><select id="d-state"><option value="">All states</option></select></div><div><label>City</label><select id="d-city"><option value="">All cities</option></select></div></div>
+      <div class="grid2"><div><label>Search</label><input id="d-search" placeholder="Customer / phone / design"></div><div><label>Break down by</label><select id="d-dim"><option value="firm">Firm</option><option value="category">Category / Style</option><option value="fabric">Fabric</option><option value="color">Color</option><option value="designNo">Design</option><option value="companyName">Customer</option><option value="state">State</option><option value="city">City</option></select></div></div>
+      <div id="d-chips" class="chips"></div>
     </div>
     <div class="kpis"><div class="kpi primary"><b id="k-pieces">0</b><span>Total pieces</span></div><div class="kpi"><b id="k-customers">0</b><span>Customers with orders</span></div><div class="kpi"><b id="k-orders">0</b><span>Saved orders</span></div><div class="kpi"><b id="k-designs">0</b><span>Unique designs</span></div><div class="kpi"><b id="k-maitri">0</b><span>Maitri pieces</span></div><div class="kpi"><b id="k-niharika">0</b><span>Niharika pieces</span></div></div>
-    <div class="charts"><div class="chart-card"><h2>Pieces by firm</h2><div class="chart-wrap"><canvas id="firm-chart"></canvas></div></div><div class="chart-card"><h2>Top designs</h2><div class="chart-wrap"><canvas id="design-chart"></canvas></div></div></div>
+    <div class="card"><div class="toolbar"><h2 id="d-dim-title">Breakdown</h2><p class="copy" id="d-dim-sub"></p></div><div id="d-breakdown" class="scrollbox"></div></div>
     <div class="card"><div class="toolbar"><h2>Orders</h2><p class="copy" id="order-count">0</p><button id="export" class="btn secondary sm">Export Excel</button></div><div id="orders" class="list"></div></div>
     <div class="card"><h2>Reset a customer password</h2><p class="copy">Set a temporary password and share it directly.</p><div class="grid3"><div><label>Mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"></div><div><label>New password</label><input id="reset-password" type="password" minlength="8"></div><div style="display:flex;align-items:flex-end"><button id="reset-btn" class="btn" style="width:100%">Reset</button></div></div></div>
   </div>
@@ -135,7 +150,7 @@
 
   <!-- PRODUCTS -->
   <div id="panel-products" class="panel">
-    <div class="card"><div class="toolbar"><h1>Products</h1><input id="p-filter" placeholder="Search design / category / color" style="max-width:280px"></div><p class="copy">Synced from the ProductMaster Google Sheet. Edit there; changes appear here after sync.</p><div id="p-list" class="list"></div></div>
+    <div class="card"><div class="toolbar"><h1>Products</h1><select id="p-group" style="max-width:180px"><option value="">No grouping</option><option value="category">By category / style</option><option value="fabric">By fabric</option><option value="color">By color</option><option value="firm">By firm</option></select><input id="p-filter" placeholder="Search" style="max-width:220px"></div><p class="copy" id="p-sub">Synced from the ProductMaster Google Sheet. Tap a group to expand.</p><div id="p-list" class="list"></div></div>
   </div>
 
   <!-- ASSISTED -->
@@ -205,20 +220,30 @@ async function loadTab(tab,force){try{loading(true,'Loading…');
   else if(tab==='assisted'){/* on demand */}
 }catch(err){toast(err.message,'error')}finally{loading(false)}}
 
-/* ---------- Dashboard ---------- */
-async function loadDashboard(){st.data=await admin('dashboard');populateFilters();applyFilters();$('updated').textContent='Generated '+new Date(st.data.generatedAt).toLocaleString('en-IN')}
-function populateFilters(){const states=[...new Set(st.data.customers.map(x=>x.state).filter(Boolean))].sort();const cities=[...new Set(st.data.customers.map(x=>x.city).filter(Boolean))].sort();$('d-state').innerHTML='<option value="">All states</option>'+states.map(x=>`<option>${esc(x)}</option>`).join('');$('d-city').innerHTML='<option value="">All cities</option>'+cities.map(x=>`<option>${esc(x)}</option>`).join('')}
-function applyFilters(){const q=$('d-search').value.trim().toLowerCase(),firm=$('d-firm').value,st2=$('d-state').value,city=$('d-city').value;st.orders=st.data.orders.filter(o=>{if(firm&&o.firm!==firm)return false;if(st2&&o.state!==st2)return false;if(city&&o.city!==city)return false;if(q){const hay=[o.companyName,o.contactName,o.phone,o.city,o.state,...o.items.map(i=>i.designNo)].join(' ').toLowerCase();if(!hay.includes(q))return false}return true});renderDash()}
-['d-search','d-firm','d-state','d-city'].forEach(id=>$(id).addEventListener(id==='d-search'?'input':'change',applyFilters));
-function dfacts(){return st.orders.flatMap(o=>o.items.map(i=>({...i,firm:o.firm,customerId:o.customerId,companyName:o.companyName})))}
-function group(rows,key){const m=new Map;rows.forEach(r=>m.set(r[key]||'—',(m.get(r[key]||'—')||0)+Number(r.qty||0)));return[...m].map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value)}
-function renderDash(){const f=dfacts(),saved=st.orders.filter(o=>o.totalDesigns>0||o.status==='Saved');
-  $('k-pieces').textContent=f.reduce((s,x)=>s+Number(x.qty||0),0);$('k-customers').textContent=new Set(saved.map(x=>x.customerId)).size;$('k-orders').textContent=saved.length;$('k-designs').textContent=new Set(f.map(x=>x.designNo)).size;$('k-maitri').textContent=f.filter(x=>x.firm==='Maitri').reduce((s,x)=>s+Number(x.qty||0),0);$('k-niharika').textContent=f.filter(x=>x.firm==='Niharika').reduce((s,x)=>s+Number(x.qty||0),0);
-  chart('firm-chart','doughnut',group(f,'firm'));chart('design-chart','bar',group(f,'designNo').slice(0,10));
-  $('order-count').textContent=st.orders.length+' orders';
-  $('orders').innerHTML=st.orders.length?st.orders.map((o,i)=>`<div class="li" data-i="${i}" style="cursor:pointer"><div><b>${esc(o.companyName)} · ${esc(o.firm)}</b><p>${esc(o.contactName)} · +${esc(o.phone)} · ${esc([o.city,o.state].filter(Boolean).join(', '))}<br>${esc(o.status)} · Updated ${new Date(o.updatedAt).toLocaleString('en-IN')}</p></div><div class="value"><strong>${o.totalPieces}</strong><span>${o.totalDesigns} designs</span></div></div>`).join(''):'<div class="empty">No orders match.</div>';
+/* ---------- Dashboard (drill-down) ---------- */
+const DIMS={firm:'Firm',category:'Category / Style',fabric:'Fabric',color:'Color',designNo:'Design',companyName:'Customer',state:'State',city:'City'};
+const ITEM_DIMS=['category','fabric','color','designNo'];
+st.filters=[];
+async function loadDashboard(){st.data=await admin('dashboard');st.filters=[];applyFilters();$('updated').textContent='Generated '+new Date(st.data.generatedAt).toLocaleString('en-IN')}
+function itemFilters(){return st.filters.filter(f=>ITEM_DIMS.includes(f.dim))}
+function passOrder(o){
+  for(const f of st.filters){if(!ITEM_DIMS.includes(f.dim)&&(o[f.dim]||'—')!==f.val)return false}
+  const itf=itemFilters();
+  if(itf.length&&!o.items.some(i=>itf.every(f=>(i[f.dim]||'—')===f.val)))return false;
+  const q=$('d-search').value.trim().toLowerCase();
+  if(q){const hay=[o.companyName,o.contactName,o.phone,o.city,o.state,...o.items.map(i=>i.designNo)].join(' ').toLowerCase();if(!hay.includes(q))return false}
+  return true;
 }
-function chart(id,type,rows){st.charts[id]?.destroy();st.charts[id]=new Chart($(id),{type,data:{labels:rows.map(x=>x.label),datasets:[{data:rows.map(x=>x.value),backgroundColor:type==='doughnut'?['#225E63','#FF9700','#2B7379','#8AB0A8']:'#2B7379'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:type==='doughnut',position:'bottom'}},scales:type==='doughnut'?{}:{y:{beginAtZero:true}}}})}
+function dfacts(){const itf=itemFilters();return st.orders.flatMap(o=>o.items.filter(i=>itf.every(f=>(i[f.dim]||'—')===f.val)).map(i=>({...i,firm:o.firm,customerId:o.customerId,companyName:o.companyName,state:o.state,city:o.city})))}
+function applyFilters(){st.orders=st.data.orders.filter(passOrder);renderChips();renderKpis();renderBreakdown();renderOrders()}
+$('d-search').addEventListener('input',applyFilters);$('d-dim').addEventListener('change',renderBreakdown);
+function renderChips(){$('d-chips').innerHTML=st.filters.map((f,i)=>`<button class="chip" data-rm="${i}">${esc(DIMS[f.dim]||f.dim)}: ${esc(f.val)} ✕</button>`).join('')+(st.filters.length?'<button class="chip clear" data-clear="1">Clear all</button>':'')}
+$('d-chips').onclick=e=>{const rm=e.target.closest('[data-rm]'),cl=e.target.closest('[data-clear]');if(cl)st.filters=[];else if(rm)st.filters.splice(Number(rm.dataset.rm),1);else return;applyFilters()};
+function renderKpis(){const f=dfacts();const saved=st.orders.filter(o=>o.totalDesigns>0||o.status==='Saved');$('k-pieces').textContent=f.reduce((s,x)=>s+(Number(x.qty)||0),0);$('k-customers').textContent=new Set(f.map(x=>x.customerId)).size;$('k-orders').textContent=saved.length;$('k-designs').textContent=new Set(f.map(x=>x.designNo)).size;$('k-maitri').textContent=f.filter(x=>x.firm==='Maitri').reduce((s,x)=>s+(Number(x.qty)||0),0);$('k-niharika').textContent=f.filter(x=>x.firm==='Niharika').reduce((s,x)=>s+(Number(x.qty)||0),0)}
+function segment(dim){const f=dfacts();const m=new Map();f.forEach(r=>{const key=(r[dim]??'')===''?'—':String(r[dim]);const o=m.get(key)||{pieces:0,designs:new Set(),custs:new Set()};o.pieces+=Number(r.qty)||0;o.designs.add(r.designNo);o.custs.add(r.customerId);m.set(key,o)});return[...m.entries()].map(([label,o])=>({label,pieces:o.pieces,designs:o.designs.size,customers:o.custs.size})).sort((a,b)=>b.pieces-a.pieces).slice(0,100)}
+function renderBreakdown(){const dim=$('d-dim').value;const rows=segment(dim);const max=Math.max(1,...rows.map(r=>r.pieces));$('d-dim-title').textContent='Breakdown by '+(DIMS[dim]||dim);$('d-dim-sub').textContent=rows.length+' value'+(rows.length===1?'':'s')+' · top 100 · tap to drill in';$('d-breakdown').innerHTML=rows.length?rows.map(r=>`<button class="drill" data-dim="${dim}" data-val="${esc(r.label)}"><span class="bl">${esc(r.label)}</span><div class="fill" style="width:${Math.max(3,Math.round(r.pieces/max*100))}%"></div><span class="bv">${r.pieces} pcs · ${r.designs} des · ${r.customers} cust</span></button>`).join(''):'<div class="empty">No data.</div>'}
+$('d-breakdown').onclick=e=>{const b=e.target.closest('[data-val]');if(!b)return;const dim=b.dataset.dim,val=b.dataset.val;if(!st.filters.some(f=>f.dim===dim&&f.val===val))st.filters.push({dim,val});applyFilters()};
+function renderOrders(){$('order-count').textContent=st.orders.length+' orders';$('orders').innerHTML=st.orders.length?st.orders.map((o,i)=>`<div class="li drilldown" data-i="${i}"><div><b>${esc(o.companyName)} · ${esc(o.firm)}</b><p>${esc(o.contactName)} · +${esc(o.phone)} · ${esc([o.city,o.state].filter(Boolean).join(', '))}<br>${esc(o.status)} · Updated ${new Date(o.updatedAt).toLocaleString('en-IN')}</p></div><div class="value"><strong>${o.totalPieces}</strong><span>${o.totalDesigns} designs</span></div></div>`).join(''):'<div class="empty">No orders match.</div>'}
 $('orders').onclick=e=>{const r=e.target.closest('[data-i]');if(!r)return;openDetail(st.orders[Number(r.dataset.i)])};
 function openDetail(o){st.selected=o;$('detail-title').textContent=o.companyName+' · '+o.firm;$('detail-sub').textContent=`${o.contactName} · +${o.phone} · ${o.city}, ${o.state}`;$('detail-metrics').innerHTML=`<div class="detail-metric"><b>${o.totalPieces}</b><span>Pieces</span></div><div class="detail-metric"><b>${o.totalDesigns}</b><span>Designs</span></div><div class="detail-metric"><b>${o.version}</b><span>Version</span></div><div class="detail-metric"><b>${esc(o.status)}</b><span>Status</span></div>`;$('detail-items').innerHTML=o.items.length?o.items.map(i=>`<div class="line">${i.imageUrl?`<img src="${esc(ik(i.imageUrl,'w-160,h-210,c-at_max,q-55'))}" referrerpolicy="no-referrer">`:'<div style="width:56px;height:74px;border-radius:8px;background:#EEF2F0"></div>'}<div><b>${esc(i.designNo)}</b><p>${esc([i.category,i.fabric,i.color].filter(Boolean).join(' · '))}<br>${esc(i.description||'')}</p></div><strong>${i.qty} pcs</strong></div>`).join(''):'<div class="empty">No items.</div>';$('lock-order').textContent=o.status==='Locked'?'Unlock order':'Lock order';$('customer-toggle').textContent=o.customerActive?'Disable customer':'Enable customer';$('detail-modal').classList.add('open')}
 $('detail-close').onclick=()=>$('detail-modal').classList.remove('open');$('detail-modal').onclick=e=>{if(e.target===$('detail-modal'))$('detail-modal').classList.remove('open')};
@@ -230,8 +255,15 @@ $('reset-btn').onclick=async()=>{try{const phone=$('reset-phone').value.trim(),n
 
 /* ---------- Entry ---------- */
 let eTimer;$('e-search').addEventListener('input',()=>{clearTimeout(eTimer);eTimer=setTimeout(()=>searchDirectory().catch(e=>toast(e.message,'error')),300)});
-async function searchDirectory(){const data=await admin('directory',{query:$('e-search').value.trim()});$('e-list').innerHTML=data.length?data.map(c=>{const badge=c.active===false?'<span class="badge off">Paused</span>':c.checkedInAt?`<span class="badge in">Checked in ${fmt(c.checkedInAt)}</span>`:'<span class="badge out">Not entered</span>';const btn=c.checkedInAt?`<button class="btn ghost sm" data-revoke="${c.id}">Revoke</button>`:`<button class="btn sm" data-checkin="${c.id}">Check in</button>`;return `<div class="li"><div><b>${esc(c.companyName)}</b><p>${esc(c.contactName)} · +${esc(c.phone)} · ${esc([c.city,c.state].filter(Boolean).join(', '))}<br>${badge}${c.editDeadline?' · edits until '+fmt(c.editDeadline):''}</p></div><div class="row-actions">${btn}</div></div>`}).join(''):'<div class="empty">No matching customers.</div>'}
-$('e-list').onclick=async e=>{const ci=e.target.closest('[data-checkin]'),rv=e.target.closest('[data-revoke]');try{if(ci){loading(true,'Checking in…');await admin('checkIn',{customerId:ci.dataset.checkin});toast('Checked in','success')}else if(rv){if(!confirm('Revoke entry for this customer?'))return;loading(true,'Revoking…');await admin('revokeEntry',{customerId:rv.dataset.revoke});toast('Entry revoked','success')}else return;await searchDirectory()}catch(err){toast(err.message,'error')}finally{loading(false)}};
+async function searchDirectory(){const data=await admin('directory',{query:$('e-search').value.trim()});$('e-list').innerHTML=data.length?data.map(c=>{const badge=c.active===false?'<span class="badge off">Paused</span>':c.checkedInAt?`<span class="badge in">Checked in ${fmt(c.checkedInAt)}</span>`:'<span class="badge out">Not entered</span>';const btn=c.checkedInAt?`<button class="btn ghost sm" data-revoke="${c.id}">Revoke</button>`:`<button class="btn sm" data-checkin="${c.id}">Check in</button>`;return `<div class="li drilldown" data-exp="${c.id}"><div><b>${esc(c.companyName)}</b><p>${esc(c.contactName)} · +${esc(c.phone)} · ${esc([c.city,c.state].filter(Boolean).join(', '))}<br>${badge}${c.editDeadline?' · edits until '+fmt(c.editDeadline):''}</p><div class="subrow hidden" id="ex-${c.id}"></div></div><div class="row-actions">${btn}</div></div>`}).join(''):'<div class="empty">No matching customers.</div>'}
+$('e-list').onclick=async e=>{
+  const ci=e.target.closest('[data-checkin]'),rv=e.target.closest('[data-revoke]');
+  if(ci||rv){try{if(ci){loading(true,'Checking in…');await admin('checkIn',{customerId:ci.dataset.checkin});toast('Checked in','success')}else{if(!confirm('Revoke entry for this customer?')){loading(false);return}loading(true,'Revoking…');await admin('revokeEntry',{customerId:rv.dataset.revoke})}await searchDirectory()}catch(err){toast(err.message,'error')}finally{loading(false)}return}
+  const row=e.target.closest('[data-exp]');if(!row)return;const id=row.dataset.exp,box=$('ex-'+id);if(!box)return;
+  if(!box.classList.contains('hidden')){box.classList.add('hidden');return}
+  box.classList.remove('hidden');box.textContent='Loading orders…';
+  try{const d=await admin('getCustomerOrders',{customerId:id});const os=(d.orders||[]).filter(o=>o.items.length);box.innerHTML=os.length?os.map(o=>`<b>${esc(o.firm)}</b>: ${o.totalPieces} pcs · ${o.items.length} designs${o.status==='Locked'?' · Locked':''}`).join('<br>'):'No saved orders yet.'}catch(err){box.textContent=err.message}
+};
 
 /* ---------- Slots ---------- */
 async function loadSlots(){const[slots,bookings]=await Promise.all([admin('listSlots'),admin('listBookings')]);st.slots=slots;
@@ -254,8 +286,15 @@ async function stopScanner(){if(st.scanner){try{if(st.scanning)await st.scanner.
 
 /* ---------- Products ---------- */
 async function loadProducts(){st.designs=await admin('listDesigns');renderProducts()}
-function renderProducts(){const q=$('p-filter').value.trim().toLowerCase();const rows=st.designs.filter(d=>!q||[d.designNo,d.category,d.color,d.fabric,d.firm].join(' ').toLowerCase().includes(q));$('p-list').innerHTML=rows.length?rows.slice(0,400).map(d=>`<div class="li"><div><b>${esc(d.designNo)}</b><p>${esc([d.firm,d.category,d.fabric,d.color].filter(Boolean).join(' · '))}<br>${esc(d.description||'')}</p></div><span class="badge ${d.active?'in':'off'}">${d.active?'Active':'Inactive'}</span></div>`).join(''):'<div class="empty">No products.</div>'}
-$('p-filter').oninput=renderProducts;
+function pcard(d){return `<div class="li"><div><b>${esc(d.designNo)}</b><p>${esc([d.firm,d.category,d.fabric,d.color].filter(Boolean).join(' · '))}<br>${esc(d.description||'')}</p></div><span class="badge ${d.active?'in':'off'}">${d.active?'Active':'Inactive'}</span></div>`}
+function renderProducts(){const q=$('p-filter').value.trim().toLowerCase();const g=$('p-group').value;const rows=st.designs.filter(d=>!q||[d.designNo,d.category,d.color,d.fabric,d.firm,d.description].join(' ').toLowerCase().includes(q));
+  $('p-sub').textContent=rows.length+' designs'+(g?' · grouped by '+(DIMS[g]||g):'');
+  if(!g){$('p-list').className='list';$('p-list').innerHTML=rows.length?rows.slice(0,1000).map(pcard).join(''):'<div class="empty">No products.</div>';return}
+  const m=new Map();rows.forEach(d=>{const k=(d[g]||'—');if(!m.has(k))m.set(k,[]);m.get(k).push(d)});
+  const groups=[...m.entries()].sort((a,b)=>b[1].length-a[1].length);
+  $('p-list').className='';$('p-list').innerHTML=groups.length?groups.map(([k,ds],gi)=>`<div class="grouphdr" data-g="${gi}">${esc(k)}<span class="cnt">${ds.length} designs · ${ds.filter(x=>x.active).length} active</span></div><div class="groupbody" id="gb-${gi}">${ds.map(pcard).join('')}</div>`).join(''):'<div class="empty">No products.</div>'}
+$('p-filter').oninput=renderProducts;$('p-group').onchange=renderProducts;
+$('p-list').onclick=e=>{const h=e.target.closest('[data-g]');if(!h)return;const b=$('gb-'+h.dataset.g);if(b)b.classList.toggle('open')};
 
 /* ---------- Assisted ---------- */
 let aTimer;$('a-search').addEventListener('input',()=>{clearTimeout(aTimer);aTimer=setTimeout(()=>assistedSearch().catch(e=>toast(e.message,'error')),300)});

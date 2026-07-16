@@ -51,6 +51,14 @@
     .status-banner.ok .dot{background:var(--success)}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     .slot-list{display:grid;gap:8px;margin-top:11px}
+    .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+    .slot-col{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .slot-colhead{font-size:11px;font-weight:800;color:var(--teal-deep);text-align:center;padding:7px 4px;background:var(--foam);border-radius:9px}
+    .slot-cell{padding:11px 4px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--charcoal);font-size:12px;cursor:pointer;text-align:center;line-height:1.2}
+    .slot-cell b{display:block;font-size:12px;font-weight:800}
+    .slot-cell small{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+    .slot-cell.picked{border-color:var(--teal);background:var(--foam);box-shadow:0 0 0 2px rgba(43,115,121,.16)}
+    .slot-cell.full{opacity:.4;cursor:not-allowed}
     .slot{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:#fff;cursor:pointer;text-align:left}
     .slot.picked{border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,115,121,.12)}
     .slot.full{opacity:.5;cursor:not-allowed}
@@ -270,12 +278,21 @@ async function loadSlots(){
   const info=$('booked-info');
   if(booking){info.innerHTML=`<div class="booked-chip">✓ Booked: ${esc(fmtTime(booking.startsAt))}${booking.label?' · '+esc(booking.label):''}</div>`;state.pickedSlot=booking.slotId;$('cancel-booking-btn').classList.remove('hidden');$('party-size').value=booking.partySize||1;$('booking-note').value=booking.note||'';$('book-btn').textContent='Update my slot'}
   else{info.innerHTML='';$('cancel-booking-btn').classList.add('hidden');$('book-btn').textContent='Confirm slot'}
-  const host=$('slot-list');
+  renderSlotGrid();
+}
+function renderSlotGrid(){
+  const host=$('slot-list');host.className='';
   if(!state.slots.length){host.innerHTML='<div class="empty">No slots have been published yet. You can still come during event hours.</div>';$('book-btn').disabled=true;return}
-  host.innerHTML=state.slots.map(s=>{const picked=s.id===state.pickedSlot;const cap=s.capacity!=null?`${s.booked}/${s.capacity}`:'';const full=s.full&&!picked;return `<button type="button" class="slot ${picked?'picked':''} ${full?'full':''}" data-slot="${s.id}" ${full?'disabled':''}><div><b>${esc(fmtTime(s.startsAt))}</b><span>${esc(s.label||'')} ${s.endsAt?'· until '+esc(new Date(s.endsAt).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})):''}</span></div>${cap?`<span class="cap">${full?'Full':cap}</span>`:''}</button>`}).join('');
+  const byDate=new Map();
+  [...state.slots].sort((a,b)=>new Date(a.startsAt)-new Date(b.startsAt)).forEach(s=>{const k=new Date(s.startsAt).toDateString();if(!byDate.has(k))byDate.set(k,[]);byDate.get(k).push(s)});
+  host.innerHTML='<div class="slot-grid">'+[...byDate.entries()].map(([date,slots])=>{
+    const head=new Date(date).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+    const cells=slots.map(s=>{const picked=s.id===state.pickedSlot;const full=s.full&&!picked;const t=new Date(s.startsAt).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});const meta=s.full?'<small>Full</small>':(s.capacity!=null?`<small>${Math.max(0,s.capacity-s.booked)} left</small>`:'');return `<button type="button" class="slot-cell ${picked?'picked':''} ${full?'full':''}" data-slot="${s.id}" ${full?'disabled':''}><b>${esc(t)}</b>${meta}</button>`}).join('');
+    return `<div class="slot-col"><div class="slot-colhead">${esc(head)}</div>${cells}</div>`;
+  }).join('')+'</div>';
   $('book-btn').disabled=!state.pickedSlot;
 }
-$('slot-list').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b||b.disabled)return;state.pickedSlot=b.dataset.slot;document.querySelectorAll('.slot').forEach(x=>x.classList.toggle('picked',x.dataset.slot===state.pickedSlot));$('book-btn').disabled=false});
+$('slot-list').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b||b.disabled)return;state.pickedSlot=b.dataset.slot;renderSlotGrid()});
 $('book-btn').onclick=async()=>{if(!state.pickedSlot)return;try{loading(true,'Saving your slot…');const{error}=await sb.rpc('book_slot',{p_slot_id:state.pickedSlot,p_party_size:Number($('party-size').value)||1,p_note:$('booking-note').value.trim()});if(error)throw error;await refreshStatus();await loadSlots();toast('Slot booked','success')}catch(err){toast(err.message==='SLOT_FULL'?'That slot is full — pick another':err.message,'error')}finally{loading(false)}};
 $('cancel-booking-btn').onclick=async()=>{try{loading(true,'Cancelling…');const{error}=await sb.rpc('cancel_my_booking');if(error)throw error;state.pickedSlot=null;await refreshStatus();await loadSlots();toast('Booking cancelled','success')}catch(err){toast(err.message,'error')}finally{loading(false)}};
 $('refresh-status-btn').onclick=()=>refreshStatus().then(()=>toast('Status updated')).catch(e=>toast(e.message,'error'));
