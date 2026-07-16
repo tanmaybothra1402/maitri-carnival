@@ -1,0 +1,190 @@
+// Generic two-way data mirror for the Google Sheet workbook.
+// Secret-gated (x-sheet-sync-secret). Pull = read a table; Push = upsert/update/delete
+// rows. Only whitelisted (writable) columns are ever changed.
+
+import { optionsResponse } from "../_shared/cors.ts";
+import { clean, errorMessage, jsonResponse } from "../_shared/http.ts";
+import { secureEqual } from "../_shared/secure.ts";
+import { serviceClient } from "../_shared/supabase.ts";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
+
+type TableCfg = {
+  pk: string | string[];
+  cols: string[];        // columns returned on pull
+  write: string[];       // columns that may be changed on push
+  insert: boolean;       // may new rows be created?
+  recomputeOrders?: boolean;
+};
+
+const TABLES: Record<string, TableCfg> = {
+  designs: {
+    pk: "design_no",
+    cols: ["design_no","firm","image_url","category","fabric","color","description","active","sync_version","updated_at"],
+    write: ["firm","image_url","category","fabric","color","description","active"],
+    insert: true,
+  },
+  barcode_mappings: {
+    pk: "barcode",
+    cols: ["barcode","design_no","active","mapped_at","updated_at"],
+    write: ["design_no","active"],
+    insert: true,
+  },
+  customers: {
+    pk: "id",
+    cols: ["id","phone_e164","company_name","contact_name","city","state","gstin","agent","active","checked_in_at","ordering_started_at","edit_deadline","created_at"],
+    write: ["company_name","contact_name","city","state","gstin","agent","active"],
+    insert: false,
+  },
+  orders: {
+    pk: "id",
+    cols: ["id","customer_id","firm","status","total_designs","total_pieces","version","admin_unlocked","updated_at"],
+    write: ["status","admin_unlocked"],
+    insert: false,
+  },
+  order_items: {
+    pk: "id",
+    cols: ["id","order_id","barcode","design_no","qty","category_snapshot","fabric_snapshot","color_snapshot","description_snapshot"],
+    write: ["qty"],
+    insert: false,
+    recomputeOrders: true,
+  },
+  slots: {
+    pk: "id",
+    cols: ["id","starts_at","ends_at","label","capacity","active","created_at"],
+    write: ["starts_at","ends_at","label","capacity","active"],
+    insert: true,
+  },
+  bookings: {
+    pk: "id",
+    cols: ["id","customer_id","slot_id","party_size","note","status","created_at"],
+    write: ["party_size","note","status","slot_id"],
+    insert: false,
+  },
+  lookup_values: {
+    pk: ["kind","value"],
+    cols: ["kind","value","created_at"],
+    write: ["kind","value"],
+    insert: true,
+  },
+  system_settings: {
+    pk: "singleton",
+    cols: ["singleton","event_name","event_start_date","event_end_date","registration_enabled","edit_window_hours","customer_email_domain"],
+    write: ["event_name","event_start_date","event_end_date","registration_enabled","edit_window_hours"],
+    insert: false,
+  },
+};
+
+const BOOL = new Set(["active","admin_unlocked","registration_enabled","singleton"]);
+const INT = new Set(["qty","capacity","party_size","total_designs","total_pieces","version","edit_window_hours"]);
+
+function requireSecret(req: Request) {
+  const exp = Deno.env.get("SHEET_SYNC_SECRET") ?? "";
+  const got = req.headers.get("x-sheet-sync-secret") ?? "";
+  if (!exp || !secureEqual(exp, got)) throw new Error("SHEET_SYNC_AUTH_REQUIRED");
+}
+
+function truthy(v: unknown) { return v === true || /^(true|yes|1|active)$/i.test(String(v ?? "")); }
+
+function coerce(col: string, val: unknown) {
+  if (val === "" || val === null || val === undefined) return col === "capacity" ? null : (BOOL.has(col) ? false : (INT.has(col) ? null : ""));
+  if (BOOL.has(col)) return truthy(val);
+  if (INT.has(col)) { const n = Number(val); return Number.isFinite(n) ? Math.round(n) : null; }
+  return typeof val === "string" ? val : val;
+}
+
+async function pull(db: SupabaseClient, table: string) {
+  const cfg = TABLES[table];
+  if (!cfg) throw new Error("UNKNOWN_TABLE_" + table);
+  const out: any[] = [];
+  let from = 0; const size = 1000;
+  while (true) {
+    const { data, error } = await db.from(table).select(cfg.cols.join(",")).range(from, from + size - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    out.push(...rows);
+    if (rows.length < size) break;
+    from += size;
+  }
+  return { table, columns: cfg.cols, rows: out };
+}
+
+async function recompute(db: SupabaseClient, orderId: string) {
+  const { data } = await db.from("order_items").select("qty").eq("order_id", orderId);
+  const items = data ?? [];
+  await db.from("orders").update({
+    total_designs: items.length,
+    total_pieces: items.reduce((s: number, i: any) => s + Number(i.qty || 0), 0),
+    updated_at: new Date().toISOString(),
+  }).eq("id", orderId);
+}
+
+async function push(db: SupabaseClient, table: string, rows: any[]) {
+  const cfg = TABLES[table];
+  if (!cfg) throw new Error("UNKNOWN_TABLE_" + table);
+  if (!Array.isArray(rows)) throw new Error("ROWS_MUST_BE_AN_ARRAY");
+  const pkArr = Array.isArray(cfg.pk) ? cfg.pk : [cfg.pk];
+  const affected = new Set<string>();
+  const upserts: any[] = [];
+  const inserts: any[] = [];
+  let updated = 0, deleted = 0;
+
+  for (const raw of rows) {
+    const r = raw || {};
+    if (cfg.recomputeOrders && r.order_id) affected.add(String(r.order_id));
+    const hasPk = pkArr.every((k) => String(r[k] ?? "").trim() !== "");
+
+    if (truthy(r._delete)) {
+      if (!hasPk) continue;
+      const m: any = {}; pkArr.forEach((k) => m[k] = coerce(k, r[k]));
+      const { error } = await db.from(table).delete().match(m);
+      if (error) throw error;
+      deleted++; continue;
+    }
+
+    const patch: any = {};
+    for (const c of cfg.write) if (c in r) patch[c] = coerce(c, r[c]);
+
+    if (cfg.insert) {
+      if (hasPk) { const rec = { ...patch }; pkArr.forEach((k) => rec[k] = coerce(k, r[k])); upserts.push(rec); }
+      else inserts.push(patch);
+    } else {
+      if (!hasPk) continue;
+      const m: any = {}; pkArr.forEach((k) => m[k] = coerce(k, r[k]));
+      const { error } = await db.from(table).update(patch).match(m);
+      if (error) throw error;
+      updated++;
+    }
+  }
+
+  let upserted = 0;
+  if (upserts.length) { const { error } = await db.from(table).upsert(upserts, { onConflict: pkArr.join(",") }); if (error) throw error; upserted += upserts.length; }
+  if (inserts.length) { const { error } = await db.from(table).insert(inserts); if (error) throw error; upserted += inserts.length; }
+
+  if (cfg.recomputeOrders) for (const oid of affected) await recompute(db, oid);
+
+  return { table, updated, upserted, deleted };
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return optionsResponse(req);
+  if (req.method !== "POST") return jsonResponse(req, { ok: false, error: "POST_REQUIRED" }, 405);
+  try {
+    requireSecret(req);
+    const body = await req.json().catch(() => ({}));
+    const action = clean(body.action);
+    const db = serviceClient();
+    if (action === "ping") return jsonResponse(req, { ok: true, data: { tables: Object.keys(TABLES), at: new Date().toISOString() } });
+    if (action === "pull") return jsonResponse(req, { ok: true, data: await pull(db, clean(body.table)) });
+    if (action === "pullAll") {
+      const all: Record<string, any> = {};
+      for (const t of Object.keys(TABLES)) all[t] = await pull(db, t);
+      return jsonResponse(req, { ok: true, data: all });
+    }
+    if (action === "push") return jsonResponse(req, { ok: true, data: await push(db, clean(body.table), body.rows) });
+    return jsonResponse(req, { ok: false, error: "UNKNOWN_ACTION_" + action }, 400);
+  } catch (error) {
+    console.error(error);
+    const m = errorMessage(error);
+    return jsonResponse(req, { ok: false, error: m }, m.includes("AUTH_REQUIRED") ? 401 : 500);
+  }
+});
