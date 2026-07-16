@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" name="viewport"/>
 <meta content="#225E63" name="theme-color"/>
-<title>EKUM Staff · Maitri Carnival 2026</title>
+<title>EKUM Team · Maitri Carnival 2026</title>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
 <link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
@@ -40,6 +40,8 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 @media(max-width:520px){.sale-scan-row{grid-template-columns:1fr}.customer-choice{grid-template-columns:minmax(0,1fr) auto 14px}.customer-status{display:none}.catalogue-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.product-master-head{grid-template-columns:minmax(0,1fr) 104px}.slot-form-grid{grid-template-columns:1fr}.slot-label-field,.slot-cap-field{grid-column:auto}}
 @media(max-width:360px){.catalogue-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.selected-customer-card{grid-template-columns:1fr}.change-customer-btn{width:100%}.entry-actions{grid-template-columns:1fr 1fr}}
 
+
+.new-visitor-callout{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:11px 12px;border:1px solid rgba(43,115,121,.18);border-radius:12px;background:linear-gradient(135deg,#F8FCFB,#EEF7F5)}.new-visitor-callout b{display:block;color:var(--deep);font-size:11px}.new-visitor-callout span{display:block;margin-top:2px;color:var(--muted);font-size:9.5px}.entry-tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.entry-tag{display:inline-flex;align-items:center;min-height:22px;padding:3px 8px;border-radius:999px;font-size:8.5px;font-weight:850;white-space:nowrap}.entry-tag.status.current{background:#FFF0D6;color:#8A5A09}.entry-tag.status.past{background:#FEECE2;color:#9A3412}.entry-tag.status.future{background:var(--foam);color:var(--deep)}.entry-tag.status.none{background:#F1F3F2;color:#6B716F}.entry-tag.date{background:#F4F4F2;color:#4B5563}.entry-tag.time{background:#EEF7F5;color:var(--deep)}.entry-tag.checked{background:#DCFCE7;color:#166534}.entry-tag.paused{background:#FEE2E2;color:#991B1B}.entry-edit-summary{padding:11px 12px;border-radius:12px;background:var(--foam);color:var(--deep);font-size:11px;line-height:1.5}.entry-edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.danger-outline{border:1px solid #F1B4B4!important;background:#fff!important;color:var(--error)!important;box-shadow:none!important}.team-note{color:var(--muted);font-size:9.5px}.slot-action.activate{border-color:rgba(21,128,61,.25);color:var(--success)}
 </style>
 <style>
 /* EKUM floor UX refinement: clarity, containment and fast visual navigation. */
@@ -58,12 +60,12 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <body>
 <header class="appbar hidden" id="top">
 <div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
-<div class="staff-meta"><b id="staff-name">Staff</b><button id="logout">Logout</button></div>
+<div class="staff-meta"><b id="staff-name">Team Member</b><button id="logout">Logout</button></div>
 </header>
-<main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Staff login</h1><p class="copy">Use your Staff ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Staff ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
+<main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Team login</h1><p class="copy">Use your Team ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Team ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
 <main class="page" id="page-reception">
-<div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">Registration</button><button data-sub="password">Password</button></div>
-<section class="subpanel" id="reception-entry"><div class="card"><h1>Reception</h1><p class="copy">Search, check in, revoke entry or manage customer access.</p><label>Search customer</label><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/>
+<div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">New Visitor</button><button data-sub="password">Password</button></div>
+<section class="subpanel" id="reception-entry"><div class="card"><span class="section-kicker">Visitor reception</span><h1>Reception</h1><p class="copy">Find a visitor, confirm their entry or update their visit slot from one place.</p><label>Search visitor</label><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/><div class="new-visitor-callout"><div><b>Not registered yet?</b><span>Welcome a new visitor and create their access.</span></div><button class="btn secondary small" data-open-registration>Register visitor</button></div>
 <div class="entry-board">
 <section class="entry-section entry-pending-section">
 <div class="entry-section-head">
@@ -81,7 +83,7 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </section>
 </div>
 </div></section>
-<section class="subpanel hidden" id="reception-registration"><div class="card"><h1>Register customer</h1><div class="grid2"><div><label>Company</label><input id="reg-company"/></div><div><label>Contact</label><input id="reg-contact"/></div><div><label>City</label><input id="reg-city" list="dl-city"/></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent" list="dl-agent"/></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"/></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"/></div></div><button class="btn" id="register-customer" style="margin-top:12px">Register customer</button><div id="registration-result"></div></div></section>
+<section class="subpanel hidden" id="reception-registration"><div class="card"><span class="section-kicker">New visitor</span><h1>Welcome and register</h1><p class="copy">Create their access in a few quick steps, then continue to check-in or Sale Order.</p><div class="grid2"><div><label>Company</label><input id="reg-company"/></div><div><label>Contact</label><input id="reg-contact"/></div><div><label>City</label><input id="reg-city" list="dl-city"/></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent" list="dl-agent"/></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"/></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"/></div></div><button class="btn" id="register-customer" style="margin-top:12px">Register visitor</button><div id="registration-result"></div></div></section>
 <section class="subpanel hidden" id="reception-password"><div class="card"><h1>Password support</h1><p class="copy">Set a temporary password and share it directly with the customer.</p><label>Customer mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"/><label>New password</label><input id="reset-password" minlength="8" type="text"/><div class="row" style="margin-top:12px"><button class="btn secondary" id="generate-customer-pass">Generate</button><button class="btn" id="reset-customer-pass">Reset password</button></div><div id="password-result"></div></div></section>
 </main>
 <main class="page" id="page-dashboard">
@@ -97,7 +99,7 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <article class="viz-card wide"><div class="viz-head"><div><div class="viz-title">Best product mix</div><div class="viz-copy">Category, style, fabric or firm.</div></div><div class="mini-segment" id="mix-product"><button class="active" data-mode="category">Category</button><button data-mode="style">Style</button><button data-mode="fabric">Fabric</button><button data-mode="firm">Firm</button></div></div><div class="chart-frame"><canvas id="chart-overview-product"></canvas></div></article>
 </div></section>
 <section class="dashboard-panel" hidden="" id="dash-products"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Top designs</div><div class="chart-frame hero"><canvas id="chart-products-design"></canvas></div><div class="ranking" id="rank-products-design"></div></article><article class="viz-card"><div class="viz-title">Categories</div><div class="chart-frame"><canvas id="chart-products-category"></canvas></div></article><article class="viz-card"><div class="viz-title">Styles</div><div class="chart-frame"><canvas id="chart-products-style"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Fabrics</div><div class="chart-frame"><canvas id="chart-products-fabric"></canvas></div></article></div></section>
-<section class="dashboard-panel" hidden="" id="dash-customers"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Best customers</div><div class="chart-frame hero"><canvas id="chart-customers-top"></canvas></div><div class="ranking" id="rank-customers"></div></article><article class="viz-card"><div class="viz-title">Agent mix</div><div class="chart-frame"><canvas id="chart-customers-agent"></canvas></div></article><article class="viz-card"><div class="viz-title">Customer states</div><div class="chart-frame"><canvas id="chart-customers-state"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Order source</div><div class="viz-copy">Customer versus staff-last-modified order lines.</div><div class="chart-frame"><canvas id="chart-customers-source"></canvas></div></article></div></section>
+<section class="dashboard-panel" hidden="" id="dash-customers"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-title">Best customers</div><div class="chart-frame hero"><canvas id="chart-customers-top"></canvas></div><div class="ranking" id="rank-customers"></div></article><article class="viz-card"><div class="viz-title">Agent mix</div><div class="chart-frame"><canvas id="chart-customers-agent"></canvas></div></article><article class="viz-card"><div class="viz-title">Customer states</div><div class="chart-frame"><canvas id="chart-customers-state"></canvas></div></article><article class="viz-card wide"><div class="viz-title">Order source</div><div class="viz-copy">Customer versus team-assisted order lines.</div><div class="chart-frame"><canvas id="chart-customers-source"></canvas></div></article></div></section>
 <section class="dashboard-panel" hidden="" id="dash-zones"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">State performance</div><div class="viz-copy">Tap a state to apply it as a filter.</div></div><div class="mini-segment" id="zones-mode"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame hero"><canvas id="chart-zones-state"></canvas></div><div class="ranking" id="rank-zones"></div></article></div></section>
 </main>
 <main class="page" id="page-sale">
@@ -128,15 +130,14 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <section class="subpanel hidden" id="products-lookups"><div class="card"><h1>Lookups</h1><div class="grid2"><div><label>Type</label><select id="lookup-kind"><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="agent">Agent</option><option value="city">City</option></select></div><div><label>Value</label><input id="lookup-value"/></div></div><button class="btn" id="lookup-add" style="margin-top:10px">Add value</button><div class="list" id="lookup-list"></div></div></section>
 </main>
 <main class="page" id="page-admin">
-<div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="bookings">Bookings</button><button data-sub="staff">Staff</button><button data-sub="settings">Settings</button></div>
+<div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button></div>
 <section class="subpanel" id="admin-slots"><div class="card slot-manager-card">
   <div class="slot-manager-head"><div><span class="section-kicker">Schedule</span><h1>Visit Slots</h1><p class="copy">Capacity counts parties. Existing bookings are shown on each slot.</p></div></div>
   <div class="slot-form-grid"><div><label>Starts</label><input id="slot-start" type="datetime-local"/></div><div><label>Ends</label><input id="slot-end" type="datetime-local"/></div><div class="slot-label-field"><label>Display label <span class="optional">optional</span></label><input id="slot-label" placeholder="Morning slot"/></div><div class="slot-cap-field"><label>Party capacity</label><input id="slot-cap" min="1" type="number" placeholder="20"/></div></div>
   <button class="btn slot-add-btn" id="slot-add">Add visit slot</button>
   <div class="slot-groups" id="slot-list"></div>
 </div></section>
-<section class="subpanel hidden" id="admin-bookings"><div class="card"><div class="toolbar"><h1>Bookings</h1><button class="btn secondary small" id="bookings-refresh">Refresh</button></div><input id="booking-search" placeholder="Search customer or slot"/><div class="list" id="booking-list"></div></div></section>
-<section class="subpanel hidden" id="admin-staff"><div class="card"><h1>Staff Accounts</h1><div class="grid2"><div><label>Staff name</label><input id="staff-fullname"/></div><div><label>Staff ID</label><input id="staff-id" placeholder="sales01"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div class="permission-grid" id="permission-grid"></div></details><button class="btn" id="staff-create" style="margin-top:12px">Create staff account</button><div id="staff-result"></div></div><div class="card"><h2>Current staff</h2><div class="list" id="staff-list"></div></div></section>
+<section class="subpanel hidden" id="admin-staff"><div class="card"><span class="section-kicker">Access and permissions</span><h1>Add Team Member</h1><p class="copy">Give each person the access they need. Their Team ID is used only for login.</p><div class="grid2"><div><label>Team member name</label><input id="staff-fullname"/></div><div><label>Team ID</label><input id="staff-id" placeholder="sales01"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div class="permission-grid" id="permission-grid"></div></details><button class="btn" id="staff-create" style="margin-top:12px">Add Team Member</button><div id="staff-result"></div></div><div class="card"><h2>Team Members</h2><p class="copy">Tap a member to update access, reset their password or remove the account.</p><div class="list" id="staff-list"></div></div></section>
 <section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
 </main>
 <nav class="bottom-nav hidden" id="bottom-nav">
@@ -146,12 +147,13 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <button class="nav-item" data-section="products" id="nav-products" style="grid-column:4"><svg viewbox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><path d="M7 7h.01"></path></svg>Products</button>
 <button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:5"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
 </nav>
+<div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
 <div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number"/></div><div><label>Category</label><input id="pm-category" list="dl-category"/></div><div><label>Style</label><input id="pm-style" list="dl-style"/></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
-<div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="staff-modal-title">Staff</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close" data-close="staff-modal">✕</button></div><label>Staff name</label><input id="edit-staff-name"/><label>Preset</label><select id="edit-staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select><label>Default section</label><select id="edit-staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select><div class="permission-grid" id="edit-permission-grid"></div><label class="perm"><input id="edit-staff-active" type="checkbox"/> Account active</label><button class="btn" id="edit-staff-save" style="width:100%;margin-top:12px">Save permissions</button><button class="btn secondary" id="edit-staff-reset" style="width:100%;margin-top:8px">Generate new password</button><div id="edit-staff-result"></div></div></div>
+<div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close" data-close="staff-modal">✕</button></div><label>Team member name</label><input id="edit-staff-name"/><label>Preset</label><select id="edit-staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select><label>Default section</label><select id="edit-staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select><div class="permission-grid" id="edit-permission-grid"></div><label class="perm"><input id="edit-staff-active" type="checkbox"/> Account active</label><button class="btn" id="edit-staff-save" style="width:100%;margin-top:12px">Save permissions</button><button class="btn secondary" id="edit-staff-reset" style="width:100%;margin-top:8px">Generate new password</button><button class="btn danger-outline" id="edit-staff-delete" style="width:100%;margin-top:8px">Remove Team Member</button><div id="edit-staff-result"></div></div></div>
 <datalist id="dl-city"></datalist><datalist id="dl-agent"></datalist><datalist id="dl-category"></datalist><datalist id="dl-style"></datalist><datalist id="dl-fabric"></datalist><datalist id="dl-design"></datalist>
 <div class="toast" id="toast"></div><div class="loading" id="loading"><div class="loader" id="loading-text">Working…</div></div>
 <script>
@@ -216,8 +218,8 @@ const PERMISSIONS = {
   "products.mapping": "Barcode mapping",
   "products.lookups": "Manage lookups",
   "admin.slots": "Manage slots",
-  "admin.bookings": "Manage bookings",
-  "admin.staff": "Manage staff",
+  "admin.bookings": "Manage visitor slots in Reception",
+  "admin.staff": "Manage team",
   "admin.settings": "System settings",
 };
 const PRESETS = {
@@ -315,6 +317,7 @@ const st = {
   },
   drill: null,
   editStaff: null,
+  editEntry: null,
   editProduct: null,
   entryRows: [],
   lookupData: {},
@@ -413,6 +416,7 @@ function setupNavigation() {
     $("nav-" + s).classList.toggle("hidden", !moduleAllowed(s)),
   );
   $("dash-export").classList.toggle("hidden", !has("dashboard.export"));
+  document.querySelector("[data-open-registration]")?.classList.toggle("hidden", !has("reception.register"));
   const subPerm = {
     reception: {
       entry: "reception.view",
@@ -426,7 +430,6 @@ function setupNavigation() {
     },
     admin: {
       slots: "admin.slots",
-      bookings: "admin.bookings",
       staff: "admin.staff",
       settings: "admin.settings",
     },
@@ -438,7 +441,7 @@ function setupNavigation() {
         ?.classList.toggle("hidden", !has(perm)),
     ),
   );
-  $("staff-name").textContent = st.me.staffName || "Staff";
+  $("staff-name").textContent = st.me.staffName || "Team Member";
   go(
     moduleAllowed(st.me.defaultSection)
       ? st.me.defaultSection
@@ -561,11 +564,19 @@ $("entry-search").oninput = () => {
 };
 async function loadReception() {
   const sub = st.sub.reception;
-  if (sub === "entry" && has("reception.view")) await searchEntry();
+  if (sub === "entry" && has("reception.view")) {
+    await Promise.all([
+      searchEntry(),
+      has("admin.bookings") ? loadReceptionSlots() : Promise.resolve(),
+    ]);
+  }
   if (sub === "registration" && !has("reception.register"))
     denySub("reception", "entry");
   if (sub === "password" && !has("reception.password_reset"))
     denySub("reception", "entry");
+}
+async function loadReceptionSlots() {
+  st.slots = await admin("listSlots");
 }
 function denySub(module, sub) {
   document
@@ -590,11 +601,11 @@ function entryCard(c, completed = false) {
   const location = [c.city, c.state].filter(Boolean).join(", ");
   const contactLine = [c.contactName, c.phone ? `+${c.phone}` : ""].filter(Boolean).join(" · ");
   const context = [location, c.agent ? `Agent: ${c.agent}` : ""].filter(Boolean).join(" · ");
-  const action = has("reception.checkin")
+  const entryAction = has("reception.checkin")
     ? `<button class="btn small ${completed ? "secondary" : ""}" data-entry="${completed ? "revoke" : "checkin"}" data-id="${c.id}">${completed ? "Revoke" : "Check in"}</button>`
     : "";
-  const control = has("reception.customer_control")
-    ? `<button class="btn ghost small" data-entry="active" data-id="${c.id}" data-active="${c.active ? "false" : "true"}">${c.active ? "Pause" : "Activate"}</button>`
+  const editAction = has("admin.bookings") || has("reception.customer_control")
+    ? `<button class="btn ghost small" data-entry="edit" data-id="${c.id}">Edit</button>`
     : "";
   const slotTags = completed
     ? `<span class="entry-tag checked">Checked in</span>${slot.key !== "none" ? `<span class="entry-tag date">${esc(slot.date)}</span>${slot.clock ? `<span class="entry-tag time">${esc(slot.clock)}</span>` : ""}` : ""}`
@@ -607,7 +618,7 @@ function entryCard(c, completed = false) {
       <div class="entry-secondary">${esc(context || "No location or agent details")}</div>
       ${completed ? `<div class="entry-complete-mark">✓ ${esc(fmt(c.checkedInAt))}</div>` : ""}
     </div>
-    <div class="entry-actions">${action}${control}</div>
+    <div class="entry-actions">${entryAction}${editAction}</div>
   </article>`;
 }
 function renderEntryLists(rows = st.entryRows) {
@@ -630,20 +641,87 @@ async function searchEntry() {
   }
 }
 $("reception-entry").onclick = async (e) => {
+  const register = e.target.closest("[data-open-registration]");
+  if (register) {
+    document.querySelector('[data-module="reception"] [data-sub="registration"]')?.click();
+    return;
+  }
   const b = e.target.closest("[data-entry]");
   if (!b) return;
+  if (b.dataset.entry === "edit") {
+    openEntryEdit(b.dataset.id);
+    return;
+  }
   try {
     b.disabled = true;
     if (b.dataset.entry === "checkin") await admin("checkIn", { customerId: b.dataset.id });
     if (b.dataset.entry === "revoke") await admin("revokeEntry", { customerId: b.dataset.id });
-    if (b.dataset.entry === "active") await admin("setCustomerActive", { customerId: b.dataset.id, active: b.dataset.active === "true" });
     await searchEntry();
-    toast("Customer updated", "success");
+    toast("Visitor updated", "success");
   } catch (e) {
     toast(e.message, "error");
   } finally {
     b.disabled = false;
   }
+};
+function openEntryEdit(id) {
+  const c = st.entryRows.find((row) => row.id === id);
+  if (!c) return;
+  st.editEntry = c;
+  $("entry-edit-title").textContent = c.companyName || "Visitor details";
+  $("entry-edit-sub").textContent = [c.contactName, c.phone ? `+${c.phone}` : ""].filter(Boolean).join(" · ");
+  $("entry-edit-summary").innerHTML = `<b>${esc(c.checkedInAt ? "Entry completed" : "Entry pending")}</b><br>${esc([c.city, c.state, c.agent ? `Agent: ${c.agent}` : ""].filter(Boolean).join(" · ") || "Visitor details")}`;
+  const currentId = c.booking?.slotId || "";
+  const options = [...(st.slots || [])]
+    .filter((slot) => slot.active !== false || slot.id === currentId)
+    .sort((a,b) => new Date(a.startsAt)-new Date(b.startsAt))
+    .map((slot) => `<option value="${slot.id}" ${slot.id === currentId ? "selected" : ""}>${esc(slotDateLabel(slot.startsAt))} · ${esc(slotTimeLabel(slot.startsAt))}–${esc(slotTimeLabel(slot.endsAt))}${slot.label ? ` · ${esc(slot.label)}` : ""}</option>`)
+    .join("");
+  $("entry-edit-slot").innerHTML = `<option value="">No visit slot</option>${options}`;
+  $("entry-edit-slot").value = currentId;
+  $("entry-edit-party").value = c.booking?.partySize || 1;
+  $("entry-edit-note").value = c.booking?.note || "";
+  ["entry-edit-slot","entry-edit-party","entry-edit-note"].forEach((id) => $(id).disabled = !has("admin.bookings"));
+  $("entry-edit-save").classList.toggle("hidden", !has("admin.bookings"));
+  $("entry-edit-active").classList.toggle("hidden", !has("reception.customer_control"));
+  $("entry-edit-entry").classList.toggle("hidden", !has("reception.checkin"));
+  $("entry-edit-active").textContent = c.active ? "Pause visitor" : "Reactivate visitor";
+  $("entry-edit-entry").textContent = c.checkedInAt ? "Revoke entry" : "Check in";
+  openModal("entry-edit-modal");
+}
+$("entry-edit-save").onclick = async () => {
+  const c = st.editEntry;
+  if (!c) return;
+  try {
+    loading(true, "Saving visit details…");
+    await admin("setCustomerBooking", {
+      customerId: c.id,
+      bookingId: c.booking?.id || "",
+      slotId: $("entry-edit-slot").value,
+      partySize: Number($("entry-edit-party").value) || 1,
+      note: $("entry-edit-note").value,
+    });
+    closeModal("entry-edit-modal");
+    await Promise.all([searchEntry(), loadReceptionSlots()]);
+    toast("Visit details saved", "success");
+  } catch (e) { toast(e.message, "error"); }
+  finally { loading(false); }
+};
+$("entry-edit-active").onclick = async () => {
+  const c = st.editEntry;
+  if (!c) return;
+  await admin("setCustomerActive", { customerId: c.id, active: !c.active });
+  closeModal("entry-edit-modal");
+  await searchEntry();
+  toast(c.active ? "Visitor paused" : "Visitor reactivated", "success");
+};
+$("entry-edit-entry").onclick = async () => {
+  const c = st.editEntry;
+  if (!c) return;
+  await admin(c.checkedInAt ? "revokeEntry" : "checkIn", { customerId: c.id });
+  closeModal("entry-edit-modal");
+  await searchEntry();
+  toast(c.checkedInAt ? "Entry revoked" : "Visitor checked in", "success");
 };
 
 $("register-customer").onclick = async () => {
@@ -1551,36 +1629,17 @@ async function loadAdminModule() {
   const sub = st.sub.admin;
   if (sub === "slots") {
     if (!has("admin.slots"))
-      return denySub(
-        "admin",
-        has("admin.bookings")
-          ? "bookings"
-          : has("admin.staff")
-            ? "staff"
-            : "settings",
-      );
+      return denySub("admin", has("admin.staff") ? "staff" : "settings");
     await loadSlots();
-  }
-  if (sub === "bookings") {
-    if (!has("admin.bookings"))
-      return denySub(
-        "admin",
-        has("admin.slots")
-          ? "slots"
-          : has("admin.staff")
-            ? "staff"
-            : "settings",
-      );
-    await loadBookings();
   }
   if (sub === "staff") {
     if (!has("admin.staff"))
-      return denySub("admin", has("admin.slots") ? "slots" : "bookings");
+      return denySub("admin", has("admin.slots") ? "slots" : "settings");
     await loadStaff();
   }
   if (sub === "settings") {
     if (!has("admin.settings"))
-      return denySub("admin", has("admin.slots") ? "slots" : "bookings");
+      return denySub("admin", has("admin.slots") ? "slots" : "staff");
     await loadSettings();
   }
 }
@@ -1596,7 +1655,7 @@ async function loadSlots() {
   st.slots.forEach((slot) => (groups[slotDateLabel(slot.startsAt)] ??= []).push(slot));
   $("slot-list").innerHTML = Object.entries(groups).map(([date, slots]) => `<section class="slot-day-group"><div class="slot-day-head"><b>${esc(date)}</b><span>${slots.length} slot${slots.length === 1 ? "" : "s"}</span></div><div class="slot-card-list">${slots.sort((a,b) => new Date(a.startsAt) - new Date(b.startsAt)).map((s) => {
     const cap = s.capacity == null || s.capacity === "" ? "No limit" : `${s.booked} / ${s.capacity} parties`;
-    return `<article class="slot-card ${s.active === false ? "inactive" : ""}"><div class="slot-card-copy"><div class="slot-card-title">${esc(s.label || `${slotTimeLabel(s.startsAt)} – ${slotTimeLabel(s.endsAt)}`)}</div><div class="slot-card-tags"><span class="slot-tag time">${esc(slotTimeLabel(s.startsAt))} – ${esc(slotTimeLabel(s.endsAt))}</span><span class="slot-tag capacity">${esc(cap)}</span>${s.active === false ? '<span class="slot-tag inactive">Inactive</span>' : '<span class="slot-tag active">Active</span>'}</div></div><button class="slot-action" data-slot-del="${s.id}">${s.booked ? "Deactivate" : "Delete"}</button></article>`;
+    return `<article class="slot-card ${s.active === false ? "inactive" : ""}"><div class="slot-card-copy"><div class="slot-card-title">${esc(s.label || `${slotTimeLabel(s.startsAt)} – ${slotTimeLabel(s.endsAt)}`)}</div><div class="slot-card-tags"><span class="slot-tag time">${esc(slotTimeLabel(s.startsAt))} – ${esc(slotTimeLabel(s.endsAt))}</span><span class="slot-tag capacity">${esc(cap)}</span>${s.active === false ? '<span class="slot-tag inactive">Inactive</span>' : '<span class="slot-tag active">Active</span>'}</div></div><button class="slot-action ${s.active === false ? "activate" : ""}" data-slot-active="${s.id}" data-active="${s.active === false ? "true" : "false"}">${s.active === false ? "Activate" : "Deactivate"}</button></article>`;
   }).join("")}</div></section>`).join("") || '<div class="empty">No visit slots created yet.</div>';
 }
 $("slot-add").onclick = async () => {
@@ -1615,56 +1674,11 @@ $("slot-add").onclick = async () => {
   }
 };
 $("slot-list").onclick = async (e) => {
-  const b = e.target.closest("[data-slot-del]");
+  const b = e.target.closest("[data-slot-active]");
   if (!b) return;
-  await admin("deleteSlot", { id: b.dataset.slotDel });
+  await admin("setSlotActive", { id: b.dataset.slotActive, active: b.dataset.active === "true" });
   await loadSlots();
-};
-async function loadBookings() {
-  [st.bookings, st.slots] = await Promise.all([
-    admin("listBookings"),
-    admin("listSlots"),
-  ]);
-  renderBookings();
-}
-function renderBookings() {
-  const q = $("booking-search").value.toLowerCase();
-  const rows = st.bookings.filter(
-    (b) =>
-      !q ||
-      [b.companyName, b.contactName, b.phone, b.slotLabel, fmt(b.startsAt)]
-        .join(" ")
-        .toLowerCase()
-        .includes(q),
-  );
-  $("booking-list").innerHTML =
-    rows
-      .map(
-        (b) =>
-          `<div class="list-row"><div><b>${esc(b.companyName)}</b><p>${esc(b.contactName)} · +${esc(b.phone)}<br>${esc(b.slotLabel || "Slot")} · ${fmt(b.startsAt)} · ${b.partySize} people ${b.checkedIn ? "· Checked in" : ""}${b.note ? "<br>" + esc(b.note) : ""}</p></div><div class="row"><select data-book-slot="${b.id}" style="width:150px;height:40px">${st.slots.map((s) => `<option value="${s.id}" ${s.startsAt === b.startsAt ? "selected" : ""}>${esc(s.label || fmt(s.startsAt))}</option>`).join("")}</select><button class="btn ghost small" data-cancel-booking="${b.id}">Cancel</button></div></div>`,
-      )
-      .join("") || '<div class="empty">No bookings</div>';
-}
-$("booking-search").oninput = renderBookings;
-$("bookings-refresh").onclick = loadBookings;
-$("booking-list").onchange = async (e) => {
-  if (e.target.dataset.bookSlot) {
-    await admin("updateBooking", {
-      id: e.target.dataset.bookSlot,
-      slotId: e.target.value,
-    });
-    await loadBookings();
-  }
-};
-$("booking-list").onclick = async (e) => {
-  const b = e.target.closest("[data-cancel-booking]");
-  if (b) {
-    await admin("updateBooking", {
-      id: b.dataset.cancelBooking,
-      status: "Cancelled",
-    });
-    await loadBookings();
-  }
+  toast(b.dataset.active === "true" ? "Slot activated" : "Slot deactivated", "success");
 };
 function permissionChecks(container, values = {}) {
   $(container).innerHTML = Object.entries(PERMISSIONS)
@@ -1702,9 +1716,9 @@ $("staff-create").onclick = async () => {
       permissions: readPermissions("permission-grid"),
     });
     $("staff-result").innerHTML =
-      `<div class="cred">Staff ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br>Login email is hidden from staff.</div>`;
+      `<div class="cred">Team ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br>Email is handled securely in the background.</div>`;
     await loadStaff();
-    toast("Staff account created", "success");
+    toast("Team member added", "success");
   } catch (e) {
     toast(e.message, "error");
   }
@@ -1717,7 +1731,7 @@ async function loadStaff() {
         (s) =>
           `<button class="list-row click" data-staff="${s.authUserId}"><div><b>${esc(s.staffName)} · ${esc(s.staffId)}</b><p>${esc(s.preset)} · opens ${esc(s.defaultSection)}</p></div><span class="badge ${s.active ? "ok" : "off"}">${s.active ? "Active" : "Disabled"}</span></button>`,
       )
-      .join("") || '<div class="empty">No staff accounts</div>';
+      .join("") || '<div class="empty">No team members yet</div>';
 }
 $("staff-list").onclick = (e) => {
   const b = e.target.closest("[data-staff]");
@@ -1750,7 +1764,7 @@ $("edit-staff-save").onclick = async () => {
     });
     closeModal("staff-modal");
     await loadStaff();
-    toast("Staff updated", "success");
+    toast("Team member updated", "success");
   } catch (e) {
     toast(e.message, "error");
   }
@@ -1761,6 +1775,16 @@ $("edit-staff-reset").onclick = async () => {
   });
   $("edit-staff-result").innerHTML =
     `<div class="cred">New password: <b>${esc(d.password)}</b></div>`;
+};
+$("edit-staff-delete").onclick = async () => {
+  if (!st.editStaff) return;
+  if (!confirm(`Remove ${st.editStaff.staffName} from the team? This login will stop working immediately.`)) return;
+  try {
+    await admin("deleteStaff", { authUserId: st.editStaff.authUserId });
+    closeModal("staff-modal");
+    await loadStaff();
+    toast("Team member removed", "success");
+  } catch (e) { toast(e.message, "error"); }
 };
 async function loadSettings() {
   const s = await admin("getSettings");

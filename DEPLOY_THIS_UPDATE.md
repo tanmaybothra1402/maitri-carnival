@@ -1,24 +1,21 @@
-# Final floor-interface polish
+# Reception, Team and Customer Welcome update
 
-This release changes only:
+Copy these files into the same paths in the repository:
 
 - `web/admin-a106dc80eeabd658.html`
+- `web/user.html`
+- `web/assets/maitri-logo.png`
+- `web/assets/niharika-logo.png`
+- `supabase/functions/admin-api/index.ts`
 
-No database migration, Edge Function, Apps Script, or Sheet change is required.
-
-## Copy
-
-```bash
-cp "$UPDATE/web/admin-a106dc80eeabd658.html" \
-  "web/admin-a106dc80eeabd658.html"
-```
-
-## Publish
+Deploy:
 
 ```bash
-git add web/admin-a106dc80eeabd658.html
-git commit -m "Polish entry, sale order, products and slots"
+npx supabase functions deploy admin-api --no-verify-jwt
+
+git add -A
+git commit -m "Refine Reception, Team and customer welcome flow"
 git push origin main
 ```
 
-After GitHub Pages deploys, hard-refresh the admin page with `Command + Shift + R`.
+No database migration is required. No Apps Script change is required.

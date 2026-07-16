@@ -94,7 +94,7 @@ type StaffContext = {
 function normalizeStaffId(value: unknown): string {
   const staffId = clean(value).toLowerCase();
   if (!/^[a-z0-9][a-z0-9._-]{1,39}$/.test(staffId)) {
-    throw new Error("Staff ID must be 2-40 characters using letters, numbers, dot, underscore or dash");
+    throw new Error("Team ID must be 2-40 characters using letters, numbers, dot, underscore or dash");
   }
   return staffId;
 }
@@ -144,7 +144,7 @@ async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffCon
       legacyAdmin: true,
     };
   }
-  throw new Error("STAFF_PROFILE_NOT_FOUND");
+  throw new Error("TEAM_PROFILE_NOT_FOUND");
 }
 
 const ACTION_PERMISSIONS: Record<string, string[]> = {
@@ -167,6 +167,8 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   deleteSlot: ["admin.slots"],
   listBookings: ["admin.bookings", "reception.view"],
   updateBooking: ["admin.bookings"],
+  setCustomerBooking: ["admin.bookings"],
+  setSlotActive: ["admin.slots"],
   assistedRegister: ["reception.register"],
   assistedSaveOrder: ["sale.write"],
   recentOrders: ["sale.previous", "sale.write"],
@@ -175,6 +177,7 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   listStaff: ["admin.staff"],
   updateStaff: ["admin.staff"],
   resetStaffPassword: ["admin.staff"],
+  deleteStaff: ["admin.staff"],
   getSettings: ["admin.settings"],
   updateSettings: ["admin.settings"],
   listLookupsAdmin: ["products.lookups"],
@@ -183,7 +186,7 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
 };
 
 function requireActionPermission(context: StaffContext, action: string) {
-  if (!context.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+  if (!context.active) throw new Error("TEAM_ACCOUNT_DISABLED");
   const alternatives = ACTION_PERMISSIONS[action] ?? [];
   if (alternatives.length && !alternatives.some((key) => context.permissions[key])) {
     throw new Error("PERMISSION_DENIED");
@@ -409,12 +412,12 @@ Deno.serve(async (request: Request) => {
     };
 
     if (action === "whoami") {
-      if (!staff.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+      if (!staff.active) throw new Error("TEAM_ACCOUNT_DISABLED");
       return jsonResponse(request, { ok: true, data: me });
     }
 
     if (action === "bootstrap") {
-      if (!staff.active) throw new Error("STAFF_ACCOUNT_DISABLED");
+      if (!staff.active) throw new Error("TEAM_ACCOUNT_DISABLED");
       const { data: lookups, error: lookupError } = await db.rpc("list_lookups");
       if (lookupError) throw lookupError;
       return jsonResponse(request, {
@@ -661,6 +664,15 @@ Deno.serve(async (request: Request) => {
       return jsonResponse(request, { ok: true, data: { deleted: true } });
     }
 
+    if (action === "setSlotActive") {
+      const id = clean(body.id);
+      const active = Boolean(body.active);
+      const { data, error } = await db.from("slots").update({ active }).eq("id", id)
+        .select("id,active").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
     if (action === "listBookings") {
       const { data, error } = await db
         .from("bookings")
@@ -693,6 +705,40 @@ Deno.serve(async (request: Request) => {
       if (body.note !== undefined) patch.note = clean(body.note);
       if (body.status !== undefined) patch.status = clean(body.status) === "Cancelled" ? "Cancelled" : "Booked";
       const { data, error } = await db.from("bookings").update(patch).eq("id", id).select("id,status,slot_id,party_size,note").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "setCustomerBooking") {
+      const customerId = clean(body.customerId);
+      const slotId = clean(body.slotId);
+      const partySize = Math.max(1, Math.min(99, Math.round(Number(body.partySize) || 1)));
+      const note = clean(body.note);
+      if (!customerId) throw new Error("Customer is required");
+      if (!slotId) {
+        const { error } = await db.from("bookings").update({ status: "Cancelled" })
+          .eq("customer_id", customerId).eq("status", "Booked");
+        if (error) throw error;
+        return jsonResponse(request, { ok: true, data: { cancelled: true } });
+      }
+      const { data: slot, error: slotError } = await db.from("slots")
+        .select("id,capacity,active").eq("id", slotId).maybeSingle();
+      if (slotError) throw slotError;
+      if (!slot || slot.active === false) throw new Error("Selected slot is not available");
+      if (slot.capacity != null) {
+        const { count, error: countError } = await db.from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("slot_id", slotId).eq("status", "Booked").neq("customer_id", customerId);
+        if (countError) throw countError;
+        if ((count ?? 0) >= Number(slot.capacity)) throw new Error("This visit slot is full");
+      }
+      const { data, error } = await db.from("bookings").upsert({
+        customer_id: customerId,
+        slot_id: slotId,
+        party_size: partySize,
+        note,
+        status: "Booked",
+      }, { onConflict: "customer_id" }).select("id,status,slot_id,party_size,note").single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
     }
@@ -792,7 +838,7 @@ Deno.serve(async (request: Request) => {
     if (action === "createStaff") {
       const staffId = normalizeStaffId(body.staffId);
       const staffName = clean(body.staffName);
-      if (staffName.length < 2) throw new Error("Staff name is required");
+      if (staffName.length < 2) throw new Error("Team member name is required");
       const preset = ["sales","reception","products","manager","administrator","custom"].includes(clean(body.preset)) ? clean(body.preset) : "custom";
       const permissions = normalizePermissions(body.permissions, preset);
       const allowedSections = ["reception","dashboard","sale","products","admin"];
@@ -812,7 +858,7 @@ Deno.serve(async (request: Request) => {
       });
       if (error) throw error;
       const userId = created.user?.id;
-      if (!userId) throw new Error("STAFF_USER_NOT_CREATED");
+      if (!userId) throw new Error("TEAM_USER_NOT_CREATED");
       const { error: profileError } = await db.from("staff_profiles").insert({
         auth_user_id: userId,
         staff_id: staffId,
@@ -862,6 +908,15 @@ Deno.serve(async (request: Request) => {
       const { error } = await db.auth.admin.updateUserById(authUserId,{password});
       if (error) throw error;
       return jsonResponse(request,{ok:true,data:{password}});
+    }
+
+    if (action === "deleteStaff") {
+      const authUserId = clean(body.authUserId);
+      if (!authUserId) throw new Error("Team member is required");
+      if (authUserId === admin.id) throw new Error("You cannot remove your own account");
+      const { error } = await db.auth.admin.deleteUser(authUserId);
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: { deleted: true } });
     }
 
     if (action === "assistedSaveOrder") {
@@ -958,7 +1013,7 @@ Deno.serve(async (request: Request) => {
   } catch (error) {
     console.error(error);
     const message = errorMessage(error);
-    const status = /PERMISSION_DENIED|STAFF_ACCESS_REQUIRED|STAFF_ACCOUNT_DISABLED|STAFF_PROFILE_NOT_FOUND|ADMIN_REQUIRED/.test(message)
+    const status = /PERMISSION_DENIED|STAFF_ACCESS_REQUIRED|TEAM_ACCOUNT_DISABLED|TEAM_PROFILE_NOT_FOUND|ADMIN_REQUIRED/.test(message)
       ? 403
       : message.includes("SESSION") || message === "AUTH_REQUIRED" ? 401 : 500;
     return jsonResponse(request, { ok: false, error: message }, status);
