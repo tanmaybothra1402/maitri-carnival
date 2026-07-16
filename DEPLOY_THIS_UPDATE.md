@@ -1,54 +1,24 @@
-# Maitri Carnival — floor UX and speed update
+# Final floor-interface polish
 
-Copy the included files into the same paths in the existing repository.
+This release changes only:
 
-## 1. Apply the new migration
+- `web/admin-a106dc80eeabd658.html`
 
-```bash
-npx supabase db push --dry-run
-```
+No database migration, Edge Function, Apps Script, or Sheet change is required.
 
-The dry run should list only:
-
-```text
-202607170008_speed_and_floor_ux.sql
-```
-
-Then apply it:
+## Copy
 
 ```bash
-npx supabase db push
+cp "$UPDATE/web/admin-a106dc80eeabd658.html" \
+  "web/admin-a106dc80eeabd658.html"
 ```
 
-## 2. Redeploy the updated Edge Function
+## Publish
 
 ```bash
-npx supabase functions deploy admin-api --no-verify-jwt
-```
-
-## 3. Publish the frontend and logo assets
-
-```bash
-git add -A
-git commit -m "Improve Carnival speed and floor UX"
+git add web/admin-a106dc80eeabd658.html
+git commit -m "Polish entry, sale order, products and slots"
 git push origin main
 ```
 
-Publish/copy these exact paths:
-
-- `web/user.html`
-- `web/admin-a106dc80eeabd658.html`
-- `web/assets/maitri-logo.png`
-- `web/assets/niharika-logo.png`
-- `supabase/functions/admin-api/index.ts`
-- `supabase/migrations/202607170008_speed_and_floor_ux.sql`
-
-## Requirements
-
-- Database migration: **Yes**
-- Edge Function redeploy: **Yes — `admin-api` only**
-- Frontend publish: **Yes**
-- Google Apps Script change: **No**
-- `data-sync` redeploy: **No**
-
-After GitHub Pages finishes, hard-refresh both applications and test one login, one customer search, and one order save.
+After GitHub Pages deploys, hard-refresh the admin page with `Command + Shift + R`.

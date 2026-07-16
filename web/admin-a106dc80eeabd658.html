@@ -28,6 +28,18 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 @media(min-width:720px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet{width:620px;margin:0 auto;border-radius:20px}.modal{align-items:center}.kpi{flex:1 1 0}}
 @media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.permission-grid{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:390px){.page{padding-left:9px;padding-right:9px}.firm-logo,.divider{display:none}.staff-meta b{max-width:90px}.dashboard-subnav button{font-size:10px}.chart-frame,.chart-frame.hero{height:235px}}
+
+/* FINAL FLOOR POLISH — information hierarchy, compact catalogue and slot cards */
+.section-kicker{display:block;margin-bottom:3px;color:var(--orange);font-size:8.5px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.sale-find-intro h2{font-size:18px}.sale-find-intro p{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.5}.sale-search-wrap{position:relative;margin-top:13px}.sale-search-wrap input{padding-right:42px}.sale-search-icon{position:absolute;right:14px;top:50%;color:var(--deep);font-size:22px;font-weight:700;pointer-events:none;transform:translateY(-52%)}.sale-results-heading{margin:14px 2px 7px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.customer-results{display:grid;gap:7px;margin-top:0}.customer-choice{width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto 18px;align-items:center;gap:8px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;color:inherit;text-align:left;cursor:pointer}.customer-choice:hover,.customer-choice:active{border-color:rgba(43,115,121,.34);background:var(--foam)}.customer-choice-copy{min-width:0}.customer-choice-copy b{display:block;overflow:hidden;color:var(--deep);font-size:12.5px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}.customer-choice-copy p{margin-top:3px;overflow:hidden;color:var(--muted);font-size:9.5px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap}.customer-status{display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border-radius:999px;font-size:8.5px;font-weight:850;white-space:nowrap}.customer-status.entered{background:#DCFCE7;color:#166534}.customer-status.registered{background:var(--foam);color:var(--deep)}.customer-choice-arrow{color:var(--deep);font-size:21px;line-height:1}
+.selected-customer-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px;margin-bottom:12px;padding:13px;border:1px solid rgba(43,115,121,.15);border-radius:14px;background:linear-gradient(135deg,#E8F2F1,#F6FAF9)}.selected-customer-copy{min-width:0}.selected-customer-card h2{overflow:hidden;font-size:16px;text-overflow:ellipsis;white-space:nowrap}.selected-customer-meta{margin-top:4px;color:#53605C;font-size:10.5px;line-height:1.45}.selected-order-summary{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.selected-order-summary span{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border-radius:999px;background:#fff;color:var(--deep);font-size:9px;font-weight:850;box-shadow:inset 0 0 0 1px rgba(43,115,121,.10)}.change-customer-btn{min-width:74px}.sale-firm-switch{margin-bottom:12px}.sale-scan-block{padding:12px;border:1px solid var(--border);border-radius:13px;background:#FBFDFC}.sale-scan-block label{margin-top:0}.sale-scan-row{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:8px}.sale-scan-row .btn{width:100%}.sale-camera-btn{width:100%;margin-top:8px}
+.sale-cart-list{gap:9px}.sale-item{display:block;padding:11px}.sale-item-top{display:grid;grid-template-columns:62px minmax(0,1fr);gap:11px}.sale-item-thumb{width:62px;height:82px}.sale-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.sale-item-title{font-size:13.5px}.sale-remove{flex:0 0 auto;min-height:29px;padding:0 8px;border:1px solid #F4C6C6;border-radius:8px;background:#FFF8F8;color:var(--error);font-size:9px;font-weight:850;cursor:pointer}.sale-product-stats{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}.pcs-set-chip{display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border-radius:999px;background:var(--foam);color:var(--deep);font-size:9px;font-weight:850}.line-total-text{color:var(--muted);font-size:9px;font-weight:650}.sale-qty-panel{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding:7px 8px;border-radius:10px;background:#F7FAF9}.sale-qty-label{color:var(--slate);font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}.sale-qty-controls{display:grid;grid-template-columns:34px 54px 34px;align-items:center;gap:5px}.qty-step{width:34px;height:34px;border:1px solid #D9E2DF;border-radius:9px;background:#fff;color:var(--deep);font-size:17px;font-weight:850;cursor:pointer}.sale-qty-input{width:54px!important;height:34px!important;border-radius:9px!important}.sale-note-wrap{margin-top:10px;padding-top:9px}.sale-note-label{font-size:9.5px}.sale-item-note{min-height:54px;padding:9px 10px;line-height:1.35}.sale-savebar .btn{width:100%;margin:0}.sale-empty{min-height:128px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:20px;border:1px dashed rgba(43,115,121,.22);border-radius:13px;background:#F8FBFA;text-align:center}.sale-empty-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--foam);color:var(--deep);font-size:20px}.sale-empty b{color:var(--slate);font-size:12px}.sale-empty span{color:var(--muted);font-size:10px}
+.entry-card-title{display:block}.entry-tag-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.entry-tag{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:850;white-space:nowrap}.entry-tag.status.current{background:#FFF0D6;color:#8A5A09}.entry-tag.status.past{background:#FEECE2;color:#9A3412}.entry-tag.status.future{background:var(--foam);color:var(--deep)}.entry-tag.status.none{background:#F1F3F2;color:#6B716F}.entry-tag.date,.entry-tag.time{background:#F4F6F5;color:#59615F}.entry-tag.checked{background:#DCFCE7;color:#166534}.entry-tag.paused{background:#FEE2E2;color:#991B1B}.entry-complete-mark{margin-top:6px}.entry-card.current{border-left:4px solid var(--orange)}
+.product-master-head{display:grid;grid-template-columns:minmax(0,1fr) 120px;align-items:end;gap:12px;margin-bottom:12px}.product-master-head h1{font-size:20px}.product-group-control label{margin:0 0 5px}.product-group-control select{height:42px;padding:0 10px;font-size:13px}.catalogue-guide{margin-top:3px}.catalogue-groups{gap:14px}.catalogue-group{gap:7px}.catalogue-group-head h2{font-size:12px}.catalogue-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.catalogue-card{border-radius:10px}.catalogue-thumb{aspect-ratio:1/1;object-fit:cover;object-position:center top}.catalogue-design{padding:6px 4px 7px;font-size:8.5px}.catalogue-state-dot{top:4px;right:4px;width:7px;height:7px}
+.slot-manager-head{margin-bottom:12px}.slot-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.slot-form-grid label{margin-top:0}.slot-label-field{grid-column:1}.slot-cap-field{grid-column:2}.slot-add-btn{width:100%;margin-top:10px}.slot-groups{display:grid;gap:14px;margin-top:16px}.slot-day-group{display:grid;gap:7px}.slot-day-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px}.slot-day-head b{color:var(--deep);font-size:12px}.slot-day-head span{color:var(--muted);font-size:9px}.slot-card-list{display:grid;gap:7px}.slot-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}.slot-card.inactive{opacity:.65}.slot-card-copy{min-width:0}.slot-card-title{overflow:hidden;color:var(--deep);font-size:12px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}.slot-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.slot-tag{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:800}.slot-tag.time{background:var(--foam);color:var(--deep)}.slot-tag.capacity{background:#F4F6F5;color:#59615F}.slot-tag.active{background:#DCFCE7;color:#166534}.slot-tag.inactive{background:#FEE2E2;color:#991B1B}.slot-action{min-height:36px;padding:0 11px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--slate);font-size:9.5px;font-weight:850;cursor:pointer}
+@media(max-width:520px){.sale-scan-row{grid-template-columns:1fr}.customer-choice{grid-template-columns:minmax(0,1fr) auto 14px}.customer-status{display:none}.catalogue-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.product-master-head{grid-template-columns:minmax(0,1fr) 104px}.slot-form-grid{grid-template-columns:1fr}.slot-label-field,.slot-cap-field{grid-column:auto}}
+@media(max-width:360px){.catalogue-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.selected-customer-card{grid-template-columns:1fr}.change-customer-btn{width:100%}.entry-actions{grid-template-columns:1fr 1fr}}
+
 </style>
 <style>
 /* EKUM floor UX refinement: clarity, containment and fast visual navigation. */
@@ -90,18 +102,39 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </main>
 <main class="page" id="page-sale">
 <div class="toolbar"><div><h1>Sale Order</h1><p class="copy">Search a customer and start scanning.</p></div><button class="btn secondary small" id="previous-orders">Previous Orders</button></div>
-<section class="card focus-card sale-find-card" id="sale-find-card"><label>Choose customer</label><input id="sale-search" placeholder="Search company, mobile or contact"/><div class="list customer-results" id="sale-results"></div></section>
-<section class="card hidden sale-builder-card" id="sale-builder"><div class="toolbar"><div><h2 id="sale-party">Order for —</h2><p class="selected-customer-meta" id="sale-customer-meta"></p><p class="selected-order-summary" id="sale-summary"></p></div><button class="btn ghost small change-customer-btn" id="sale-close">Change customer</button></div><div class="segment" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div><div class="grid2"><div><label>Barcode</label><input id="sale-barcode" placeholder="Scan or type"/></div><div style="display:flex;align-items:flex-end"><button class="btn" id="sale-add" style="width:100%">Add design</button></div></div><button class="btn secondary" id="sale-camera" style="width:100%;margin-top:9px">Camera scanner</button><div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save" style="width:100%;margin-top:12px">Save order</button></div></section>
+<section class="card focus-card sale-find-card" id="sale-find-card">
+  <div class="sale-find-intro"><span class="section-kicker">Create sale order</span><h2>Choose a customer</h2><p>Search by company, contact or mobile, or pick someone who entered recently.</p></div>
+  <div class="sale-search-wrap"><input id="sale-search" placeholder="Search company, mobile or contact" autocomplete="off"/><span class="sale-search-icon" aria-hidden="true">⌕</span></div>
+  <div class="sale-results-heading" id="sale-results-heading">Recently entered</div>
+  <div class="list customer-results" id="sale-results"></div>
+</section>
+<section class="card hidden sale-builder-card" id="sale-builder">
+  <div class="selected-customer-card">
+    <div class="selected-customer-copy"><span class="section-kicker">Ordering for</span><h2 id="sale-party">—</h2><p class="selected-customer-meta" id="sale-customer-meta"></p><div class="selected-order-summary" id="sale-summary"></div></div>
+    <button class="btn ghost small change-customer-btn" id="sale-close">Change</button>
+  </div>
+  <div class="segment sale-firm-switch" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
+  <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="sale-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="sale-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="sale-camera">Use camera scanner</button></div>
+  <div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save">Save order</button></div>
+</section>
 </main>
 <main class="page" id="page-products">
 <div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="lookups">Lookups</button></div>
-<section class="subpanel" id="products-master"><div class="card product-master-card"><div class="toolbar"><h1>Products</h1><select class="compact" id="product-group"><option value="">No grouping</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div><p class="catalogue-guide">Products are grouped by category. Tap a thumbnail to view or edit details.</p><input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div></div></section>
+<section class="subpanel" id="products-master"><div class="card product-master-card">
+  <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Products</h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
+  <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
+</div></section>
 <section class="subpanel hidden" id="products-mapping"><div class="card"><h1>Barcode Mapping</h1><div class="grid2"><div><label>Barcode</label><input id="map-barcode"/></div><div><label>Design</label><input id="map-design" list="dl-design"/></div></div><div class="row" style="margin-top:10px"><button class="btn" id="map-save">Save mapping</button><button class="btn secondary" id="map-camera">Camera</button></div><div class="reader" id="map-reader"></div></div><div class="card"><h2>Batch mapping</h2><textarea id="map-batch" placeholder="BARCODE,DESIGNNO"></textarea><button class="btn" id="map-batch-save" style="margin-top:9px">Save batch</button></div><div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
 <section class="subpanel hidden" id="products-lookups"><div class="card"><h1>Lookups</h1><div class="grid2"><div><label>Type</label><select id="lookup-kind"><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="agent">Agent</option><option value="city">City</option></select></div><div><label>Value</label><input id="lookup-value"/></div></div><button class="btn" id="lookup-add" style="margin-top:10px">Add value</button><div class="list" id="lookup-list"></div></div></section>
 </main>
 <main class="page" id="page-admin">
 <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="bookings">Bookings</button><button data-sub="staff">Staff</button><button data-sub="settings">Settings</button></div>
-<section class="subpanel" id="admin-slots"><div class="card"><h1>Visit Slots</h1><p class="copy">Capacity is the number of parties, not the number of people.</p><div class="grid4"><div><label>Start</label><input id="slot-start" type="datetime-local"/></div><div><label>End</label><input id="slot-end" type="datetime-local"/></div><div><label>Label</label><input id="slot-label"/></div><div><label>Party capacity</label><input id="slot-cap" min="1" type="number"/></div></div><button class="btn" id="slot-add" style="margin-top:10px">Add slot</button><div class="list" id="slot-list"></div></div></section>
+<section class="subpanel" id="admin-slots"><div class="card slot-manager-card">
+  <div class="slot-manager-head"><div><span class="section-kicker">Schedule</span><h1>Visit Slots</h1><p class="copy">Capacity counts parties. Existing bookings are shown on each slot.</p></div></div>
+  <div class="slot-form-grid"><div><label>Starts</label><input id="slot-start" type="datetime-local"/></div><div><label>Ends</label><input id="slot-end" type="datetime-local"/></div><div class="slot-label-field"><label>Display label <span class="optional">optional</span></label><input id="slot-label" placeholder="Morning slot"/></div><div class="slot-cap-field"><label>Party capacity</label><input id="slot-cap" min="1" type="number" placeholder="20"/></div></div>
+  <button class="btn slot-add-btn" id="slot-add">Add visit slot</button>
+  <div class="slot-groups" id="slot-list"></div>
+</div></section>
 <section class="subpanel hidden" id="admin-bookings"><div class="card"><div class="toolbar"><h1>Bookings</h1><button class="btn secondary small" id="bookings-refresh">Refresh</button></div><input id="booking-search" placeholder="Search customer or slot"/><div class="list" id="booking-list"></div></div></section>
 <section class="subpanel hidden" id="admin-staff"><div class="card"><h1>Staff Accounts</h1><div class="grid2"><div><label>Staff name</label><input id="staff-fullname"/></div><div><label>Staff ID</label><input id="staff-id" placeholder="sales01"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div class="permission-grid" id="permission-grid"></div></details><button class="btn" id="staff-create" style="margin-top:12px">Create staff account</button><div id="staff-result"></div></div><div class="card"><h2>Current staff</h2><div class="list" id="staff-list"></div></div></section>
 <section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
@@ -430,7 +463,10 @@ function go(section) {
     );
   if (section === "reception") loadReception();
   if (section === "dashboard") loadDashboard();
-  if (section === "sale") $("sale-search").focus();
+  if (section === "sale") {
+    if (!st.sale.customer) searchSaleCustomers();
+    setTimeout(() => $("sale-search").focus(), 60);
+  }
   if (section === "products") loadProductsModule();
   if (section === "admin") loadAdminModule();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -539,13 +575,15 @@ function denySub(module, sub) {
 }
 function entrySlotInfo(c) {
   const now = Date.now(), b = c.booking;
-  if (!b?.startsAt) return { key: "none", rank: 3, time: Number.MAX_SAFE_INTEGER, label: "No slot" };
-  const start = new Date(b.startsAt).getTime();
+  if (!b?.startsAt) return { key: "none", rank: 3, time: Number.MAX_SAFE_INTEGER, status: "No slot", date: "No booking", clock: "" };
+  const startDate = new Date(b.startsAt);
+  const start = startDate.getTime();
   const end = b.endsAt ? new Date(b.endsAt).getTime() : start + 60 * 60 * 1000;
-  const timeLabel = new Date(b.startsAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
-  if (start <= now && now < end) return { key: "current", rank: 0, time: start, label: `Current · ${timeLabel}` };
-  if (end <= now) return { key: "past", rank: 1, time: -end, label: `Past · ${timeLabel}` };
-  return { key: "future", rank: 2, time: start, label: `Upcoming · ${timeLabel}` };
+  const dateLabel = startDate.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const timeLabel = startDate.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  if (start <= now && now < end) return { key: "current", rank: 0, time: start, status: "Current slot", date: dateLabel, clock: timeLabel };
+  if (end <= now) return { key: "past", rank: 1, time: -end, status: "Past slot", date: dateLabel, clock: timeLabel };
+  return { key: "future", rank: 2, time: start, status: "Upcoming", date: dateLabel, clock: timeLabel };
 }
 function entryCard(c, completed = false) {
   const slot = entrySlotInfo(c);
@@ -558,12 +596,16 @@ function entryCard(c, completed = false) {
   const control = has("reception.customer_control")
     ? `<button class="btn ghost small" data-entry="active" data-id="${c.id}" data-active="${c.active ? "false" : "true"}">${c.active ? "Pause" : "Activate"}</button>`
     : "";
-  return `<article class="entry-card ${slot.key === "current" ? "current" : ""}">
+  const slotTags = completed
+    ? `<span class="entry-tag checked">Checked in</span>${slot.key !== "none" ? `<span class="entry-tag date">${esc(slot.date)}</span>${slot.clock ? `<span class="entry-tag time">${esc(slot.clock)}</span>` : ""}` : ""}`
+    : `<span class="entry-tag status ${slot.key}">${esc(slot.status)}</span>${slot.key !== "none" ? `<span class="entry-tag date">${esc(slot.date)}</span>${slot.clock ? `<span class="entry-tag time">${esc(slot.clock)}</span>` : ""}` : ""}`;
+  return `<article class="entry-card ${!completed && slot.key === "current" ? "current" : ""}">
     <div class="entry-card-main">
-      <div class="entry-card-title"><b>${esc(c.companyName)}</b><span class="entry-slot ${slot.key}">${esc(slot.label)}</span></div>
+      <div class="entry-card-title"><b>${esc(c.companyName)}</b></div>
+      <div class="entry-tag-row">${slotTags}${!c.active ? '<span class="entry-tag paused">Paused</span>' : ""}</div>
       <div class="entry-primary">${esc(contactLine || "Contact not added")}</div>
-      <div class="entry-secondary">${esc(context || "No location or agent details")}${!c.active ? ' · <span class="badge off">Paused</span>' : ""}</div>
-      ${completed ? `<div class="entry-complete-mark">✓ Checked in ${esc(fmt(c.checkedInAt))}</div>` : ""}
+      <div class="entry-secondary">${esc(context || "No location or agent details")}</div>
+      ${completed ? `<div class="entry-complete-mark">✓ ${esc(fmt(c.checkedInAt))}</div>` : ""}
     </div>
     <div class="entry-actions">${action}${control}</div>
   </article>`;
@@ -984,17 +1026,20 @@ $("sale-search").oninput = () => {
 async function searchSaleCustomers() {
   if (!has("sale.view")) return;
   try {
-    const rows = await admin("directory", {
-      query: $("sale-search").value.trim(),
-    });
-    $("sale-results").innerHTML =
-      rows
-        .slice(0, 50)
-        .map(
-          (c) =>
-            `<button class="list-row click customer-choice" data-sale-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div><b>${esc(c.companyName)}</b><p>${esc([c.contactName, c.phone ? "+" + c.phone : "", [c.city,c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</p></div><span class="badge info">Use</span></button>`,
-        )
-        .join("") || '<div class="empty">No customers found</div>';
+    const query = $("sale-search").value.trim();
+    let rows = await admin("directory", { query });
+    if (!query) {
+      rows = rows.filter((c) => c.checkedInAt).sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt)).slice(0, 12);
+      $("sale-results-heading").textContent = "Recently entered";
+    } else {
+      rows = rows.sort((a, b) => Number(Boolean(b.checkedInAt)) - Number(Boolean(a.checkedInAt)) || String(a.companyName).localeCompare(String(b.companyName))).slice(0, 50);
+      $("sale-results-heading").textContent = `Search results${rows.length ? ` · ${rows.length}` : ""}`;
+    }
+    $("sale-results").innerHTML = rows.map((c) => {
+      const meta = [c.contactName, c.phone ? "+" + c.phone : "", [c.city,c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
+      const entered = c.checkedInAt ? `<span class="customer-status entered">Entered ${esc(new Date(c.checkedInAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }))}</span>` : '<span class="customer-status registered">Registered</span>';
+      return `<button class="customer-choice" data-sale-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div class="customer-choice-copy"><b>${esc(c.companyName)}</b><p>${esc(meta || "Customer details not added")}</p></div>${entered}<span class="customer-choice-arrow">›</span></button>`;
+    }).join("") || `<div class="empty">${query ? "No customers found" : "No customers have been checked in yet."}</div>`;
   } catch (e) {
     toast(e.message, "error");
   }
@@ -1052,30 +1097,27 @@ function renderSale() {
   const cart = saleCart(),
     sets = cart.reduce((s, i) => s + Number(i.qty), 0),
     pieces = cart.reduce((s, i) => s + Number(i.qty) * (Number(i.pcsPerSet) || 1), 0);
-  $("sale-summary").textContent = `${st.sale.firm} · ${cart.length} designs · ${sets} sets · ${pieces} pieces`;
+  $("sale-summary").innerHTML = `<span>${esc(st.sale.firm)}</span><span>${cart.length} design${cart.length === 1 ? "" : "s"}</span><span>${sets} set${sets === 1 ? "" : "s"}</span>`;
   $("sale-cart").className = "sale-cart-list";
   $("sale-cart").innerHTML = cart.length
     ? cart.map((it, i) => {
         const linePieces = Number(it.qty) * (Number(it.pcsPerSet) || 1);
         return `<article class="sale-item">
-          ${it.imageUrl ? `<img class="sale-item-thumb" src="${esc(ik(it.imageUrl, "w-160,h-220,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy">` : '<div class="sale-item-thumb"></div>'}
-          <div class="sale-item-main">
-            <div class="sale-item-head"><div><div class="sale-item-title">${esc(it.designNo)}</div><div class="sale-item-meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(" · ") || "Product details not added")}</div></div></div>
-            <span class="line-piece-pill">${it.qty} set${Number(it.qty) === 1 ? "" : "s"} × ${it.pcsPerSet} = ${linePieces} pieces</span>
-            <div class="sale-qty-row">
-              <button class="btn ghost small" data-sale="minus" data-i="${i}" aria-label="Reduce sets">−</button>
-              <input class="sale-qty-input" data-sale="qty" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" aria-label="Sets for ${esc(it.designNo)}">
-              <button class="btn ghost small" data-sale="plus" data-i="${i}" aria-label="Increase sets">+</button>
-              <button class="btn ghost small sale-remove" data-sale="remove" data-i="${i}" aria-label="Remove ${esc(it.designNo)}">Remove</button>
+          <div class="sale-item-top">
+            ${it.imageUrl ? `<img class="sale-item-thumb" src="${esc(ik(it.imageUrl, "w-160,h-220,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy">` : '<div class="sale-item-thumb"></div>'}
+            <div class="sale-item-main">
+              <div class="sale-item-head"><div><div class="sale-item-title">${esc(it.designNo)}</div><div class="sale-item-meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(" · ") || "Product details not added")}</div></div><button class="sale-remove" data-sale="remove" data-i="${i}" aria-label="Remove ${esc(it.designNo)}">Remove</button></div>
+              <div class="sale-product-stats"><span class="pcs-set-chip">${it.pcsPerSet} pcs / set</span><span class="line-total-text">${linePieces} total pcs</span></div>
+              <div class="sale-qty-panel"><span class="sale-qty-label">Sets</span><div class="sale-qty-controls"><button class="qty-step" data-sale="minus" data-i="${i}" aria-label="Reduce sets">−</button><input class="sale-qty-input" data-sale="qty" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" aria-label="Sets for ${esc(it.designNo)}"><button class="qty-step" data-sale="plus" data-i="${i}" aria-label="Increase sets">+</button></div></div>
             </div>
           </div>
           <div class="sale-note-wrap">
-            <label class="sale-note-label" for="sale-note-${i}"><span>Notes for this design</span><span class="sale-note-help">optional</span></label>
-            <textarea id="sale-note-${i}" class="sale-item-note" data-sale="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction the team should remember">${esc(it.note)}</textarea>
+            <label class="sale-note-label" for="sale-note-${i}"><span>Order note</span><span class="sale-note-help">Optional</span></label>
+            <textarea id="sale-note-${i}" class="sale-item-note" data-sale="note" data-i="${i}" maxlength="500" placeholder="Add colour preference, size mix or packing instruction">${esc(it.note)}</textarea>
           </div>
         </article>`;
       }).join("")
-    : '<div class="empty">Select a firm, then scan or type the first barcode.</div>';
+    : '<div class="sale-empty"><div class="sale-empty-icon">＋</div><b>No designs added yet</b><span>Scan or enter a barcode to start this order.</span></div>';
 }
 $("sale-firms").onclick = (e) => {
   const b = e.target.closest("[data-firm]");
@@ -1089,7 +1131,9 @@ $("sale-close").onclick = () => {
   $("sale-find-card").classList.remove("hidden");
   $("sale-search").value = "";
   $("sale-results").innerHTML = "";
+  $("sale-results-heading").textContent = "Recently entered";
   st.sale.customer = null;
+  searchSaleCustomers();
   setTimeout(() => $("sale-search").focus(), 80);
 };
 $("sale-cart").onclick = (e) => {
@@ -1337,7 +1381,7 @@ function renderProducts() {
     </section>`).join("") || '<div class="empty">No products match this search.</div>';
 }
 function productTile(d) {
-  const image = d.imageUrl ? `<img class="catalogue-thumb" src="${esc(ik(d.imageUrl,"w-180,h-240,c-at_max,q-50"))}" alt="${esc(d.designNo)}" loading="lazy">` : '<div class="catalogue-thumb"></div>';
+  const image = d.imageUrl ? `<img class="catalogue-thumb" src="${esc(ik(d.imageUrl,"w-140,h-140,c-at_max,q-48"))}" alt="${esc(d.designNo)}" loading="lazy">` : '<div class="catalogue-thumb"></div>';
   return `<button class="catalogue-card ${d.active ? "" : "inactive"}" data-product="${esc(d.designNo)}">${image}<span class="catalogue-state-dot"></span><span class="catalogue-design">${esc(d.designNo)}</span></button>`;
 }
 $("product-search").oninput = renderProducts;
@@ -1540,15 +1584,20 @@ async function loadAdminModule() {
     await loadSettings();
   }
 }
+function slotDateLabel(value) {
+  return new Date(value).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+}
+function slotTimeLabel(value) {
+  return new Date(value).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+}
 async function loadSlots() {
   st.slots = await admin("listSlots");
-  $("slot-list").innerHTML =
-    st.slots
-      .map(
-        (s) =>
-          `<div class="list-row"><div><b>${esc(s.label || fmt(s.startsAt))}</b><p>${fmt(s.startsAt)} – ${fmt(s.endsAt)} · ${s.booked} / ${s.capacity ?? "∞"} parties</p></div><button class="btn ghost small" data-slot-del="${s.id}">${s.booked ? "Deactivate" : "Delete"}</button></div>`,
-      )
-      .join("") || '<div class="empty">No slots</div>';
+  const groups = {};
+  st.slots.forEach((slot) => (groups[slotDateLabel(slot.startsAt)] ??= []).push(slot));
+  $("slot-list").innerHTML = Object.entries(groups).map(([date, slots]) => `<section class="slot-day-group"><div class="slot-day-head"><b>${esc(date)}</b><span>${slots.length} slot${slots.length === 1 ? "" : "s"}</span></div><div class="slot-card-list">${slots.sort((a,b) => new Date(a.startsAt) - new Date(b.startsAt)).map((s) => {
+    const cap = s.capacity == null || s.capacity === "" ? "No limit" : `${s.booked} / ${s.capacity} parties`;
+    return `<article class="slot-card ${s.active === false ? "inactive" : ""}"><div class="slot-card-copy"><div class="slot-card-title">${esc(s.label || `${slotTimeLabel(s.startsAt)} – ${slotTimeLabel(s.endsAt)}`)}</div><div class="slot-card-tags"><span class="slot-tag time">${esc(slotTimeLabel(s.startsAt))} – ${esc(slotTimeLabel(s.endsAt))}</span><span class="slot-tag capacity">${esc(cap)}</span>${s.active === false ? '<span class="slot-tag inactive">Inactive</span>' : '<span class="slot-tag active">Active</span>'}</div></div><button class="slot-action" data-slot-del="${s.id}">${s.booked ? "Deactivate" : "Delete"}</button></article>`;
+  }).join("")}</div></section>`).join("") || '<div class="empty">No visit slots created yet.</div>';
 }
 $("slot-add").onclick = async () => {
   try {
@@ -1558,6 +1607,7 @@ $("slot-add").onclick = async () => {
       label: $("slot-label").value,
       capacity: $("slot-cap").value,
     });
+    ["slot-start","slot-end","slot-label","slot-cap"].forEach((id) => $(id).value = "");
     await loadSlots();
     toast("Slot added", "success");
   } catch (e) {
