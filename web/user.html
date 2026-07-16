@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#225E63">
+  <title>Maitri Carnival 2026 · Orders</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <style>
+    :root{--teal:#2B7379;--teal-deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#FFFFFF;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--warning:#B7791F}
+    *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--warm);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+    button,input,select,textarea{font:inherit}.hidden{display:none!important}
+    .appbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;min-height:60px;padding:9px 15px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+    .wordmark{display:flex;align-items:center;gap:7px;color:var(--teal-deep);font-size:15px;font-weight:800;letter-spacing:.12em}
+    .logo-dot{width:12px;height:12px;border-radius:50%;background:var(--orange);flex:0 0 auto}
+    .brand-sub{display:block;color:var(--muted);font-size:8.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-top:1px}
+    .top-actions{margin-left:auto;display:flex;gap:7px}
+    .icon-btn{min-height:38px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--teal-deep);font-size:12px;font-weight:750;cursor:pointer}
+    main{width:min(100%,600px);margin:0 auto;padding:16px 13px 40px}
+    .hero{padding:22px;border-radius:18px;background:linear-gradient(135deg,var(--teal-deep),#17494D);color:#fff;box-shadow:0 15px 34px rgba(34,94,99,.18)}
+    .hero h1{font-size:23px;letter-spacing:.01em}.hero p{margin-top:8px;color:rgba(255,255,255,.82);font-size:12.5px;line-height:1.55}
+    .card{margin-top:13px;padding:17px;border:1px solid var(--border);border-radius:15px;background:#fff;box-shadow:0 6px 18px rgba(34,94,99,.06)}
+    .card h2{color:var(--teal-deep);font-size:15px}.copy{margin-top:5px;color:var(--muted);font-size:11.5px;line-height:1.55}
+    label{display:block;margin:12px 0 5px;color:var(--slate);font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .optional{color:var(--muted);font-weight:500;letter-spacing:0;text-transform:none}
+    input,select,textarea{width:100%;border:1px solid #D8E1DE;border-radius:10px;background:#fff;color:var(--charcoal);font-size:16px}
+    input,select{min-height:47px;padding:0 13px}textarea{min-height:74px;padding:11px 13px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .phone{display:flex;gap:8px}.prefix{width:60px;min-width:60px;display:grid;place-items:center;border:1px solid #D8E1DE;border-radius:10px;background:var(--foam);color:var(--teal-deep);font-weight:800}
+    .btn{width:100%;min-height:48px;margin-top:13px;border:0;border-radius:10px;background:var(--teal-deep);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+    .btn.secondary{border:1.5px solid var(--teal-deep);background:#fff;color:var(--teal-deep)}
+    .btn.ghost{border:1px solid var(--border);background:#fff;color:var(--slate)}
+    .btn.danger{background:var(--error)}.btn:disabled{background:#E7EBE9;color:#949A97;cursor:not-allowed}
+    .switch{display:flex;gap:4px;margin-top:2px;padding:4px;border-radius:13px;background:var(--foam)}
+    .switch button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--teal-deep);font-size:12px;font-weight:800;cursor:pointer}
+    .switch button.active{background:#fff;box-shadow:0 2px 8px rgba(34,94,99,.12)}
+    .steps{margin-top:12px;display:grid;gap:8px}
+    .step{display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:11px;background:#fff}
+    .step .n{width:24px;height:24px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:var(--foam);color:var(--teal-deep);font-size:11px;font-weight:800}
+    .step.done .n{background:var(--success);color:#fff}.step.active .n{background:var(--orange);color:#fff}
+    .step b{font-size:12.5px;color:var(--charcoal)}.step p{margin-top:2px;color:var(--muted);font-size:11px;line-height:1.45}
+    .status-banner{display:flex;gap:11px;align-items:center;padding:13px 15px;border-radius:13px;font-size:12.5px;line-height:1.45}
+    .status-banner.wait{background:#FFF5DF;color:#8A5A09;border:1px solid #F4D69B}
+    .status-banner.ok{background:#DCFCE7;color:#166534;border:1px solid #A7E9BF}
+    .status-banner .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+    .status-banner.wait .dot{background:var(--orange);animation:pulse 1.4s ease-in-out infinite}
+    .status-banner.ok .dot{background:var(--success)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .slot-list{display:grid;gap:8px;margin-top:11px}
+    .slot{display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:#fff;cursor:pointer;text-align:left}
+    .slot.picked{border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,115,121,.12)}
+    .slot.full{opacity:.5;cursor:not-allowed}
+    .slot b{font-size:12.5px;color:var(--charcoal)}.slot span{display:block;color:var(--muted);font-size:10.5px;margin-top:2px}
+    .slot .cap{margin-left:auto;font-size:10px;font-weight:700;color:var(--teal-deep)}
+    .booked-chip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:20px;background:var(--foam);color:var(--teal-deep);font-size:11.5px;font-weight:700}
+    .countdown{position:sticky;top:60px;z-index:30;margin:0 0 12px;padding:11px 14px;border-radius:12px;background:linear-gradient(135deg,#225E63,#2B7379);color:#fff;display:flex;align-items:center;gap:10px;font-size:12px}
+    .countdown.closed{background:#4B5563}.countdown b{font-variant-numeric:tabular-nums;font-size:13px}
+    .firm-tabs{position:sticky;top:60px;z-index:29;display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 -1px 11px;padding:5px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px)}
+    .firm-tab{min-height:46px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer;letter-spacing:.04em}
+    .firm-tab.active{background:var(--teal-deep);color:#fff}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+    .metric{padding:11px;border-radius:11px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--teal-deep);font-size:20px}.metric span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .scan-actions{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.scan-actions .btn{width:auto;min-width:104px;margin:0}
+    .reader{display:none;margin-top:12px;overflow:hidden;border-radius:13px}.reader.open{display:block}
+    .notice{margin-top:10px;padding:10px 12px;border-radius:10px;background:#FFF5DF;color:#8A5A09;font-size:11px;line-height:1.45}.notice.error{background:#FEE2E2;color:#991B1B}.notice.success{background:#DCFCE7;color:#166534}
+    .items{display:grid;gap:10px;margin-top:12px}
+    .item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:11px;padding:11px;border:1px solid var(--border);border-radius:13px;background:#fff}
+    .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+    .item h3{font-size:14px;color:var(--teal-deep)}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45}
+    .qty{display:flex;align-items:center;gap:5px;margin-top:9px}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}
+    .qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{margin-left:auto!important;color:var(--error)!important}
+    .savebar{position:sticky;bottom:8px;z-index:25;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 30px rgba(34,55,52,.14);backdrop-filter:blur(10px)}.savebar .btn{margin:0}
+    .empty{padding:26px 12px;border:1px dashed #BCD0CB;border-radius:13px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}
+    .toast{position:fixed;left:50%;top:70px;z-index:200;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%);box-shadow:0 9px 25px rgba(0,0,0,.18)}.toast.open{display:block}.toast.error{background:#B91C1C}.toast.success{background:#166534}
+    .loading{position:fixed;inset:0;z-index:180;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader-card{padding:22px 28px;border-radius:15px;background:#fff;color:var(--teal-deep);font-weight:800}.spinner{width:28px;height:28px;margin:0 auto 10px;border:3px solid var(--foam);border-top-color:var(--teal-deep);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .modal{position:fixed;inset:0;z-index:210;display:none;place-items:center;padding:18px;background:rgba(24,30,28,.55)}.modal.open{display:grid}
+    .modal-card{width:min(100%,420px);padding:22px;border-radius:18px;background:#fff;text-align:center}
+    .cred{margin-top:14px;padding:14px;border:1px dashed var(--teal);border-radius:12px;background:var(--foam);text-align:left}
+    .cred-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:13px}.cred-row b{color:var(--teal-deep)}.cred-row span{font-weight:800;color:var(--charcoal);word-break:break-all}
+    .config-warning{padding:12px;background:#FEE2E2;color:#991B1B;font-size:12px;text-align:center}
+    .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
+  </style>
+</head>
+<body oncontextmenu="return false">
+  <div id="config-warning" class="config-warning hidden">Replace the Supabase placeholders in this file before publishing.</div>
+  <header class="appbar hidden" id="app-top">
+    <div><div class="wordmark"><i class="logo-dot"></i>EKUM</div><small class="brand-sub">Maitri Carnival 2026</small></div>
+    <div class="top-actions"><button class="icon-btn" id="account-btn">Account</button><button class="icon-btn" id="logout-btn">Logout</button></div>
+  </header>
+
+  <main>
+    <!-- AUTH -->
+    <section id="auth-screen">
+      <div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p></div>
+      <div class="card">
+        <div class="switch"><button id="login-mode" class="active">Login</button><button id="register-mode">Register</button></div>
+        <form id="login-form">
+          <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="login-phone" inputmode="numeric" maxlength="10" required placeholder="10-digit mobile"></div>
+          <label>Password</label><input id="login-password" type="password" required minlength="8" autocomplete="current-password">
+          <button class="btn" type="submit">Login</button>
+        </form>
+        <form id="register-form" class="hidden">
+          <label>Company / firm name</label><input id="reg-company" required maxlength="120">
+          <label>Contact person</label><input id="reg-contact" required maxlength="100">
+          <div class="grid2"><div><label>City</label><input id="reg-city" required></div><div><label>State</label><input id="reg-state" required></div></div>
+          <label>GSTIN <span class="optional">(optional)</span></label><input id="reg-gstin" maxlength="15">
+          <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="reg-phone" inputmode="numeric" maxlength="10" required></div>
+          <label>Create password <span class="optional">(min 8 characters)</span></label><input id="reg-password" type="password" minlength="8" required autocomplete="new-password">
+          <div id="access-code-wrap" class="hidden"><label>Exhibition access code</label><input id="reg-access-code"></div>
+          <button class="btn" type="submit">Register</button>
+        </form>
+        <p class="copy">No OTP is sent. Save your mobile number and password — you will log in with them at the venue.</p>
+      </div>
+    </section>
+
+    <!-- LOBBY -->
+    <section id="lobby-screen" class="hidden">
+      <div class="card">
+        <h2>Welcome, <span id="lobby-name">there</span></h2>
+        <p class="copy">Here is how the carnival ordering works:</p>
+        <div class="steps">
+          <div class="step done"><div class="n">✓</div><div><b>Registered</b><p>Your account is ready.</p></div></div>
+          <div class="step" id="step-slot"><div class="n">2</div><div><b>Book a visit slot</b><p>Optional, helps us manage the crowd. Pick a time below.</p></div></div>
+          <div class="step" id="step-entry"><div class="n">3</div><div><b>Get checked in at the counter</b><p>Show your mobile number to our staff when you arrive.</p></div></div>
+          <div class="step" id="step-order"><div class="n">4</div><div><b>Build your order</b><p>Scan product barcodes for Maitri and Niharika.</p></div></div>
+          <div class="step" id="step-edit"><div class="n">5</div><div><b>Edit for 24 hours</b><p>You can change your order for a day after your first save.</p></div></div>
+        </div>
+      </div>
+
+      <div class="card" id="entry-card">
+        <div id="entry-banner" class="status-banner wait"><span class="dot"></span><div id="entry-text">Checking your entry status…</div></div>
+        <button id="enter-order-btn" class="btn hidden">Start / continue my order →</button>
+        <button id="refresh-status-btn" class="btn secondary">Refresh status</button>
+      </div>
+
+      <div class="card" id="booking-card">
+        <h2>Book a visit slot</h2>
+        <p class="copy">Pick a time that suits you. You can change it any time before the event.</p>
+        <div id="booked-info"></div>
+        <div class="grid2" style="margin-top:6px">
+          <div><label>People in your group</label><input id="party-size" type="number" min="1" max="99" value="1"></div>
+          <div><label>Note <span class="optional">(optional)</span></label><input id="booking-note" maxlength="120" placeholder="Anything we should know"></div>
+        </div>
+        <div id="slot-list" class="slot-list"></div>
+        <button id="book-btn" class="btn" disabled>Confirm slot</button>
+        <button id="cancel-booking-btn" class="btn ghost hidden">Cancel my booking</button>
+      </div>
+    </section>
+
+    <!-- ORDER -->
+    <section id="order-screen" class="hidden">
+      <div id="countdown" class="countdown hidden"><span>⏱</span><div>Edit window: <b id="countdown-text">—</b></div></div>
+      <div class="firm-tabs"><button class="firm-tab active" data-firm="Maitri">Maitri</button><button class="firm-tab" data-firm="Niharika">Niharika</button></div>
+      <div class="card">
+        <h2 id="order-title">Maitri order</h2><p class="copy" id="order-status">Draft</p>
+        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="piece-count">0</b><span>Pieces</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
+      </div>
+      <div class="card">
+        <h2>Scan a barcode</h2><p class="copy">Each design is added once. Change the quantity manually.</p>
+        <div class="scan-actions"><div><label>Barcode</label><input id="barcode-input" autocomplete="off" inputmode="text" placeholder="Scan or type barcode"></div><button id="add-barcode" class="btn">Add</button></div>
+        <button id="camera-btn" class="btn secondary">Open camera scanner</button>
+        <div id="reader" class="reader"></div>
+        <div id="scan-note" class="notice hidden"></div>
+      </div>
+      <div class="card"><h2>Order items</h2><div id="items" class="items"></div></div>
+      <div class="savebar"><button id="save-btn" class="btn">Save order</button><button id="pdf-btn" class="btn secondary">Download PDF</button></div>
+      <button id="back-lobby-btn" class="btn ghost">← Back to slot & status</button>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section id="account-screen" class="hidden">
+      <div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to exhibition staff.</p>
+        <div class="account-grid"><div><label>Company</label><input id="acc-company"></div><div><label>Contact</label><input id="acc-contact"></div><div><label>City</label><input id="acc-city"></div><div><label>State</label><input id="acc-state"></div></div>
+        <label>GSTIN</label><input id="acc-gstin"><button id="save-account" class="btn">Save account details</button><button id="back-order" class="btn secondary">Back</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Credentials modal -->
+  <div id="cred-modal" class="modal">
+    <div class="modal-card">
+      <div class="wordmark" style="justify-content:center"><i class="logo-dot"></i>EKUM</div>
+      <h2 style="margin-top:12px;color:var(--teal-deep)">Save your login</h2>
+      <p class="copy">You will need these to log in at the venue. Take a screenshot or copy them now.</p>
+      <div class="cred">
+        <div class="cred-row"><b>Username (mobile)</b><span id="cred-user">—</span></div>
+        <div class="cred-row"><b>Password</b><span id="cred-pass">—</span></div>
+      </div>
+      <button id="cred-copy" class="btn secondary">Copy my login details</button>
+      <button id="cred-done" class="btn">I've saved them — continue</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <div id="loading" class="loading"><div class="loader-card"><div class="spinner"></div><span id="loading-text">Working…</span></div></div>
+
+<script>
+const CONFIG={
+  SUPABASE_URL:"https://ezmtiiftolcaslqfvozu.supabase.co",
+  SUPABASE_ANON_KEY:"sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",
+  REQUIRE_ACCESS_CODE:false
+};
+const configured=!CONFIG.SUPABASE_URL.includes('__')&&!CONFIG.SUPABASE_ANON_KEY.includes('__');
+if(!configured)document.getElementById('config-warning').classList.remove('hidden');
+if(CONFIG.REQUIRE_ACCESS_CODE)document.getElementById('access-code-wrap').classList.remove('hidden');
+const sb=configured?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+
+const state={profile:null,status:null,slots:[],pickedSlot:null,orders:{Maitri:null,Niharika:null},carts:{Maitri:[],Niharika:[]},activeFirm:'Maitri',scanner:null,scanning:false,poll:null,tick:null,screen:'auth'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function toast(m,t=''){const el=$('toast');el.textContent=m;el.className='toast open '+t;clearTimeout(window.__t);window.__t=setTimeout(()=>el.className='toast',3200)}
+function loading(on,text='Working…'){$('loading-text').textContent=text;$('loading').classList.toggle('open',on)}
+function normalizePhone(v){const d=String(v||'').replace(/\D/g,'');if(!/^[6-9]\d{9}$/.test(d))throw new Error('Enter a valid 10-digit Indian mobile number');return '91'+d}
+function ik(url,tr){if(!url)return '';return url+(url.includes('?')?'&':'?')+'tr='+tr}
+function fmtTime(iso){if(!iso)return '';const d=new Date(iso);return d.toLocaleString('en-IN',{weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}
+
+function show(screen){state.screen=screen;['auth-screen','lobby-screen','order-screen','account-screen'].forEach(id=>$(id).classList.toggle('hidden',id!==screen+'-screen'));$('app-top').classList.toggle('hidden',screen==='auth');
+  if(screen!=='lobby'&&state.poll){clearInterval(state.poll);state.poll=null}
+  if(screen==='order'){startTick()}else{stopTick()}}
+
+/* ---------- Auth ---------- */
+function setMode(reg){$('login-form').classList.toggle('hidden',reg);$('register-form').classList.toggle('hidden',!reg);$('login-mode').classList.toggle('active',!reg);$('register-mode').classList.toggle('active',reg)}
+$('login-mode').onclick=()=>setMode(false);$('register-mode').onclick=()=>setMode(true);
+
+async function customerAuth(action,payload){
+  const res=await fetch(`${CONFIG.SUPABASE_URL}/functions/v1/customer-auth`,{method:'POST',headers:{'Content-Type':'application/json','apikey':CONFIG.SUPABASE_ANON_KEY},body:JSON.stringify({action,...payload})});
+  const out=await res.json().catch(()=>({ok:false,error:'Invalid server response'}));
+  if(!res.ok||!out.ok)throw new Error(out.error||`Authentication failed (${res.status})`);
+  return out.data;
+}
+async function applySession(session){if(!session?.access_token||!session?.refresh_token)throw new Error('No session returned');const{error}=await sb.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token});if(error)throw error}
+
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;try{loading(true,'Logging in…');const phone=normalizePhone($('login-phone').value);const data=await customerAuth('login',{phone,password:$('login-password').value});await applySession(data.session)}catch(err){toast(err.message,'error')}finally{loading(false)}});
+
+$('register-form').addEventListener('submit',async e=>{e.preventDefault();if(!sb)return;try{loading(true,'Creating account…');const phone=normalizePhone($('reg-phone').value);const password=$('reg-password').value;const data=await customerAuth('register',{phone,password,companyName:$('reg-company').value.trim(),contactName:$('reg-contact').value.trim(),city:$('reg-city').value.trim(),state:$('reg-state').value.trim(),gstin:$('reg-gstin').value.trim().toUpperCase(),accessCode:$('reg-access-code').value.trim()});
+  $('cred-user').textContent=phone;$('cred-pass').textContent=password;window.__pendingSession=data.session;$('cred-modal').classList.add('open');
+}catch(err){toast(String(err.message||err).replace('Database error saving new user','Registration details were rejected'),'error')}finally{loading(false)}});
+
+$('cred-copy').onclick=async()=>{const text=`Maitri Carnival 2026 login\nUsername (mobile): ${$('cred-user').textContent}\nPassword: ${$('cred-pass').textContent}`;try{await navigator.clipboard.writeText(text);toast('Login details copied','success')}catch{toast('Copy not available — please screenshot','error')}};
+$('cred-done').onclick=async()=>{try{loading(true,'Signing you in…');$('cred-modal').classList.remove('open');await applySession(window.__pendingSession);window.__pendingSession=null}catch(err){toast(err.message,'error');show('auth')}finally{loading(false)}};
+
+/* ---------- Lobby / status / slots ---------- */
+async function loadProfileAndStatus(){
+  const{data:profile,error}=await sb.from('customers').select('*').single();if(error)throw error;state.profile=profile;
+  fillAccount();$('lobby-name').textContent=profile.contact_name||profile.company_name||'there';
+  await refreshStatus();await loadSlots();
+}
+async function refreshStatus(){
+  const{data,error}=await sb.rpc('get_my_status');if(error)throw error;state.status=data;renderEntry();
+  if(data.checkedIn){$('step-entry').className='step done';$('step-order').className='step active'}
+  else{$('step-entry').className='step active';$('step-order').className='step'}
+}
+function renderEntry(){
+  const s=state.status||{};const banner=$('entry-banner');const text=$('entry-text');
+  if(s.active===false){banner.className='status-banner wait';text.innerHTML='<b>Account paused.</b> Please speak to exhibition staff.';$('enter-order-btn').classList.add('hidden');return}
+  if(s.checkedIn){banner.className='status-banner ok';text.innerHTML='<b>You are checked in.</b> You can build and edit your order now.';$('enter-order-btn').classList.remove('hidden');
+    if(state.poll){clearInterval(state.poll);state.poll=null}
+  }else{banner.className='status-banner wait';text.innerHTML='<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+'+esc(state.profile?.phone_e164||'')+'</b>. This screen updates automatically once staff check you in.';$('enter-order-btn').classList.add('hidden');
+    if(!state.poll)state.poll=setInterval(()=>refreshStatus().catch(()=>{}),8000);
+  }
+}
+async function loadSlots(){
+  const{data,error}=await sb.rpc('list_slots');if(error){console.warn(error);return}
+  state.slots=data||[];const booking=state.status?.booking;
+  const info=$('booked-info');
+  if(booking){info.innerHTML=`<div class="booked-chip">✓ Booked: ${esc(fmtTime(booking.startsAt))}${booking.label?' · '+esc(booking.label):''}</div>`;state.pickedSlot=booking.slotId;$('cancel-booking-btn').classList.remove('hidden');$('party-size').value=booking.partySize||1;$('booking-note').value=booking.note||'';$('book-btn').textContent='Update my slot'}
+  else{info.innerHTML='';$('cancel-booking-btn').classList.add('hidden');$('book-btn').textContent='Confirm slot'}
+  const host=$('slot-list');
+  if(!state.slots.length){host.innerHTML='<div class="empty">No slots have been published yet. You can still come during event hours.</div>';$('book-btn').disabled=true;return}
+  host.innerHTML=state.slots.map(s=>{const picked=s.id===state.pickedSlot;const cap=s.capacity!=null?`${s.booked}/${s.capacity}`:'';const full=s.full&&!picked;return `<button type="button" class="slot ${picked?'picked':''} ${full?'full':''}" data-slot="${s.id}" ${full?'disabled':''}><div><b>${esc(fmtTime(s.startsAt))}</b><span>${esc(s.label||'')} ${s.endsAt?'· until '+esc(new Date(s.endsAt).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})):''}</span></div>${cap?`<span class="cap">${full?'Full':cap}</span>`:''}</button>`}).join('');
+  $('book-btn').disabled=!state.pickedSlot;
+}
+$('slot-list').addEventListener('click',e=>{const b=e.target.closest('[data-slot]');if(!b||b.disabled)return;state.pickedSlot=b.dataset.slot;document.querySelectorAll('.slot').forEach(x=>x.classList.toggle('picked',x.dataset.slot===state.pickedSlot));$('book-btn').disabled=false});
+$('book-btn').onclick=async()=>{if(!state.pickedSlot)return;try{loading(true,'Saving your slot…');const{error}=await sb.rpc('book_slot',{p_slot_id:state.pickedSlot,p_party_size:Number($('party-size').value)||1,p_note:$('booking-note').value.trim()});if(error)throw error;await refreshStatus();await loadSlots();toast('Slot booked','success')}catch(err){toast(err.message==='SLOT_FULL'?'That slot is full — pick another':err.message,'error')}finally{loading(false)}};
+$('cancel-booking-btn').onclick=async()=>{try{loading(true,'Cancelling…');const{error}=await sb.rpc('cancel_my_booking');if(error)throw error;state.pickedSlot=null;await refreshStatus();await loadSlots();toast('Booking cancelled','success')}catch(err){toast(err.message,'error')}finally{loading(false)}};
+$('refresh-status-btn').onclick=()=>refreshStatus().then(()=>toast('Status updated')).catch(e=>toast(e.message,'error'));
+$('enter-order-btn').onclick=async()=>{await loadOrders();show('order');render()};
+$('back-lobby-btn').onclick=async()=>{await stopScanner();await refreshStatus().catch(()=>{});await loadSlots().catch(()=>{});show('lobby')};
+
+/* ---------- Orders ---------- */
+async function loadOrders(){loading(true,'Loading your orders…');try{for(const firm of ['Maitri','Niharika']){const{data,error}=await sb.rpc('get_my_order_state',{p_firm:firm});if(error)throw error;state.orders[firm]=data;state.carts[firm]=(data.items||[]).map(x=>({...x}))}}catch(err){toast(err.message,'error')}finally{loading(false)}}
+function currentCart(){return state.carts[state.activeFirm]}
+function windowClosed(){const s=state.status;if(!s||!s.editDeadline)return false;return new Date(s.editDeadline).getTime()<Date.now()}
+function fillAccount(){const p=state.profile||{};$('acc-company').value=p.company_name||'';$('acc-contact').value=p.contact_name||'';$('acc-city').value=p.city||'';$('acc-state').value=p.state||'';$('acc-gstin').value=p.gstin||''}
+
+function render(){
+  document.querySelectorAll('.firm-tab').forEach(b=>b.classList.toggle('active',b.dataset.firm===state.activeFirm));
+  const order=state.orders[state.activeFirm]||{version:1,status:'Draft'};const cart=currentCart();
+  $('order-title').textContent=state.activeFirm+' order';
+  $('order-status').textContent=`${order.status||'Draft'} · Last saved ${order.updatedAt?new Date(order.updatedAt).toLocaleString('en-IN'):'not yet'}`;
+  $('design-count').textContent=cart.length;$('piece-count').textContent=cart.reduce((s,x)=>s+(Number(x.qty)||0),0);$('version-count').textContent=order.version||1;
+  const host=$('items');
+  if(!cart.length){host.innerHTML='<div class="empty">No designs added yet. Scan the first sticker above.</div>'}
+  else{host.innerHTML=cart.map((it,i)=>`<article class="item">${it.imageUrl?`<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl,'w-240,h-320,c-at_max,q-55'))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">`:'<div class="thumb"></div>'}<div><h3>${esc(it.designNo)}</h3><div class="meta">${esc([it.category,it.fabric,it.color].filter(Boolean).join(' · '))}<br>${esc(it.description||'')}</div><div class="qty"><button data-act="minus" data-i="${i}">−</button><input data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty)||1}"><button data-act="plus" data-i="${i}">+</button><button class="remove" data-act="remove" data-i="${i}">✕</button></div></div></article>`).join('');
+    cart.forEach((it,i)=>{const el=$('thumb-'+i);if(el)protect(el)})}
+  renderCountdown();
+}
+function protect(el){el.draggable=false;el.addEventListener('contextmenu',e=>e.preventDefault());el.addEventListener('dragstart',e=>e.preventDefault())}
+function renderCountdown(){const s=state.status;const box=$('countdown');const closed=windowClosed();
+  if(!s||!s.editDeadline){box.classList.add('hidden');$('save-btn').disabled=false;return}
+  box.classList.remove('hidden');
+  if(closed){box.classList.add('closed');$('countdown-text').textContent='closed — ask staff to reopen';$('save-btn').disabled=true;return}
+  box.classList.remove('closed');$('save-btn').disabled=false;
+  const ms=new Date(s.editDeadline).getTime()-Date.now();const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1000);
+  $('countdown-text').textContent=`${h}h ${String(m).padStart(2,'0')}m ${String(sec).padStart(2,'0')}s left to edit`;
+}
+function startTick(){stopTick();state.tick=setInterval(renderCountdown,1000)}
+function stopTick(){if(state.tick){clearInterval(state.tick);state.tick=null}}
+
+$('items').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;const i=Number(b.dataset.i),cart=currentCart();if(b.dataset.act==='plus')cart[i].qty=Math.min(9999,(Number(cart[i].qty)||1)+1);if(b.dataset.act==='minus')cart[i].qty=Math.max(1,(Number(cart[i].qty)||1)-1);if(b.dataset.act==='remove')cart.splice(i,1);render()});
+$('items').addEventListener('change',e=>{if(e.target.dataset.act!=='qty')return;const i=Number(e.target.dataset.i);currentCart()[i].qty=Math.max(1,Math.min(9999,Number(e.target.value)||1));render()});
+document.querySelectorAll('.firm-tab').forEach(b=>b.onclick=async()=>{await stopScanner();state.activeFirm=b.dataset.firm;render()});
+
+async function addBarcode(raw){const barcode=String(raw||'').trim();if(!barcode)return;try{$('scan-note').classList.add('hidden');const{data,error}=await sb.rpc('lookup_barcode',{p_barcode:barcode});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('Barcode is not mapped to an active design');if(![state.activeFirm,'Both'].includes(row.firm))throw new Error(`${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`);const cart=currentCart();if(cart.some(x=>x.designNo===row.design_no))throw new Error(`${row.design_no} is already in this order`);cart.push({barcode:row.barcode,designNo:row.design_no,imageUrl:row.image_url||'',qty:1,category:row.category,fabric:row.fabric,color:row.color,description:row.description});$('barcode-input').value='';render();note(`Added ${row.design_no}`,'success');navigator.vibrate?.(80)}catch(err){note(err.message,'error');navigator.vibrate?.([100,70,100])}}
+function note(t,type=''){$('scan-note').textContent=t;$('scan-note').className='notice '+type}
+$('add-barcode').onclick=()=>addBarcode($('barcode-input').value);$('barcode-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addBarcode(e.target.value)}});
+$('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err,'error');await stopScanner()}};
+async function stopScanner(){if(state.scanner){try{if(state.scanning)await state.scanner.stop()}catch{}try{await state.scanner.clear()}catch{}}state.scanner=null;state.scanning=false;$('reader').classList.remove('open');$('camera-btn').textContent='Open camera scanner'}
+
+$('save-btn').onclick=async()=>{try{loading(true,'Saving order…');const firm=state.activeFirm,order=state.orders[firm];const items=currentCart().map(x=>({barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1}));const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok){state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));render();throw new Error(data.message)}state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));await refreshStatus();render();toast(`${firm} order saved`,'success')}catch(err){toast(friendlySave(err.message),'error')}finally{loading(false)}};
+function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';return m}
+
+async function blobToDataUrl(b){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
+async function imageThumbDataUrl(url){const res=await fetch(ik(url,'w-320,h-430,c-at_max,q-40,f-jpg'),{mode:'cors',credentials:'omit'});if(!res.ok)throw new Error('img');return await blobToDataUrl(await res.blob())}
+$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}try{loading(true,'Building PDF…');const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});const p=state.profile,firm=state.activeFirm;doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text(`${firm} · Maitri Carnival 2026`,14,16);doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text(`${p.company_name} · ${p.contact_name}`,14,23);doc.text(`Phone: +${p.phone_e164}   City: ${p.city}, ${p.state}`,14,29);doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`,14,35);let y=43;for(let i=0;i<cart.length;i++){const it=cart[i];if(y>260){doc.addPage();y=16}try{const dataUrl=await imageThumbDataUrl(it.imageUrl);doc.addImage(dataUrl,'JPEG',14,y,28,38,undefined,'FAST')}catch{doc.setDrawColor(220);doc.rect(14,y,28,38)}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(it.designNo,48,y+7);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(doc.splitTextToSize([it.category,it.fabric,it.color].filter(Boolean).join(' · '),130),48,y+14);doc.text(doc.splitTextToSize(it.description||'',130),48,y+20);doc.setFont('helvetica','bold');doc.text(`Qty: ${it.qty} pcs`,48,y+34);doc.setDrawColor(225);doc.line(14,y+41,196,y+41);y+=46}doc.setFontSize(11);doc.text(`Total designs: ${cart.length}    Total pieces: ${cart.reduce((s,x)=>s+Number(x.qty||0),0)}`,14,Math.min(y+3,285));doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Maitri-Carnival.pdf`);toast('PDF downloaded','success')}catch(err){toast(err.message,'error')}finally{loading(false)}};
+
+/* ---------- Account ---------- */
+$('account-btn').onclick=()=>{fillAccount();show('account')};
+$('back-order').onclick=()=>show(state.status?.checkedIn?'order':'lobby');
+$('save-account').onclick=async()=>{try{loading(true,'Saving account…');const patch={company_name:$('acc-company').value.trim(),contact_name:$('acc-contact').value.trim(),city:$('acc-city').value.trim(),state:$('acc-state').value.trim(),gstin:$('acc-gstin').value.trim().toUpperCase()};const{data,error}=await sb.from('customers').update(patch).eq('id',state.profile.id).select().single();if(error)throw error;state.profile=data;toast('Account updated','success');show(state.status?.checkedIn?'order':'lobby')}catch(err){toast(err.message,'error')}finally{loading(false)}};
+$('logout-btn').onclick=async()=>{await stopScanner();if(state.poll){clearInterval(state.poll);state.poll=null}stopTick();await sb.auth.signOut();state.profile=null;show('auth')};
+
+/* ---------- Boot ---------- */
+async function boot(){try{loading(true,'Loading…');await loadProfileAndStatus();show('lobby')}catch(err){toast(err.message,'error');await sb.auth.signOut();show('auth')}finally{loading(false)}}
+if(sb){sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session)boot();else show('auth')},0)});sb.auth.getSession().then(({data})=>{if(data.session)boot();else show('auth')})}else show('auth');
+</script>
+</body>
+</html>

@@ -26,11 +26,24 @@ async function fetchAll(
   return output;
 }
 
+const CUSTOMER_DOMAIN = "accounts.maitricarnival.app";
+
 function normalizePhone(value: unknown): string {
   let digits = clean(value).replace(/\D/g, "");
   if (digits.length === 10) digits = `91${digits}`;
   if (!/^91[6-9]\d{9}$/.test(digits)) throw new Error("Enter a valid Indian mobile number");
   return digits;
+}
+
+function hiddenEmail(phone: string): string {
+  return `c${phone}@${CUSTOMER_DOMAIN}`;
+}
+
+function generatePassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
 }
 
 function groupSum<T>(rows: T[], keyFn: (row: T) => string, valueFn: (row: T) => number) {
@@ -318,14 +331,220 @@ Deno.serve(async (request: Request) => {
     if (action === "setOrderLocked") {
       const orderId = clean(body.orderId);
       const locked = Boolean(body.locked);
+      // Unlocking sets admin_unlocked so the customer can edit past the 24h window.
       const { data, error } = await db
         .from("orders")
-        .update({ status: locked ? "Locked" : "Saved" })
+        .update({ status: locked ? "Locked" : "Saved", admin_unlocked: locked ? false : true })
         .eq("id", orderId)
-        .select("id,firm,status,updated_at")
+        .select("id,firm,status,admin_unlocked,updated_at")
         .single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
+    }
+
+    // ---- Entry gate ----------------------------------------------------
+    if (action === "directory") {
+      const q = clean(body.query).toLowerCase();
+      let query = db
+        .from("customers")
+        .select("id,phone_e164,company_name,contact_name,city,state,active,checked_in_at,ordering_started_at,edit_deadline,created_at")
+        .order("created_at", { ascending: false })
+        .limit(400);
+      if (q) {
+        const digits = q.replace(/\D/g, "");
+        const like = `%${q}%`;
+        query = digits
+          ? query.or(`phone_e164.ilike.%${digits}%,company_name.ilike.${like},contact_name.ilike.${like}`)
+          : query.or(`company_name.ilike.${like},contact_name.ilike.${like},city.ilike.${like},state.ilike.${like}`);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return jsonResponse(request, {
+        ok: true,
+        data: (data ?? []).map((r) => ({
+          id: r.id,
+          phone: r.phone_e164,
+          companyName: r.company_name,
+          contactName: r.contact_name,
+          city: r.city,
+          state: r.state,
+          active: r.active,
+          checkedInAt: r.checked_in_at,
+          orderingStartedAt: r.ordering_started_at,
+          editDeadline: r.edit_deadline,
+        })),
+      });
+    }
+
+    if (action === "checkIn") {
+      const { data, error } = await db.rpc("check_in_customer", {
+        p_customer_id: clean(body.customerId),
+        p_admin_user_id: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "revokeEntry") {
+      const { data, error } = await db.rpc("revoke_entry", {
+        p_customer_id: clean(body.customerId),
+        p_admin_user_id: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    // ---- Slots & bookings ---------------------------------------------
+    if (action === "listSlots") {
+      const [{ data: slots, error: sErr }, { data: booked, error: bErr }] = await Promise.all([
+        db.from("slots").select("id,starts_at,ends_at,label,capacity,active").order("starts_at", { ascending: true }),
+        db.from("bookings").select("slot_id").eq("status", "Booked"),
+      ]);
+      if (sErr) throw sErr;
+      if (bErr) throw bErr;
+      const counts = new Map<string, number>();
+      for (const b of booked ?? []) counts.set(b.slot_id, (counts.get(b.slot_id) ?? 0) + 1);
+      return jsonResponse(request, {
+        ok: true,
+        data: (slots ?? []).map((s) => ({
+          id: s.id,
+          startsAt: s.starts_at,
+          endsAt: s.ends_at,
+          label: s.label,
+          capacity: s.capacity,
+          active: s.active,
+          booked: counts.get(s.id) ?? 0,
+        })),
+      });
+    }
+
+    if (action === "upsertSlot") {
+      const row: Record<string, unknown> = {
+        starts_at: clean(body.startsAt),
+        ends_at: clean(body.endsAt),
+        label: clean(body.label),
+        capacity: body.capacity === null || body.capacity === "" || body.capacity === undefined ? null : Number(body.capacity),
+        active: body.active === undefined ? true : Boolean(body.active),
+      };
+      if (!row.starts_at || !row.ends_at) throw new Error("Slot start and end are required");
+      const id = clean(body.id);
+      const { data, error } = id
+        ? await db.from("slots").update(row).eq("id", id).select("id").single()
+        : await db.from("slots").insert(row).select("id").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "deleteSlot") {
+      const id = clean(body.id);
+      const { count, error: cErr } = await db
+        .from("bookings").select("id", { count: "exact", head: true }).eq("slot_id", id).eq("status", "Booked");
+      if (cErr) throw cErr;
+      if ((count ?? 0) > 0) {
+        const { error } = await db.from("slots").update({ active: false }).eq("id", id);
+        if (error) throw error;
+        return jsonResponse(request, { ok: true, data: { deactivated: true, bookings: count } });
+      }
+      const { error } = await db.from("slots").delete().eq("id", id);
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: { deleted: true } });
+    }
+
+    if (action === "listBookings") {
+      const { data, error } = await db
+        .from("bookings")
+        .select("id,party_size,note,status,created_at,slots(starts_at,ends_at,label),customers(company_name,contact_name,phone_e164,checked_in_at)")
+        .eq("status", "Booked")
+        .limit(1000);
+      if (error) throw error;
+      return jsonResponse(request, {
+        ok: true,
+        data: (data ?? []).map((b: any) => ({
+          id: b.id,
+          partySize: b.party_size,
+          note: b.note,
+          startsAt: b.slots?.starts_at ?? null,
+          endsAt: b.slots?.ends_at ?? null,
+          slotLabel: b.slots?.label ?? "",
+          companyName: b.customers?.company_name ?? "",
+          contactName: b.customers?.contact_name ?? "",
+          phone: b.customers?.phone_e164 ?? "",
+          checkedIn: !!b.customers?.checked_in_at,
+        })),
+      });
+    }
+
+    // ---- Assisted registration & ordering -----------------------------
+    if (action === "assistedRegister") {
+      const phone = normalizePhone(body.phone);
+      const companyName = clean(body.companyName);
+      const contactName = clean(body.contactName);
+      if (companyName.length < 2) throw new Error("Company name is required");
+      if (contactName.length < 2) throw new Error("Contact person is required");
+      const password = clean(body.password) || generatePassword();
+      if (password.length < 8) throw new Error("Password must be at least 8 characters");
+      const { data: created, error } = await db.auth.admin.createUser({
+        email: hiddenEmail(phone),
+        password,
+        email_confirm: true,
+        user_metadata: {
+          phone_e164: phone,
+          company_name: companyName,
+          contact_name: contactName,
+          city: clean(body.city),
+          state: clean(body.state),
+          gstin: clean(body.gstin).toUpperCase(),
+          login_method: "phone_password_hidden_email",
+          created_by: "admin_assisted",
+        },
+      });
+      if (error) throw error;
+      return jsonResponse(request, {
+        ok: true,
+        data: { customerId: created.user?.id, phone, password, companyName },
+      });
+    }
+
+    if (action === "assistedSaveOrder") {
+      const items = Array.isArray(body.items) ? body.items : [];
+      const { data, error } = await db.rpc("admin_save_order", {
+        p_customer_id: clean(body.customerId),
+        p_firm: clean(body.firm),
+        p_items: items,
+        p_request_id: crypto.randomUUID(),
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "getCustomerOrders") {
+      const customerId = clean(body.customerId);
+      // Fetch both firm orders + items for assisted editing.
+      const { data: orders, error: oErr } = await db
+        .from("orders")
+        .select("id,firm,status,version,total_designs,total_pieces,admin_unlocked,order_items(barcode,design_no,qty,category_snapshot,fabric_snapshot,color_snapshot,description_snapshot,designs(image_url))")
+        .eq("customer_id", customerId);
+      if (oErr) throw oErr;
+      const shaped = (orders ?? []).map((o: any) => ({
+        id: o.id,
+        firm: o.firm,
+        status: o.status,
+        version: o.version,
+        totalDesigns: o.total_designs,
+        totalPieces: o.total_pieces,
+        adminUnlocked: o.admin_unlocked,
+        items: (o.order_items ?? []).map((i: any) => ({
+          barcode: i.barcode,
+          designNo: i.design_no,
+          qty: i.qty,
+          category: i.category_snapshot,
+          fabric: i.fabric_snapshot,
+          color: i.color_snapshot,
+          description: i.description_snapshot,
+          imageUrl: i.designs?.image_url ?? "",
+        })),
+      }));
+      return jsonResponse(request, { ok: true, data: { orders: shaped } });
     }
 
     return jsonResponse(request, { ok: false, error: `UNKNOWN_ACTION_${action}` }, 400);
