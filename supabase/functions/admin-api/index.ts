@@ -1,3 +1,4 @@
+
 import { optionsResponse } from "../_shared/cors.ts";
 import { requireAdmin } from "../_shared/auth.ts";
 import { clean, errorMessage, jsonResponse } from "../_shared/http.ts";
@@ -59,8 +60,8 @@ function groupSum<T>(rows: T[], keyFn: (row: T) => string, valueFn: (row: T) => 
 async function dashboard(db: SupabaseClient) {
   const [customers, orders, items, designs] = await Promise.all([
     fetchAll(db, "customers", "id,phone_e164,company_name,contact_name,city,state,gstin,active,created_at,updated_at", "created_at"),
-    fetchAll(db, "orders", "id,customer_id,firm,status,total_designs,total_pieces,version,created_at,updated_at", "created_at"),
-    fetchAll(db, "order_items", "id,order_id,barcode,design_no,qty,category_snapshot,fabric_snapshot,color_snapshot,description_snapshot,created_at,updated_at", "created_at"),
+    fetchAll(db, "orders", "id,customer_id,firm,status,total_designs,total_sets,total_pieces,version,created_at,updated_at", "created_at"),
+    fetchAll(db, "order_items", "id,order_id,barcode,design_no,qty,category_snapshot,style_snapshot,fabric_snapshot,pcs_per_set_snapshot,line_note,color_snapshot,description_snapshot,created_at,updated_at", "created_at"),
     fetchAll(db, "designs", "design_no,image_url", "design_no"),
   ]);
 
@@ -77,7 +78,11 @@ async function dashboard(db: SupabaseClient) {
       imageUrl: imageByDesign.get(item.design_no) ?? "",
       qty: Number(item.qty) || 0,
       category: item.category_snapshot,
+      style: item.style_snapshot,
       fabric: item.fabric_snapshot,
+      pcsPerSet: Number(item.pcs_per_set_snapshot) || 1,
+      totalPieces: (Number(item.qty) || 0) * (Number(item.pcs_per_set_snapshot) || 1),
+      note: item.line_note ?? "",
       color: item.color_snapshot,
       description: item.description_snapshot,
     });
@@ -98,6 +103,7 @@ async function dashboard(db: SupabaseClient) {
       firm: order.firm,
       status: order.status,
       totalDesigns: Number(order.total_designs) || 0,
+      totalSets: Number(order.total_sets) || 0,
       totalPieces: Number(order.total_pieces) || 0,
       version: Number(order.version) || 0,
       createdAt: order.created_at,
@@ -115,8 +121,10 @@ async function dashboard(db: SupabaseClient) {
       imageUrl: imageByDesign.get(item.design_no) ?? "",
       qty: Number(item.qty) || 0,
       category: item.category_snapshot,
+      style: item.style_snapshot,
       fabric: item.fabric_snapshot,
-      color: item.color_snapshot,
+      pcsPerSet: Number(item.pcs_per_set_snapshot) || 1,
+      pieces: (Number(item.qty) || 0) * (Number(item.pcs_per_set_snapshot) || 1),
       firm: order.firm ?? "",
       customerId: order.customer_id ?? "",
       companyName: customer.company_name ?? "",
@@ -159,7 +167,8 @@ async function dashboard(db: SupabaseClient) {
       activeCustomers: customers.filter((row) => row.active).length,
       customersWithOrders: new Set(savedOrders.map((row) => row.customerId)).size,
       savedOrders: savedOrders.length,
-      totalPieces: itemFacts.reduce((sum, row) => sum + row.qty, 0),
+      totalSets: itemFacts.reduce((sum, row) => sum + row.qty, 0),
+      totalPieces: itemFacts.reduce((sum, row) => sum + row.pieces, 0),
       uniqueDesigns: new Set(itemFacts.map((row) => row.designNo)).size,
       maitriPieces: itemFacts.filter((row) => row.firm === "Maitri").reduce((sum, row) => sum + row.qty, 0),
       niharikaPieces: itemFacts.filter((row) => row.firm === "Niharika").reduce((sum, row) => sum + row.qty, 0),
@@ -168,8 +177,9 @@ async function dashboard(db: SupabaseClient) {
       firmPieces: groupSum(itemFacts, (row) => row.firm, (row) => row.qty),
       statePieces: groupSum(itemFacts, (row) => row.state, (row) => row.qty),
       cityPieces: groupSum(itemFacts, (row) => row.city, (row) => row.qty),
-      categoryPieces: groupSum(itemFacts, (row) => row.category, (row) => row.qty),
-      fabricPieces: groupSum(itemFacts, (row) => row.fabric, (row) => row.qty),
+      categorySets: groupSum(itemFacts, (row) => row.category, (row) => row.qty),
+      styleSets: groupSum(itemFacts, (row) => row.style, (row) => row.qty),
+      fabricSets: groupSum(itemFacts, (row) => row.fabric, (row) => row.qty),
       topDesigns: topDesigns.slice(0, 20),
       topCustomers: topCustomers.slice(0, 20),
     },
@@ -192,7 +202,7 @@ async function dashboard(db: SupabaseClient) {
 async function listDesigns(db: SupabaseClient) {
   const { data, error } = await db
     .from("designs")
-    .select("design_no,firm,image_url,category,fabric,color,description,active,sync_version,updated_at")
+    .select("design_no,firm,image_url,category,style,fabric,pcs_per_set,color,description,active,sync_version,updated_at")
     .order("design_no", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((row) => ({
@@ -200,7 +210,9 @@ async function listDesigns(db: SupabaseClient) {
     firm: row.firm,
     imageUrl: row.image_url ?? "",
     category: row.category,
+    style: row.style,
     fabric: row.fabric,
+    pcsPerSet: Number(row.pcs_per_set) || 1,
     color: row.color,
     description: row.description,
     active: row.active,
@@ -212,7 +224,7 @@ async function listDesigns(db: SupabaseClient) {
 async function listMappings(db: SupabaseClient) {
   const { data, error } = await db
     .from("barcode_mappings")
-    .select("barcode,design_no,active,mapped_at,updated_at,designs(firm,category,fabric,color)")
+    .select("barcode,design_no,active,mapped_at,updated_at,designs(firm,category,style,fabric,pcs_per_set,color)")
     .order("updated_at", { ascending: false })
     .limit(1000);
   if (error) throw error;
@@ -224,7 +236,9 @@ async function listMappings(db: SupabaseClient) {
     updatedAt: row.updated_at,
     firm: row.designs?.firm ?? "",
     category: row.designs?.category ?? "",
+    style: row.designs?.style ?? "",
     fabric: row.designs?.fabric ?? "",
+    pcsPerSet: Number(row.designs?.pcs_per_set) || 1,
     color: row.designs?.color ?? "",
   }));
 }
@@ -401,7 +415,7 @@ Deno.serve(async (request: Request) => {
       const dn = clean(body.designNo);
       const { data: d, error } = await db
         .from("designs")
-        .select("design_no,firm,image_url,category,fabric,color,description,active,updated_at")
+        .select("design_no,firm,image_url,category,style,fabric,pcs_per_set,color,description,active,updated_at")
         .eq("design_no", dn)
         .maybeSingle();
       if (error) throw error;
@@ -417,7 +431,8 @@ Deno.serve(async (request: Request) => {
         data: {
           design: {
             designNo: d.design_no, firm: d.firm, imageUrl: d.image_url,
-            category: d.category, fabric: d.fabric, color: d.color,
+            category: d.category, style: d.style, fabric: d.fabric,
+            pcsPerSet: Number(d.pcs_per_set) || 1, color: d.color,
             description: d.description, active: d.active, updatedAt: d.updated_at,
           },
           barcodes: (bcs ?? []).map((b) => ({ barcode: b.barcode, active: b.active })),
@@ -431,11 +446,16 @@ Deno.serve(async (request: Request) => {
       const firm = clean(body.firm);
       if (!["Maitri", "Niharika", "Both"].includes(firm)) throw new Error("Firm must be Maitri, Niharika or Both");
       // Image is owned by the Excel/sheet sync and is not editable here.
+      const pcsPerSet = Math.round(Number(body.pcsPerSet));
+      if (!Number.isFinite(pcsPerSet) || pcsPerSet < 1 || pcsPerSet > 9999) {
+        throw new Error("Pcs per set must be between 1 and 9999");
+      }
       const patch = {
         firm,
         category: clean(body.category),
+        style: clean(body.style),
         fabric: clean(body.fabric),
-        color: clean(body.color),
+        pcs_per_set: pcsPerSet,
         description: clean(body.description),
         active: body.active === undefined ? true : Boolean(body.active),
       };
@@ -612,7 +632,7 @@ Deno.serve(async (request: Request) => {
       // Fetch both firm orders + items for assisted editing.
       const { data: orders, error: oErr } = await db
         .from("orders")
-        .select("id,firm,status,version,total_designs,total_pieces,admin_unlocked,order_items(barcode,design_no,qty,category_snapshot,fabric_snapshot,color_snapshot,description_snapshot,designs(image_url))")
+        .select("id,firm,status,version,total_designs,total_sets,total_pieces,admin_unlocked,order_items(barcode,design_no,qty,category_snapshot,style_snapshot,fabric_snapshot,pcs_per_set_snapshot,line_note,color_snapshot,description_snapshot,designs(image_url))")
         .eq("customer_id", customerId);
       if (oErr) throw oErr;
       const shaped = (orders ?? []).map((o: any) => ({
@@ -621,6 +641,7 @@ Deno.serve(async (request: Request) => {
         status: o.status,
         version: o.version,
         totalDesigns: o.total_designs,
+        totalSets: o.total_sets,
         totalPieces: o.total_pieces,
         adminUnlocked: o.admin_unlocked,
         items: (o.order_items ?? []).map((i: any) => ({
@@ -628,7 +649,11 @@ Deno.serve(async (request: Request) => {
           designNo: i.design_no,
           qty: i.qty,
           category: i.category_snapshot,
+          style: i.style_snapshot,
           fabric: i.fabric_snapshot,
+          pcsPerSet: Number(i.pcs_per_set_snapshot) || 1,
+          totalPieces: Number(i.qty || 0) * (Number(i.pcs_per_set_snapshot) || 1),
+          note: i.line_note ?? "",
           color: i.color_snapshot,
           description: i.description_snapshot,
           imageUrl: i.designs?.image_url ?? "",

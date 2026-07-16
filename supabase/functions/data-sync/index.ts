@@ -1,6 +1,7 @@
+
 // Generic two-way data mirror for the Google Sheet workbook.
-// Secret-gated (x-sheet-sync-secret). Pull = read a table; Push = upsert/update/delete
-// rows. Only whitelisted (writable) columns are ever changed.
+// Secret-gated (x-sheet-sync-secret). Pull = read a table; Push = guarded
+// upsert/update, with explicit deletion limited to low-risk lookup rows.
 
 import { optionsResponse } from "../_shared/cors.ts";
 import { clean, errorMessage, jsonResponse } from "../_shared/http.ts";
@@ -13,14 +14,17 @@ type TableCfg = {
   cols: string[];        // columns returned on pull
   write: string[];       // columns that may be changed on push
   insert: boolean;       // may new rows be created?
+  deletable?: boolean;   // explicit Sheet deletes allowed only for low-risk tables
+  hide?: string[];       // legacy columns intentionally omitted from the Sheet
   recomputeOrders?: boolean;
 };
 
 const TABLES: Record<string, TableCfg> = {
   designs: {
     pk: "design_no",
-    cols: ["design_no","firm","image_url","category","fabric","color","description","active","sync_version","updated_at"],
-    write: ["firm","image_url","category","fabric","color","description","active"],
+    cols: ["design_no","firm","image_url","category","style","fabric","pcs_per_set","description","active","sync_version","updated_at"],
+    write: ["firm","image_url","category","style","fabric","pcs_per_set","description","active"],
+    hide: ["color"],
     insert: true,
   },
   barcode_mappings: {
@@ -37,14 +41,15 @@ const TABLES: Record<string, TableCfg> = {
   },
   orders: {
     pk: "id",
-    cols: ["id","customer_id","firm","status","total_designs","total_pieces","version","admin_unlocked","updated_at"],
+    cols: ["id","customer_id","firm","status","total_designs","total_sets","total_pieces","version","admin_unlocked","updated_at"],
     write: ["status","admin_unlocked"],
     insert: false,
   },
   order_items: {
     pk: "id",
-    cols: ["id","order_id","barcode","design_no","qty","category_snapshot","fabric_snapshot","color_snapshot","description_snapshot"],
-    write: ["qty"],
+    cols: ["id","order_id","barcode","design_no","qty","category_snapshot","style_snapshot","fabric_snapshot","pcs_per_set_snapshot","line_note","description_snapshot"],
+    write: ["qty","line_note"],
+    hide: ["color_snapshot"],
     insert: false,
     recomputeOrders: true,
   },
@@ -65,6 +70,7 @@ const TABLES: Record<string, TableCfg> = {
     cols: ["kind","value","created_at"],
     write: ["kind","value"],
     insert: true,
+    deletable: true,
   },
   system_settings: {
     pk: "singleton",
@@ -75,7 +81,7 @@ const TABLES: Record<string, TableCfg> = {
 };
 
 const BOOL = new Set(["active","admin_unlocked","registration_enabled","singleton"]);
-const INT = new Set(["qty","capacity","party_size","total_designs","total_pieces","version","edit_window_hours"]);
+const INT = new Set(["qty","pcs_per_set","pcs_per_set_snapshot","capacity","party_size","total_designs","total_sets","total_pieces","version","edit_window_hours"]);
 
 function requireSecret(req: Request) {
   const exp = Deno.env.get("SHEET_SYNC_SECRET") ?? "";
@@ -108,17 +114,19 @@ async function pull(db: SupabaseClient, table: string) {
   }
   // Known columns first (stable order), then any new/extra columns discovered in the data.
   const seen = new Set(cfg.cols);
+  const hidden = new Set(cfg.hide ?? []);
   const extra: string[] = [];
-  for (const r of out) for (const k of Object.keys(r)) if (!seen.has(k)) { seen.add(k); extra.push(k); }
+  for (const r of out) for (const k of Object.keys(r)) if (!seen.has(k) && !hidden.has(k)) { seen.add(k); extra.push(k); }
   return { table, columns: cfg.cols.concat(extra), rows: out };
 }
 
 async function recompute(db: SupabaseClient, orderId: string) {
-  const { data } = await db.from("order_items").select("qty").eq("order_id", orderId);
+  const { data } = await db.from("order_items").select("qty,pcs_per_set_snapshot").eq("order_id", orderId);
   const items = data ?? [];
   await db.from("orders").update({
     total_designs: items.length,
-    total_pieces: items.reduce((s: number, i: any) => s + Number(i.qty || 0), 0),
+    total_sets: items.reduce((s: number, i: any) => s + Number(i.qty || 0), 0),
+    total_pieces: items.reduce((s: number, i: any) => s + Number(i.qty || 0) * (Number(i.pcs_per_set_snapshot) || 1), 0),
     updated_at: new Date().toISOString(),
   }).eq("id", orderId);
 }
@@ -139,11 +147,19 @@ async function push(db: SupabaseClient, table: string, rows: any[]) {
     const hasPk = pkArr.every((k) => String(r[k] ?? "").trim() !== "");
 
     if (truthy(r._delete)) {
+      if (!cfg.deletable) throw new Error(`DELETE_NOT_ALLOWED_FOR_${table.toUpperCase()}_USE_ACTIVE_OR_STATUS`);
       if (!hasPk) continue;
       const m: any = {}; pkArr.forEach((k) => m[k] = coerce(k, r[k]));
       const { error } = await db.from(table).delete().match(m);
       if (error) throw error;
       deleted++; continue;
+    }
+
+    if (table === "designs" && "pcs_per_set" in r) {
+      const pcs = Number(r.pcs_per_set);
+      if (!Number.isInteger(pcs) || pcs < 1 || pcs > 9999) {
+        throw new Error(`INVALID_PCS_PER_SET_FOR_${clean(r.design_no) || "NEW_DESIGN"}`);
+      }
     }
 
     const patch: any = {};
