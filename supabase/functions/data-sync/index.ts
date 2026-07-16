@@ -1,7 +1,7 @@
 
 // Generic two-way data mirror for the Google Sheet workbook.
 // Secret-gated (x-sheet-sync-secret). Pull = read a table; Push = guarded
-// upsert/update, with explicit deletion limited to low-risk lookup rows.
+// upsert/update. Destructive deletes are blocked for every mirrored table.
 
 import { optionsResponse } from "../_shared/cors.ts";
 import { clean, errorMessage, jsonResponse } from "../_shared/http.ts";
@@ -64,13 +64,6 @@ const TABLES: Record<string, TableCfg> = {
     cols: ["id","customer_id","slot_id","party_size","note","status","created_at"],
     write: ["party_size","note","status","slot_id"],
     insert: false,
-  },
-  lookup_values: {
-    pk: ["kind","value"],
-    cols: ["kind","value","created_at"],
-    write: ["kind","value"],
-    insert: true,
-    deletable: true,
   },
   staff_profiles: {
     pk: "auth_user_id",
@@ -143,6 +136,19 @@ async function push(db: SupabaseClient, table: string, rows: any[]) {
   if (!Array.isArray(rows)) throw new Error("ROWS_MUST_BE_AN_ARRAY");
   if (cfg.write.length === 0 && rows.length) throw new Error(`READ_ONLY_TABLE_${table.toUpperCase()}`);
   const pkArr = Array.isArray(cfg.pk) ? cfg.pk : [cfg.pk];
+  const existingDesignNos = new Set<string>();
+  if (table === "designs") {
+    const designNos = Array.from(new Set(rows
+      .map((row) => clean(row?.design_no))
+      .filter(Boolean)));
+    for (let i = 0; i < designNos.length; i += 500) {
+      const { data, error } = await db.from("designs")
+        .select("design_no")
+        .in("design_no", designNos.slice(i, i + 500));
+      if (error) throw error;
+      for (const row of data ?? []) existingDesignNos.add(String(row.design_no));
+    }
+  }
   const affected = new Set<string>();
   const upserts: any[] = [];
   const inserts: any[] = [];
@@ -162,15 +168,24 @@ async function push(db: SupabaseClient, table: string, rows: any[]) {
       deleted++; continue;
     }
 
-    if (table === "designs" && "pcs_per_set" in r) {
-      const pcs = Number(r.pcs_per_set);
-      if (!Number.isInteger(pcs) || pcs < 1 || pcs > 9999) {
-        throw new Error(`INVALID_PCS_PER_SET_FOR_${clean(r.design_no) || "NEW_DESIGN"}`);
-      }
-    }
-
     const patch: any = {};
     for (const c of cfg.write) if (c in r) patch[c] = coerce(c, r[c]);
+
+    if (table === "designs") {
+      const designNo = clean(r.design_no);
+      const rawPcs = r.pcs_per_set;
+      const missingPcs = rawPcs === "" || rawPcs === null || rawPcs === undefined;
+      if (missingPcs) {
+        if (designNo && !existingDesignNos.has(designNo)) patch.pcs_per_set = 4;
+        else delete patch.pcs_per_set;
+      } else {
+        const pcs = Number(rawPcs);
+        if (!Number.isInteger(pcs) || pcs < 1 || pcs > 9999) {
+          throw new Error(`INVALID_PCS_PER_SET_FOR_${designNo || "NEW_DESIGN"}`);
+        }
+        patch.pcs_per_set = pcs;
+      }
+    }
 
     if (cfg.insert) {
       if (hasPk) { const rec = { ...patch }; pkArr.forEach((k) => rec[k] = coerce(k, r[k])); upserts.push(rec); }

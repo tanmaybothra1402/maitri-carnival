@@ -11,8 +11,7 @@
 <link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-    :root{--teal:#2B7379;--teal-deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#FFFFFF;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--indigo:#2E2A6B;--pink:#E6007E}
+<style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
     html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
     html,body{min-height:100%;max-width:100%;overflow-x:hidden;background:var(--warm);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
@@ -105,7 +104,34 @@
 html,body{touch-action:manipulation}input,select,textarea{font-size:16px!important;max-width:100%}.firm-logo{display:block;width:auto;object-fit:contain;flex:0 0 auto}.firmlogos .maitri-logo{height:24px}.firmlogos .niharika-logo{height:23px}.brandbar .maitri-logo{height:30px}.brandbar .niharika-logo{height:29px}.brandbar{overflow:hidden}.card,.item,.item>div,.step>div,.modal-card,.savebar{min-width:0}.copy,.meta,.step p,.status-banner,.line-total,.line-note{overflow-wrap:anywhere;word-break:break-word}.item{overflow:hidden}.line-note{width:100%;font-size:16px!important}.loading{backdrop-filter:blur(2px)}
 @media(max-width:520px){.firmlogos{display:flex!important;gap:6px}.firmlogos .maitri-logo{height:18px}.firmlogos .niharika-logo{height:17px}.bdiv{display:none}.brandbar{gap:9px}.brandbar .maitri-logo{height:24px}.brandbar .niharika-logo{height:23px}}
 @media(max-width:390px){.firmlogos .niharika-logo{display:block!important;height:14px}.firmlogos .maitri-logo{height:15px}.brandbar .maitri-logo{height:22px}.brandbar .niharika-logo{height:21px}}
-</style></head>
+</style>
+<style id="ekum-customer-design-system-170009">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+html,body{background:var(--warm);color:var(--body);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;line-height:1.5}
+h1,h2,h3{color:var(--ink);line-height:1.2}h1{font-size:22px;font-weight:700}h2{font-size:16px;font-weight:700}.copy{font-size:12px;color:var(--muted);line-height:1.5}b,.metric,.countdown{font-variant-numeric:tabular-nums}
+.appbar{min-height:60px;height:60px;padding:0 14px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);box-shadow:var(--sh-1);backdrop-filter:blur(14px)}.wordmark{font-size:14px;color:var(--teal-deep);letter-spacing:.12em}.logo-dot{width:10px;height:10px;background:var(--orange)}.brand-sub{font-size:9px;color:var(--muted)}.bdiv{height:24px;background:var(--line)}.firmlogos .firm-logo{height:18px}.top-actions{gap:8px}.icon-btn{min-width:40px;min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:11px;font-weight:800}.icon-btn:hover{background:var(--foam)}
+main{width:min(100%,620px);padding:16px 12px 40px}.brandbar{padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}.brandbar .firm-logo{height:20px}.hero{padding:24px;border-radius:var(--r-lg);background:linear-gradient(135deg,var(--teal-deep),var(--teal));box-shadow:var(--sh-pop)}.hero h1{color:#fff}.hero p{font-size:13px;color:rgba(255,255,255,.86)}.hero .dates{border-radius:var(--r-pill);background:rgba(255,255,255,.16);font-size:11px;font-weight:800}
+.card{margin-top:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--card);box-shadow:var(--sh-2)}
+label{margin:12px 0 6px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.optional{font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}
+input,select,textarea{border:1px solid #D8E1DE;border-radius:var(--r-xs);background:#fff;color:var(--ink);font-size:16px;transition:border-color 120ms var(--ease),box-shadow 120ms var(--ease)}input,select{height:46px;min-height:46px;padding:0 13px}textarea{min-height:88px;padding:12px 13px}input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23225E63' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:38px}input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{appearance:textfield}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 16px;border:0;border-radius:var(--r-xs);background:var(--teal-deep);color:#fff;font-size:14px;font-weight:800;box-shadow:var(--sh-1);cursor:pointer;transition:transform 120ms var(--ease),background 120ms var(--ease),box-shadow 120ms var(--ease)}.btn:hover{background:#1C5358}.btn:active{transform:translateY(1px) scale(.99)}.btn.secondary{background:#fff;border:1.5px solid var(--teal-deep);color:var(--teal-deep);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--body);box-shadow:none}.btn.danger{background:var(--error)}.btn.danger-outline{background:#fff;border:1.5px solid var(--error);color:var(--error)}.btn:disabled{background:#EAEEEC;color:#9AA3A0;box-shadow:none;cursor:not-allowed;transform:none}
+.switch,.firm-tabs{padding:4px;border:1px solid var(--line);border-radius:var(--r);background:#fff;box-shadow:var(--sh-1)}.switch button,.firm-tab{min-height:40px;border-radius:var(--r-xs);color:var(--body);transition:background 200ms var(--ease),color 200ms var(--ease)}.switch button.active,.firm-tab.active{background:var(--teal-deep);color:#fff;box-shadow:var(--sh-1)}
+.welcome-card{overflow:hidden}.welcome-kicker{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-deep)}.welcome-copy{font-size:13px;color:var(--body)}.steps{gap:8px}.step{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.step .n{width:28px;height:28px;border-radius:50%;background:var(--foam);color:var(--teal-deep);font-size:11px;font-weight:800}.step.done .n{background:var(--success);color:#fff}.step.current,.step.active{border-color:var(--teal);background:var(--foam);box-shadow:0 0 0 2px rgba(43,115,121,.18)}.step.current .n,.step.active .n{background:var(--orange);color:#fff}.step.waiting{border-color:#F4D69B;background:var(--warn-bg)}.step.upcoming{opacity:.7}.step-copy b{font-size:13px}.step-copy p{font-size:11px;color:var(--muted)}.step-actions{justify-content:flex-end}.step-action{min-height:38px;margin:0;padding:0 12px;border-radius:var(--r-xs);font-size:12px}.step-action.secondary{border:1.5px solid var(--teal-deep)}
+.status-banner{border-radius:var(--r);font-size:13px}.status-banner.wait{background:var(--warn-bg);color:#7A520D;border-color:#F4D69B}.status-banner.ok{background:var(--success-bg);color:var(--success);border-color:#A7E9BF}.status-banner .dot{width:9px;height:9px}.booked-summary{border-color:var(--teal);border-radius:var(--r);background:var(--foam)}
+.slot-grid{gap:8px}.slot-colhead{border-radius:var(--r-xs);background:var(--foam)}.slot-cell{min-height:48px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff}.slot-cell.picked{border-color:var(--teal);background:var(--foam);box-shadow:0 0 0 2px rgba(43,115,121,.18)}.slot-cell.picked::after{content:"✓";display:block;margin-top:3px;color:var(--success);font-size:10px;font-weight:800}
+.countdown{top:60px;border-radius:var(--r-pill);background:var(--teal-deep);box-shadow:var(--sh-1)}.countdown.warn{background:var(--warn)}.countdown.danger{background:var(--error)}.firm-tabs{top:60px}.summary{gap:8px}.metric{padding:10px;border-radius:var(--r);background:var(--foam)}.metric b{color:var(--teal-deep);font-size:20px}.metric span{font-size:9px;font-weight:800;color:var(--muted)}
+.scan-actions{gap:8px}.reader{border-radius:var(--r)}.notice{border-radius:var(--r);background:var(--warn-bg);color:var(--warn)}.notice.error{background:var(--error-bg);color:var(--error)}.notice.success{background:var(--success-bg);color:var(--success)}
+.items{gap:12px}.item{grid-template-columns:84px minmax(0,1fr);padding:12px;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}.thumb{width:84px;height:112px;border-radius:var(--r-xs);object-fit:cover;object-position:center top}.item h3{color:var(--ink);font-size:14px}.meta{color:var(--muted);font-size:11px}.qty{justify-content:flex-start;gap:8px}.qty button{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:20px}.qty input{width:60px;height:44px;min-height:44px;font-size:16px;font-weight:800}.remove{min-width:44px}.line-note{border-radius:var(--r-xs)}
+.savebar{bottom:8px;gap:8px;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.96);box-shadow:var(--sh-pop);padding-bottom:max(8px,env(safe-area-inset-bottom))}.savebar .btn{min-height:48px}.empty{border-radius:var(--r-lg);background:#F8FBFA}
+.toast{top:72px;border-radius:var(--r-pill);background:var(--ink);box-shadow:var(--sh-pop);animation:toast-in 200ms var(--ease) both}.toast.success{background:var(--success)}.toast.error{background:var(--error)}.loading{background:rgba(20,30,28,.5)}.loader-card{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}.spinner{width:20px;height:20px}
+.modal{background:rgba(20,30,28,.5);backdrop-filter:blur(2px)}.modal-card{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}.cred{border-color:var(--teal);border-radius:var(--r);background:var(--foam)}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.step{grid-template-columns:28px minmax(0,1fr)}.step-actions{grid-column:2;justify-content:flex-start}.step-action{width:auto}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:102px}}
+@media(max-width:399px){.firmlogos,.bdiv{display:none}.brandbar{gap:8px}.top-actions{gap:4px}.icon-btn{padding:0 9px;font-size:10px}main{padding-left:8px;padding-right:8px}}
+@media(min-width:720px){.modal{align-items:center;padding:20px}.modal-card{max-width:460px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}}
+</style>
+</head>
 <body oncontextmenu="return false">
 <div class="config-warning hidden" id="config-warning">Replace the Supabase placeholders in this file before publishing.</div>
 <header class="appbar hidden" id="app-top">
@@ -134,8 +160,8 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <form class="hidden" id="register-form" style="margin-top:12px">
 <label>Company / firm name</label><input id="reg-company" maxlength="120" required=""/>
 <label>Contact person</label><input id="reg-contact" maxlength="100" required=""/>
-<div class="grid2"><div><label>City</label><input autocomplete="off" id="reg-city" list="dl-city" placeholder="Type or pick" required=""/></div><div><label>State</label><select id="reg-state" required=""></select></div></div>
-<label>Agent <span class="optional">(type or pick)</span></label><input autocomplete="off" id="reg-agent" list="dl-agent" placeholder="Your agent's name"/>
+<div class="grid2"><div><label>City</label><input autocomplete="off" id="reg-city" placeholder="Enter city" required=""/></div><div><label>State</label><select id="reg-state" required=""></select></div></div>
+<label>Agent <span class="optional">(optional)</span></label><input autocomplete="off" id="reg-agent" placeholder="Your agent's name"/>
 <label>GSTIN <span class="optional">(optional)</span></label><input id="reg-gstin" maxlength="15"/>
 <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="reg-phone" inputmode="numeric" maxlength="10" required=""/></div>
 <label>Create password <span class="optional">(min 8 characters)</span></label><input autocomplete="new-password" id="reg-password" minlength="8" required="" type="password"/>
@@ -200,14 +226,12 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <!-- ACCOUNT -->
 <section class="hidden" id="account-screen">
 <div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to our exhibition team.</p>
-<div class="account-grid"><div><label>Company</label><input id="acc-company"/></div><div><label>Contact</label><input id="acc-contact"/></div><div><label>City</label><input autocomplete="off" id="acc-city" list="dl-city"/></div><div><label>State</label><select id="acc-state"></select></div></div>
-<label>Agent</label><input autocomplete="off" id="acc-agent" list="dl-agent"/>
+<div class="account-grid"><div><label>Company</label><input id="acc-company"/></div><div><label>Contact</label><input id="acc-contact"/></div><div><label>City</label><input autocomplete="off" id="acc-city"/></div><div><label>State</label><select id="acc-state"></select></div></div>
+<label>Agent</label><input autocomplete="off" id="acc-agent"/>
 <label>GSTIN</label><input id="acc-gstin"/><button class="btn" id="save-account">Save account details</button><button class="btn secondary" id="back-order">Back</button>
 </div>
 </section>
 </main>
-<datalist id="dl-city"></datalist>
-<datalist id="dl-agent"></datalist>
 <!-- Credentials modal -->
 <div class="modal" id="cred-modal">
 <div class="modal-card">
@@ -380,7 +404,7 @@ async function ensureScanner() {
   );
 }
 
-// Populate state selects + lookup datalists.
+// Populate state selects.
 function fillStates() {
   const opts =
     '<option value="">Select state</option>' +
@@ -388,22 +412,7 @@ function fillStates() {
   $("reg-state").innerHTML = opts;
   $("acc-state").innerHTML = opts;
 }
-async function loadLookups() {
-  try {
-    const { data } = await sb.rpc("list_lookups");
-    const L = data || {};
-    $("dl-city").innerHTML = (L.city || [])
-      .map((v) => `<option value="${esc(v)}">`)
-      .join("");
-    $("dl-agent").innerHTML = (L.agent || [])
-      .map((v) => `<option value="${esc(v)}">`)
-      .join("");
-  } catch (e) {
-    /* non-blocking */
-  }
-}
 fillStates();
-if (sb) loadLookups();
 
 function show(screen) {
   state.screen = screen;
@@ -1540,7 +1549,6 @@ $("save-account").onclick = async () => {
       .single();
     if (error) throw error;
     state.profile = data;
-    loadLookups();
     toast("Account updated", "success");
     show(state.status?.checkedIn ? "order" : "lobby");
   } catch (err) {

@@ -27,13 +27,13 @@ Each tab shows all columns for reference; **only the tinted columns are written 
 | OrderItems | qty, line_note | No |
 | Slots | starts_at, ends_at, label, capacity, active | Yes (leave id blank) |
 | Bookings | party_size, note, status, slot_id | No |
-| Lookups | kind, value | Yes |
+| Staff | Read-only | No |
 | Settings | event_name, event dates, registration_enabled, edit_window_hours | No |
 
 ## Editing rules
 
 - **Pull first**, edit, then **Push this tab** (push only affects the active tab).
-- **Delete a lookup row:** put `TRUE` in its `_delete` column, then push. Direct Sheet deletion is blocked for designs, mappings, customers, orders, order items, slots, bookings and settings; use their `active`, `status`, or admin workflow instead.
+- Destructive deletes are not available from any Sheet tab. Use `active`, `status`, or the guarded admin workflow instead.
 - **Add a design:** new row with a unique `design_no` + firm + category + style + fabric + pcs_per_set (+ image_url). Push.
 - **Product images:** put the ImageKit link in `image_url` on the Designs tab and push — that's how images get attached.
 - Editing `OrderItems.qty` automatically recomputes total sets and total pieces using `pcs_per_set_snapshot`. `line_note` stores the customer/staff note for that design.
@@ -42,6 +42,6 @@ Each tab shows all columns for reference; **only the tinted columns are written 
 ## Safety notes
 
 - The push only touches editable columns, so you can't accidentally corrupt ids or versions.
-- Destructive Sheet deletes are allowed only on Lookups. Product, order, customer and booking rows must be deactivated or changed through their guarded workflow.
+- Destructive Sheet deletes are blocked on every tab. Product, order, customer and booking rows must be deactivated or changed through their guarded workflow.
 - Customers/Orders/OrderItems are update-only (no new rows) — orders are created by the app.
 - Keep the `SHEET_SYNC_SECRET` private; anyone with it and the URL can read/write data.
