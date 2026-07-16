@@ -1,0 +1,3 @@
+DesignNo,Firm,ImageURL,Category,Fabric,Color,Description,Active
+MT-EXAMPLE-001,Maitri,https://ik.imagekit.io/YOUR_ID/path/example.jpg,Kurta Set,Cotton,Blue,Delete this example before live sync,TRUE
+NH-EXAMPLE-001,Niharika,https://ik.imagekit.io/YOUR_ID/path/example-2.jpg,Suit Set,Viscose,Pink,Delete this example before live sync,FALSE

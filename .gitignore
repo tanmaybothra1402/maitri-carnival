@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+supabase/.temp/
+node_modules/
+*.log
+
+# Local Supabase secrets
+supabase/.env.production
