@@ -121,10 +121,17 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="entry-board">
 <section class="entry-section entry-pending-section">
 <div class="entry-section-head">
-<div><span class="entry-kicker">Action first</span><h2>Pending</h2><p>Current slot first, then past slots, upcoming slots and customers without a slot.</p></div>
+<div><span class="entry-kicker">By visit slot</span><h2>Booked — awaiting entry</h2><p>Current slot first, then past and upcoming slots.</p></div>
 <span class="entry-count" id="entry-pending-count">0</span>
 </div>
 <div class="entry-scroll" id="entry-pending"></div>
+</section>
+<section class="entry-section entry-noslot-section">
+<div class="entry-section-head">
+<div><span class="entry-kicker">Walk-ins</span><h2>No slot booked</h2><p>Registered visitors who did not book a slot — check them in here.</p></div>
+<span class="entry-count" id="entry-noslot-count">0</span>
+</div>
+<div class="entry-scroll" id="entry-noslot"></div>
 </section>
 <section class="entry-section entry-completed-section">
 <div class="entry-section-head">
@@ -639,14 +646,18 @@ function entryCard(c, completed = false) {
   </article>`;
 }
 function renderEntryLists(rows = st.entryRows) {
-  const pending = rows.filter((c) => !c.checkedInAt).sort((a, b) => {
+  const notIn = rows.filter((c) => !c.checkedInAt);
+  const booked = notIn.filter((c) => c.booking && c.booking.startsAt).sort((a, b) => {
     const aa = entrySlotInfo(a), bb = entrySlotInfo(b);
     return aa.rank - bb.rank || aa.time - bb.time || String(a.companyName).localeCompare(String(b.companyName));
   });
+  const noslot = notIn.filter((c) => !(c.booking && c.booking.startsAt)).sort((a, b) => String(a.companyName).localeCompare(String(b.companyName)));
   const completed = rows.filter((c) => c.checkedInAt).sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt));
-  $("entry-pending-count").textContent = pending.length;
+  $("entry-pending-count").textContent = booked.length;
+  $("entry-noslot-count").textContent = noslot.length;
   $("entry-completed-count").textContent = completed.length;
-  $("entry-pending").innerHTML = pending.length ? pending.map((c) => entryCard(c, false)).join("") : '<div class="empty">No pending customers match this search.</div>';
+  $("entry-pending").innerHTML = booked.length ? booked.map((c) => entryCard(c, false)).join("") : '<div class="empty">No booked visitors awaiting entry.</div>';
+  $("entry-noslot").innerHTML = noslot.length ? noslot.map((c) => entryCard(c, false)).join("") : '<div class="empty">No walk-ins without a slot.</div>';
   $("entry-completed").innerHTML = completed.length ? completed.map((c) => entryCard(c, true)).join("") : '<div class="empty">No completed entries match this search.</div>';
 }
 async function searchEntry() {
@@ -1979,6 +1990,32 @@ window.visualViewport?.addEventListener("resize", () => {
       loading(false);
     }
   } else setLogged(false);
+})();
+
+/* Default section auto-follows the first ticked module (create + edit). */
+(function () {
+  var ORDER = ["reception", "sales", "products", "dashboard", "admin"];
+  var SECTION = { reception: "reception", sales: "sale", products: "products", dashboard: "dashboard", admin: "admin" };
+  function firstChecked(prefix) {
+    for (var i = 0; i < ORDER.length; i++) {
+      var el = document.getElementById(prefix + "-group-" + ORDER[i]);
+      if (el && el.checked) return ORDER[i];
+    }
+    return null;
+  }
+  function sync(prefix, selectId, saveBtnId) {
+    var first = firstChecked(prefix);
+    var sel = document.getElementById(selectId);
+    if (first && sel) sel.value = SECTION[first];
+    var btn = document.getElementById(saveBtnId);
+    if (btn) btn.disabled = !first; // a member with no modules is invalid
+  }
+  ORDER.forEach(function (k) {
+    var c = document.getElementById("staff-group-" + k);
+    if (c) c.addEventListener("change", function () { sync("staff", "staff-default", "staff-create"); });
+    var e = document.getElementById("edit-group-" + k);
+    if (e) e.addEventListener("change", function () { sync("edit", "edit-staff-default", "edit-staff-save"); });
+  });
 })();
 
 </script>
