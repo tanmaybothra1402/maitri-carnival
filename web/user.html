@@ -96,7 +96,10 @@
     .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:520px){.firmlogos,.bdiv{display:none}}
     @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
-  </style>
+  
+.welcome-card{padding:18px;background:linear-gradient(145deg,#FFFFFF,#FAFDFC);border-color:rgba(43,115,121,.18)}.welcome-kicker{display:block;margin-bottom:4px;color:var(--orange);font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.welcome-copy{margin-top:5px;color:var(--muted);font-size:11.5px;line-height:1.55}.step{display:grid!important;grid-template-columns:24px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important}.step-copy{min-width:0}.step-actions{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:5px;max-width:150px}.step-action{min-height:34px!important;margin:0!important;padding:0 11px!important;white-space:nowrap}.booked-summary{background:linear-gradient(135deg,#F1F8F7,#E8F2F1)}
+@media(max-width:430px){.step{grid-template-columns:22px minmax(0,1fr) minmax(88px,auto)!important;gap:8px!important;padding:9px 10px!important}.step-actions{max-width:112px}.step-action{min-height:32px!important;padding:0 8px!important;font-size:9.5px!important}.step b{font-size:11.5px}.step p{font-size:10px}.welcome-card{padding:14px}}
+</style>
 <style>
 /* Real firm marks, mobile keyboard stability, and safe content containment. */
 html,body{touch-action:manipulation}input,select,textarea{font-size:16px!important;max-width:100%}.firm-logo{display:block;width:auto;object-fit:contain;flex:0 0 auto}.firmlogos .maitri-logo{height:24px}.firmlogos .niharika-logo{height:23px}.brandbar .maitri-logo{height:30px}.brandbar .niharika-logo{height:29px}.brandbar{overflow:hidden}.card,.item,.item>div,.step>div,.modal-card,.savebar{min-width:0}.copy,.meta,.step p,.status-banner,.line-total,.line-note{overflow-wrap:anywhere;word-break:break-word}.item{overflow:hidden}.line-note{width:100%;font-size:16px!important}.loading{backdrop-filter:blur(2px)}
@@ -120,7 +123,7 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <div class="brandbar">
 <div class="wordmark"><i class="logo-dot"></i>EKUM</div>
 <img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
-<div class="hero"><h1>Maitri Carnival 2026</h1><p>Register once and keep your login. Book a visit slot, get checked in at the counter, then build and edit your Maitri and Niharika orders on your phone.</p><span class="dates">19 – 21 July 2026</span></div>
+<div class="hero"><h1>Welcome to Maitri Carnival 2026</h1><p>We are delighted to host you. Your visit, entry and orders are organised here so you can move through the Carnival comfortably.</p><span class="dates">19 – 21 July 2026</span></div>
 <div class="card">
 <div class="switch"><button class="active" id="login-mode">Login</button><button id="register-mode">Register</button></div>
 <form id="login-form" style="margin-top:12px">
@@ -144,15 +147,16 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </section>
 <!-- LOBBY -->
 <section class="hidden" id="lobby-screen">
-<div class="card">
+<div class="card welcome-card">
+<span class="welcome-kicker">Your Carnival journey</span>
 <h2>Welcome, <span id="lobby-name">there</span></h2>
-<p class="copy">Here is how the carnival ordering works:</p>
+<p class="welcome-copy">We are happy to have you with us. Follow the highlighted next step and we will guide you through the rest.</p>
 <div class="steps">
-<div class="step done"><div class="n">✓</div><div><b>Registered</b><p>Your account is ready.</p></div></div>
-<div class="step" id="step-slot"><div class="n">2</div><div><b id="step-slot-title">Book a visit slot</b><p id="step-slot-copy">Optional, helps us manage the crowd.</p><div class="step-actions" id="step-slot-actions"></div></div></div>
-<div class="step" id="step-entry"><div class="n">3</div><div><b id="step-entry-title">Check in at reception</b><p id="step-entry-copy">Show your mobile number to our staff when you arrive.</p><div class="step-actions" id="step-entry-actions"></div></div></div>
-<div class="step" id="step-order"><div class="n">4</div><div><b id="step-order-title">Create your order</b><p id="step-order-copy">Scan product barcodes for Maitri and Niharika.</p><div class="step-actions" id="step-order-actions"></div></div></div>
-<div class="step" id="step-edit"><div class="n">5</div><div><b id="step-edit-title">Edit and download</b><p id="step-edit-copy">Your edit window starts after the first save.</p><div class="step-actions" id="step-edit-actions"></div></div></div>
+<div class="step done" id="step-registered"><div class="n">✓</div><div class="step-copy"><b>Registered</b><p>Your access is ready.</p></div></div>
+<div class="step" id="step-slot"><div class="n">2</div><div class="step-copy"><b id="step-slot-title">Book a visit slot</b><p id="step-slot-copy">Choose a convenient time for your visit.</p></div><div class="step-actions" id="step-slot-actions"></div></div>
+<div class="step" id="step-entry"><div class="n">3</div><div class="step-copy"><b id="step-entry-title">Check in at reception</b><p id="step-entry-copy">Our reception team will welcome you when you arrive.</p></div><div class="step-actions" id="step-entry-actions"></div></div>
+<div class="step" id="step-order"><div class="n">4</div><div class="step-copy"><b id="step-order-title">Create your order</b><p id="step-order-copy">Scan the designs you would like to order.</p></div><div class="step-actions" id="step-order-actions"></div></div>
+<div class="step" id="step-edit"><div class="n">5</div><div class="step-copy"><b id="step-edit-title">Review and download</b><p id="step-edit-copy">Review your saved orders and download the sale order.</p></div><div class="step-actions" id="step-edit-actions"></div></div>
 </div>
 </div>
 <div class="card" id="entry-card">
@@ -161,8 +165,8 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <button class="btn secondary" id="refresh-status-btn">Refresh status</button>
 </div>
 <div class="card" id="booking-card">
-<h2>Book a visit slot</h2>
-<p class="copy">Pick a time that suits you. You can change it any time before the event.</p>
+<span class="welcome-kicker">Plan your visit</span><h2>Your visit slot</h2>
+<p class="copy">Choose a time that suits you. Your booking helps us welcome you without unnecessary waiting.</p>
 <div id="booked-wrap"></div>
 <div id="slot-picker">
 <div class="grid2" style="margin-top:6px">
@@ -195,7 +199,7 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </section>
 <!-- ACCOUNT -->
 <section class="hidden" id="account-screen">
-<div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to exhibition staff.</p>
+<div class="card"><h2>Account details</h2><p class="copy">These details appear on your order PDF and to our exhibition team.</p>
 <div class="account-grid"><div><label>Company</label><input id="acc-company"/></div><div><label>Contact</label><input id="acc-contact"/></div><div><label>City</label><input autocomplete="off" id="acc-city" list="dl-city"/></div><div><label>State</label><select id="acc-state"></select></div></div>
 <label>Agent</label><input autocomplete="off" id="acc-agent" list="dl-agent"/>
 <label>GSTIN</label><input id="acc-gstin"/><button class="btn" id="save-account">Save account details</button><button class="btn secondary" id="back-order">Back</button>
@@ -620,8 +624,8 @@ function applyStatusSteps() {
       "step-slot",
       "current",
       "Book a visit slot",
-      "Choose a convenient time for your visit.",
-      '<button class="step-action" data-journey="slot">Choose a slot</button><button class="step-action secondary" data-journey="skip-slot">Continue without booking</button>',
+      "Choose a convenient time so we can welcome you smoothly.",
+      '<button class="step-action" data-journey="slot">Choose slot</button><button class="step-action secondary" data-journey="skip-slot">Skip for now</button>',
     );
   } else
     setStep(
@@ -629,7 +633,7 @@ function applyStatusSteps() {
       "done",
       "Visit slot skipped",
       "Slot booking is optional.",
-      '<button class="step-action secondary" data-journey="slot">Book one now</button>',
+      '<button class="step-action secondary" data-journey="slot">Book a slot</button>',
     );
   if (s.checkedIn)
     setStep(
@@ -647,10 +651,10 @@ function applyStatusSteps() {
       booked || state.skippedSlot ? "waiting" : "upcoming",
       "Check in at reception",
       booked || state.skippedSlot
-        ? "Show your registered mobile number to reception."
+        ? "Show your registered mobile number to our reception team."
         : "Complete or skip the optional slot step first.",
       booked || state.skippedSlot
-        ? '<button class="step-action" data-journey="entry">View entry status</button>'
+        ? '<button class="step-action" data-journey="entry">Entry status</button>'
         : "",
     );
   if (!s.checkedIn)
@@ -666,8 +670,8 @@ function applyStatusSteps() {
       "step-order",
       "current",
       "Create your order",
-      "Scan designs for Maitri and Niharika.",
-      '<button class="step-action" data-journey="order">Start my order</button>',
+      "Explore and scan the Maitri and Niharika designs you prefer.",
+      '<button class="step-action" data-journey="order">Start order</button>',
     );
   else
     setStep(
@@ -675,22 +679,22 @@ function applyStatusSteps() {
       "done",
       "Order started",
       `${o.designs} designs · ${o.sets} sets saved`,
-      '<button class="step-action secondary" data-journey="order">Continue ordering</button>',
+      '<button class="step-action secondary" data-journey="order">Continue</button>',
     );
   if (!o.started)
     setStep(
       "step-edit",
       "upcoming",
-      "Edit and download",
-      "Your edit window starts after the first save.",
+      "Review and download",
+      "Your review window starts after the first save.",
       "",
     );
   else if (windowClosed())
     setStep(
       "step-edit",
       "done",
-      "Ordering window completed",
-      "Your saved orders remain available to view and download.",
+      "Order review completed",
+      "Your saved orders remain available whenever you need them.",
       '<button class="step-action secondary" data-journey="edit">View orders</button>',
     );
   else {
@@ -702,9 +706,9 @@ function applyStatusSteps() {
     setStep(
       "step-edit",
       "current",
-      "Edit and download",
+      "Review and download",
       `You can update both orders for another ${h}h ${m}m.`,
-      '<button class="step-action" data-journey="edit">Continue editing</button>',
+      '<button class="step-action" data-journey="edit">Review order</button>',
     );
   }
 }
@@ -726,11 +730,7 @@ $("lobby-screen").addEventListener("click", async (e) => {
     return;
   }
   if (a === "slot") {
-    const picker = $("slot-picker");
-    picker.classList.remove("hidden");
-    renderSlotGrid();
     focusJourneyCard("booking-card");
-    setTimeout(() => $("party-size").focus(), 450);
     return;
   }
   if (a === "entry") {
@@ -752,7 +752,7 @@ function renderEntry() {
   const text = $("entry-text");
   if (s.active === false) {
     banner.className = "status-banner wait";
-    text.innerHTML = "<b>Account paused.</b> Please speak to exhibition staff.";
+    text.innerHTML = "<b>Account paused.</b> Please speak to our reception team.";
     $("enter-order-btn").classList.add("hidden");
     return;
   }
@@ -770,7 +770,7 @@ function renderEntry() {
     text.innerHTML =
       "<b>Entry pending.</b> Please visit the counter and show your mobile number <b>+" +
       esc(state.profile?.phone_e164 || "") +
-      "</b>. This screen updates automatically once staff check you in.";
+      "</b>. This screen updates automatically once our reception team checks you in.";
     $("enter-order-btn").classList.add("hidden");
     if (!state.poll)
       state.poll = setInterval(() => refreshStatus().catch(() => {}), 15000);
@@ -806,6 +806,7 @@ function renderBookingCard() {
     $("change-slot-btn").onclick = () => {
       picker.classList.remove("hidden");
       renderSlotGrid();
+      setTimeout(() => picker.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
     };
   } else {
     wrap.innerHTML = "";
@@ -1028,13 +1029,13 @@ function renderCountdown() {
   if (closed && order.adminUnlocked) {
     box.classList.remove("closed");
     $("countdown-text").textContent =
-      "reopened by staff for this " + state.activeFirm + " order";
+      "reopened by our team for this " + state.activeFirm + " order";
     $("save-btn").disabled = false;
     return;
   }
   if (closed) {
     box.classList.add("closed");
-    $("countdown-text").textContent = "closed — ask staff to reopen";
+    $("countdown-text").textContent = "closed — ask our team to reopen";
     $("save-btn").disabled = true;
     return;
   }
@@ -1233,9 +1234,9 @@ function friendlySave(m) {
   if (/NOT_CHECKED_IN/.test(m))
     return "You are not checked in yet. Please visit the counter.";
   if (/EDIT_WINDOW_CLOSED/.test(m))
-    return "Your 24-hour edit window has closed. Ask staff to reopen it.";
+    return "Your 24-hour edit window has closed. Ask our team to reopen it.";
   if (/ORDER_LOCKED/.test(m))
-    return "This order is locked. Ask staff to reopen it.";
+    return "This order is locked. Ask our team to reopen it.";
   if (/NOTE_TOO_LONG/.test(m))
     return "A note is too long. Keep each design note under 500 characters.";
   return m;
