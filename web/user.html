@@ -322,7 +322,7 @@ $('add-barcode').onclick=()=>addBarcode($('barcode-input').value);$('barcode-inp
 $('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err,'error');await stopScanner()}};
 async function stopScanner(){if(state.scanner){try{if(state.scanning)await state.scanner.stop()}catch{}try{await state.scanner.clear()}catch{}}state.scanner=null;state.scanning=false;$('reader').classList.remove('open');$('camera-btn').textContent='Open camera scanner'}
 
-$('save-btn').onclick=async()=>{try{loading(true,'Saving order…');const firm=state.activeFirm,order=state.orders[firm];const items=currentCart().map(x=>({barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1}));const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok){state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));render();throw new Error(data.message)}state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));await refreshStatus();render();toast(`${firm} order saved`,'success')}catch(err){toast(friendlySave(err.message),'error')}finally{loading(false)}};
+$('save-btn').onclick=async()=>{try{loading(true,'Saving order…');const firm=state.activeFirm,order=state.orders[firm];const items=currentCart().map(x=>({barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1}));const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok){state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));render();throw new Error(data.message)}state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));await refreshStatus();render();toast(`${firm} order saved`,'success')}catch(err){if(isAuthErr(err.message)){toast('Your session expired — please log in again.','error');show('auth')}else toast(friendlySave(err.message),'error')}finally{loading(false)}};
 function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';return m}
 
 async function blobToDataUrl(b){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
@@ -336,8 +336,15 @@ $('save-account').onclick=async()=>{try{loading(true,'Saving account…');const 
 $('logout-btn').onclick=async()=>{await stopScanner();if(state.poll){clearInterval(state.poll);state.poll=null}stopTick();await sb.auth.signOut();state.profile=null;show('auth')};
 
 /* ---------- Boot ---------- */
-async function boot(){try{loading(true,'Loading…');await loadProfileAndStatus();show('lobby')}catch(err){toast(err.message,'error');await sb.auth.signOut();show('auth')}finally{loading(false)}}
-if(sb){sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session)boot();else show('auth')},0)});sb.auth.getSession().then(({data})=>{if(data.session)boot();else show('auth')})}else show('auth');
+function isAuthErr(m){return /INVALID_OR_EXPIRED_SESSION|JWT|expired|AUTH_REQUIRED|Session/i.test(String(m||''))}
+let booted=false;
+async function boot(){if(booted)return;booted=true;try{loading(true,'Loading…');await loadProfileAndStatus();show('lobby')}catch(err){booted=false;if(!isAuthErr(err.message))toast(err.message,'error');show('auth')}finally{loading(false)}}
+if(sb){
+  // Only (re)load on real sign-in / sign-out. Ignore TOKEN_REFRESHED so a
+  // background token refresh never wipes an order the customer is editing.
+  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||!session){booted=false;show('auth');return}if(event==='SIGNED_IN'){booted=false;setTimeout(boot,0)}});
+  sb.auth.getSession().then(({data})=>{data.session?boot():show('auth')});
+}else show('auth');
 </script>
 </body>
 </html>
