@@ -5,8 +5,8 @@
  * Supabase is the master database. This workbook lets you PULL every table into
  * tabs, edit values, and PUSH changes back. Only editable columns are written;
  * system columns (ids, versions, timestamps) are shown for reference and ignored
- * on push. `_delete` is intentionally accepted only on the low-risk Lookups tab;
- * use active/status or the admin console for every operational table.
+ * on push. Destructive deletes are not available from the Sheet mirror; use
+ * active/status or the admin console for operational changes.
  *
  * Setup:
  *   1. Extensions -> Apps Script, paste this file, Save, reload the sheet.
@@ -23,7 +23,7 @@ const DS_PATH = '/functions/v1/data-sync';
 // SECURITY: only paste the real secret into the Apps Script editor copy.
 // Keep the repo copy of this file blank so the secret is never committed to GitHub.
 const DS_URL = 'https://ezmtiiftolcaslqfvozu.supabase.co';
-const DS_SECRET = '0cbd403785f28e9dde753b8d204827dec84d8b783b767a0417cafa33cf04431d';  // <-- paste your SHEET_SYNC_SECRET here (from supabase/.env.production)
+const DS_SECRET = '';  // <-- paste your SHEET_SYNC_SECRET here (from supabase/.env.production)
 
 // Tab name -> Supabase table.
 const DS_TABS = {
@@ -34,7 +34,6 @@ const DS_TABS = {
   'OrderItems': 'order_items',
   'Slots': 'slots',
   'Bookings': 'bookings',
-  'Lookups': 'lookup_values',
   'Settings': 'system_settings',
   'Staff': 'staff_profiles'
 };
@@ -48,7 +47,6 @@ const DS_EDITABLE = {
   order_items: ['qty','line_note'],
   slots: ['starts_at','ends_at','label','capacity','active'],
   bookings: ['party_size','note','status','slot_id'],
-  lookup_values: ['kind','value'],
   system_settings: ['event_name','event_start_date','event_end_date','registration_enabled','edit_window_hours'],
   staff_profiles: []
 };
@@ -106,6 +104,14 @@ function dsTest() {
 
 function dsTableForTab_(name) { return DS_TABS[name] || null; }
 
+function dsRemoveObsoleteTabs_() {
+  const ss = SpreadsheetApp.getActive();
+  ['Lookups'].forEach(function (name) {
+    const sh = ss.getSheetByName(name);
+    if (sh && ss.getSheets().length > 1) ss.deleteSheet(sh);
+  });
+}
+
 function dsWrite_(tabName, res) {
   const ss = SpreadsheetApp.getActive();
   let sh = ss.getSheetByName(tabName);
@@ -113,11 +119,10 @@ function dsWrite_(tabName, res) {
   sh.clear();
   const cols = res.columns || [];
   const editable = DS_EDITABLE[res.table] || [];
-  const header = cols.concat(['_delete']);
+  const header = cols.slice();
   const values = [header];
   (res.rows || []).forEach(function (r) {
     const line = cols.map(function (c) { const v = r[c]; if (v === null || v === undefined) return ''; if (v && typeof v === 'object') return JSON.stringify(v); return v; });
-    line.push('');
     values.push(line);
   });
   sh.getRange(1, 1, values.length, header.length).setValues(values);
@@ -134,6 +139,7 @@ function dsWrite_(tabName, res) {
 
 function dsPullAll() {
   const all = dsCall_({ action: 'pullAll' });
+  dsRemoveObsoleteTabs_();
   Object.keys(DS_TABS).forEach(function (tab) {
     const table = DS_TABS[tab];
     if (all[table]) dsWrite_(tab, all[table]);
@@ -153,6 +159,7 @@ function dsPushActive() {
   const sh = SpreadsheetApp.getActiveSheet();
   const table = dsTableForTab_(sh.getName());
   if (!table) { dsAlert_('This tab is not a synced table.'); return; }
+  if ((DS_EDITABLE[table] || []).length === 0) { dsAlert_(sh.getName() + ' is read-only. Make changes in the admin console, then pull again.'); return; }
   const grid = sh.getDataRange().getValues();
   if (grid.length < 2) { dsAlert_('No data rows to push.'); return; }
   const header = grid[0].map(String);
@@ -169,5 +176,5 @@ function dsPushActive() {
     rows.push(obj);
   }
   const res = dsCall_({ action: 'push', table: table, rows: rows });
-  dsAlert_('Pushed ' + sh.getName() + ':\nUpdated: ' + (res.updated || 0) + '\nCreated/Upserted: ' + (res.upserted || 0) + '\nDeleted: ' + (res.deleted || 0));
+  dsAlert_('Pushed ' + sh.getName() + ':\nUpdated: ' + (res.updated || 0) + '\nCreated/Upserted: ' + (res.upserted || 0));
 }

@@ -11,8 +11,7 @@
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<style>
-:root{--teal:#2B7379;--deep:#225E63;--foam:#E8F2F1;--warm:#F7F3EA;--white:#fff;--border:#E4E8E6;--muted:#7B817F;--slate:#3D3A37;--charcoal:#33271B;--orange:#FF9700;--success:#15803D;--error:#DC2626;--warning:#A16207;--nav-h:72px;--shadow:0 7px 22px rgba(34,94,99,.075)}
+<style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}html{-webkit-text-size-adjust:100%}html,body{min-height:100%;max-width:100%;overflow-x:hidden;background:linear-gradient(180deg,#FAF8F2 0,var(--warm) 240px);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif}body{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px)}button,input,select,textarea{font:inherit}.hidden{display:none!important}img,svg{max-width:100%}
 .appbar{position:sticky;top:0;z-index:60;height:64px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(255,255,255,.97);border-bottom:1px solid rgba(34,94,99,.1);box-shadow:0 4px 18px rgba(34,55,52,.06);backdrop-filter:blur(12px)}.brand{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}.wordmark{display:flex;align-items:center;gap:6px;color:var(--deep);font-size:14px;font-weight:800;letter-spacing:.105em;white-space:nowrap}.dot{width:11px;height:11px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px rgba(255,151,0,.1)}.divider{width:1px;height:24px;background:var(--border)}.firm-logo{height:21px;width:auto}.staff-meta{margin-left:auto;min-width:0;text-align:right}.staff-meta b{display:block;color:var(--deep);font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-meta button{border:0;background:none;color:var(--muted);font-size:9px;cursor:pointer}
 .page{display:none;max-width:580px;margin:0 auto;padding:14px 12px 20px}.page.active{display:block;animation:pageIn .22s ease both}#page-dashboard{max-width:1120px;padding-left:10px;padding-right:10px}@keyframes pageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -24,9 +23,9 @@ label{display:block;margin:13px 0 6px;color:#515B58;font-size:10px;font-weight:8
 nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nav-h) + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);align-items:start;padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border-top:1px solid rgba(34,94,99,.1);box-shadow:0 -10px 28px rgba(34,55,52,.1);backdrop-filter:blur(14px)}.nav-item{position:relative;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#707674;font-size:10px;font-weight:600;cursor:pointer}.nav-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--deep);font-weight:800}.nav-item.active:not(.center)::before{content:"";position:absolute;top:7px;left:50%;width:26px;height:3px;border-radius:999px;background:var(--orange);transform:translateX(-50%)}.center .fab{width:56px;height:56px;display:grid;place-items:center;margin:-25px auto 0;border:3px solid #fff;border-radius:50%;background:var(--deep);box-shadow:0 8px 20px rgba(34,94,99,.3)}.center .fab svg{width:25px;height:25px;stroke:#fff}.center.active .fab{background:var(--orange);box-shadow:0 8px 20px rgba(255,151,0,.28)}
 .dashboard-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.dashboard-header h1{font-size:21px}.updated{margin-top:4px;color:var(--muted);font-size:10px}.dashboard-subnav{position:sticky;top:64px;z-index:42;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 16px rgba(34,94,99,.08)}.dashboard-subnav button{min-height:40px;padding:5px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}.dashboard-subnav button.active{background:var(--deep);color:#fff}.filter-bar{display:flex;align-items:center;gap:7px;min-height:50px;margin-bottom:10px;padding:8px;border:1px solid var(--border);border-radius:13px;background:#fff}.filter-chips{display:flex;flex:1;gap:6px;overflow-x:auto;scrollbar-width:none}.chip{flex:0 0 auto;min-height:32px;padding:5px 10px;border:0;border-radius:16px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:800}.kpi-strip{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.kpi{flex:0 0 116px;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.05)}.kpi.primary{background:linear-gradient(135deg,var(--deep),var(--teal));border-color:transparent;color:#fff}.kpi b{display:block;font-size:21px}.kpi span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.kpi.primary span{color:rgba(255,255,255,.75)}.dashboard-panel[hidden]{display:none!important}.viz-grid{display:grid;grid-template-columns:1fr;gap:10px}.viz-card{min-width:0;overflow:hidden;padding:14px}.viz-card.wide{grid-column:1/-1}.viz-card.hero{border-color:rgba(255,151,0,.34)}.viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.viz-title{color:var(--deep);font-size:14px;font-weight:800}.viz-copy{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}.mini-segment{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--foam)}.mini-segment button{min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:9px;font-weight:800}.mini-segment button.active{background:#fff;color:var(--deep);box-shadow:0 2px 7px rgba(34,94,99,.12)}.chart-frame{position:relative;height:245px;margin-top:8px}.chart-frame.hero{height:280px}.chart-frame canvas{width:100%!important;height:100%!important}.ranking{display:grid;gap:6px;margin-top:8px}.rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}.rank-no{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.rank-row:first-child .rank-no{background:var(--orange);color:#fff}.rank-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.rank-meta{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rank-value{color:var(--deep);font-size:11px;font-weight:850;white-space:nowrap}
 .modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;background:rgba(30,37,35,.54);backdrop-filter:blur(2px)}.modal.open{display:flex}.sheet{width:100%;max-height:88vh;overflow:auto;padding:19px 18px calc(24px + env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:#fff;box-shadow:0 -20px 50px rgba(0,0,0,.18)}.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}.sheet-head>div{min-width:0}.sheet-head button.close{margin-left:auto;width:40px;height:40px;border:0;border-radius:10px;background:var(--foam);color:var(--deep);font-weight:900}.detail-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.metric{padding:10px;border-radius:10px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--deep);font-size:17px}.metric span{color:var(--muted);font-size:9px;text-transform:uppercase}.product-line{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.product-line img{width:55px;height:72px;border-radius:8px;object-fit:cover;background:#EEF2F0}.product-line b{font-size:12px;color:var(--deep)}.product-line p{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.45}
-.permission-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.perm{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:700}.perm input{width:17px;height:17px;flex:0 0 auto}.cred{margin-top:12px;padding:12px;border:1px dashed var(--teal);border-radius:11px;background:var(--foam);font-size:12px;line-height:1.7}.toast{position:fixed;left:50%;top:72px;z-index:240;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%)}.toast.open{display:block}.toast.success{background:#166534}.toast.error{background:#B91C1C}.loading{position:fixed;inset:0;z-index:230;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader{padding:22px 28px;border-radius:15px;background:#fff;color:var(--deep);font-weight:800}.reader{display:none;margin-top:10px;border-radius:12px;overflow:hidden}.reader.open{display:block}
+.perm{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:700}.perm input{width:17px;height:17px;flex:0 0 auto}.cred{margin-top:12px;padding:12px;border:1px dashed var(--teal);border-radius:11px;background:var(--foam);font-size:12px;line-height:1.7}.toast{position:fixed;left:50%;top:72px;z-index:240;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%)}.toast.open{display:block}.toast.success{background:#166534}.toast.error{background:#B91C1C}.loading{position:fixed;inset:0;z-index:230;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader{padding:22px 28px;border-radius:15px;background:#fff;color:var(--deep);font-weight:800}.reader{display:none;margin-top:10px;border-radius:12px;overflow:hidden}.reader.open{display:block}
 @media(min-width:720px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet{width:620px;margin:0 auto;border-radius:20px}.modal{align-items:center}.kpi{flex:1 1 0}}
-@media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.permission-grid{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
+@media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:390px){.page{padding-left:9px;padding-right:9px}.firm-logo,.divider{display:none}.staff-meta b{max-width:90px}.dashboard-subnav button{font-size:10px}.chart-frame,.chart-frame.hero{height:235px}}
 
 /* FINAL FLOOR POLISH — information hierarchy, compact catalogue and slot cards */
@@ -56,7 +55,60 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 .modal-card,.modal-body{min-width:0;max-width:100%;overflow-x:hidden}.product-line>*{min-width:0}.list-row>*,.toolbar>*{min-width:0}
 @media(max-width:480px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.firm-logo.maitri-logo{height:20px}.firm-logo.niharika-logo{height:19px}.brand{gap:5px}.divider{height:20px}.staff-meta b{max-width:86px}.entry-card{grid-template-columns:1fr}.entry-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.sale-item{grid-template-columns:58px minmax(0,1fr)}.sale-item-thumb{width:58px;height:77px}.sale-item-head{display:block}.sale-remove{margin-left:0}.catalogue-grid{gap:7px}.catalogue-design{font-size:9.5px}.login-firm-logo.maitri-logo{height:23px}.login-firm-logo.niharika-logo{height:22px}}
 @media(max-width:360px){.firm-logo.niharika-logo{display:block!important;height:14px}.firm-logo.maitri-logo{height:15px}.catalogue-grid{gap:6px}.catalogue-card{border-radius:10px}.entry-section{padding:10px}}
-</style></head>
+</style>
+<style id="ekum-design-system-170009">
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+html,body{background:var(--warm);color:var(--body);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;line-height:1.5}
+body{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px)}
+h1,h2,h3,.viz-title{color:var(--ink);line-height:1.2}h1{font-size:22px;font-weight:700}h2{font-size:16px;font-weight:700}h3{font-size:15px;font-weight:700}
+.copy,.viz-copy,.updated,.list-row p{color:var(--muted);line-height:1.5}.copy{font-size:12px}.section-kicker,label{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+b,.kpi,.metric,.badge,.entry-tag,.slot-capacity{font-variant-numeric:tabular-nums}
+*{scrollbar-color:#C8D8D4 transparent;scrollbar-width:thin}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}img{-webkit-user-drag:none;-webkit-touch-callout:none}
+.appbar{height:60px;min-height:60px;padding:0 16px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);box-shadow:var(--sh-1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.brand{gap:8px}.wordmark{color:var(--teal-deep);font-size:14px;font-weight:800;letter-spacing:.12em}.dot{width:10px;height:10px;background:var(--orange);box-shadow:none}.divider{height:24px;background:var(--line)}.firm-logo{height:18px;object-fit:contain}.staff-meta b{color:var(--ink);font-size:11px}.staff-meta button{min-height:32px;padding:0 8px;border-radius:var(--r-xs);color:var(--teal-deep)}.staff-meta button:hover{background:var(--foam)}
+.page{max-width:620px;padding:16px 12px 24px}.page.active{animation:ekum-enter 200ms var(--ease) both}#page-dashboard{max-width:1120px}
+.card,.viz-card,.list-card{margin-bottom:12px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-2)}
+.card.interactive,.list-row.click,.catalogue-card,.rank-row{transition:transform 120ms var(--ease),background 120ms var(--ease),box-shadow 120ms var(--ease)}
+.list-row.click:hover,.catalogue-card:hover,.rank-row:hover{background:#F8FBFA}.list-row.click:active,.catalogue-card:active,.rank-row:active{transform:scale(.985)}
+label{margin:12px 0 6px}.optional{font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:500}
+input,select,textarea{width:100%;border:1px solid #D8E1DE;border-radius:var(--r-xs);background:#fff;color:var(--ink);font-size:16px;transition:border-color 120ms var(--ease),box-shadow 120ms var(--ease)}
+input,select{height:46px;padding:0 13px}textarea{min-height:88px;padding:12px 13px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23225E63' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:38px}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}input[type=number]{appearance:textfield}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 16px;border:0;border-radius:var(--r-xs);background:var(--teal-deep);color:#fff;font-size:14px;font-weight:800;box-shadow:var(--sh-1);cursor:pointer;transition:transform 120ms var(--ease),box-shadow 120ms var(--ease),background 120ms var(--ease)}
+.btn:hover{background:#1C5358}.btn:active{transform:translateY(1px) scale(.99)}.btn.primary{background:var(--teal-deep);color:#fff}.btn.secondary{background:#fff;border:1.5px solid var(--teal-deep);color:var(--teal-deep);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--body);box-shadow:none}.btn.danger{background:var(--error);color:#fff}.btn.danger-outline{background:#fff;border:1.5px solid var(--error);color:var(--error);box-shadow:none}.btn.sm,.btn.small{min-height:38px;padding:0 12px;font-size:12.5px}.btn.block{width:100%}.btn:disabled{background:#EAEEEC;color:#9AA3A0;border-color:#EAEEEC;box-shadow:none;cursor:not-allowed;transform:none}
+.icon-button,.close{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:var(--r-xs);background:transparent;color:var(--body);font-size:18px;cursor:pointer}.icon-button:hover,.close:hover{background:var(--foam)}
+.grid2,.grid3,.grid4{gap:12px}.toolbar{gap:12px}.toolbar .compact{min-width:108px}
+.segment,.dashboard-subnav{position:sticky;top:60px;z-index:42;display:flex;gap:4px;overflow-x:auto;padding:4px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.95);box-shadow:var(--sh-1);scrollbar-width:none}.segment::-webkit-scrollbar,.dashboard-subnav::-webkit-scrollbar{display:none}.segment button,.dashboard-subnav button{flex:1 0 auto;min-height:40px;padding:0 14px;border:0;border-radius:var(--r-xs);background:transparent;color:var(--body);font-size:11px;font-weight:800;transition:background 200ms var(--ease),color 200ms var(--ease),transform 120ms var(--ease)}.segment button.active,.dashboard-subnav button.active{background:var(--teal-deep);color:#fff;box-shadow:var(--sh-1)}
+.badge,.entry-tag{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:var(--r-pill);font-size:10px;font-weight:800}.badge.ok,.entry-tag.checked{background:var(--success-bg);color:var(--success)}.badge.wait,.entry-tag.current,.entry-tag.past{background:var(--warn-bg);color:var(--warn)}.badge.off,.entry-tag.paused{background:var(--error-bg);color:var(--error)}.badge.info,.entry-tag.date,.entry-tag.time,.entry-tag.future,.entry-tag.none{background:var(--foam);color:var(--teal-deep)}
+.chip,.dashboard-filter-chip{border:1px solid var(--line);border-radius:var(--r-pill);background:#fff;color:var(--body);font-size:11px;font-weight:700}.chip.on,.dashboard-filter-chip.on{background:var(--foam);border-color:var(--teal);color:var(--teal-deep);font-weight:800}
+.list{gap:8px}.list-row{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.list-row b{color:var(--ink);font-size:13px}.list-row p{font-size:11px}
+.empty{min-height:132px;padding:24px;border:1px dashed #BCD0CB;border-radius:var(--r-lg);background:#F8FBFA;color:var(--muted);font-size:12px}
+.toast{top:72px;padding:10px 16px;border-radius:var(--r-pill);background:var(--ink);box-shadow:var(--sh-pop);animation:toast-in 200ms var(--ease) both}.toast.success{background:var(--success)}.toast.error{background:var(--error)}
+.loading{background:rgba(20,30,28,.5)}.loader{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}
+.modal{background:rgba(20,30,28,.5);backdrop-filter:blur(2px)}.sheet{max-height:92vh;padding:20px 18px calc(20px + env(safe-area-inset-bottom));border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--sh-pop);animation:sheet-in 260ms var(--ease) both}.sheet-handle{width:36px;height:4px;margin:-8px auto 16px;border-radius:var(--r-pill);background:var(--line)}.sheet-head{gap:12px}
+nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -8px 22px rgba(20,40,38,.10)}.nav-item{min-width:44px;color:var(--muted);font-size:10px}.nav-item.active{color:var(--teal-deep)}.nav-item.active:not(.center)::before{background:var(--orange)}.center .fab{background:var(--teal-deep);box-shadow:0 8px 22px rgba(34,94,99,.24)}.center.active .fab{background:var(--orange)}
+/* Reception */
+.entry-board{gap:12px}.entry-section{border-radius:var(--r-lg)}.entry-card{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.entry-card.current{border-color:var(--teal);box-shadow:0 0 0 2px rgba(43,115,121,.18);background:var(--foam)}.entry-card-title b{color:var(--ink);font-size:14px}.entry-primary{color:var(--body);font-size:12px;font-weight:700}.entry-secondary{color:var(--muted);font-size:11px}.entry-tag-row{gap:4px}.entry-actions{gap:8px}.entry-list-scroll{max-height:430px;overflow:auto;padding-right:4px}
+/* Sale order */
+.sale-find-card,.sale-builder-card{border-color:#C9DAD6}.sale-search-wrap{position:relative}.sale-search-wrap input{padding-left:40px}.sale-search-icon{left:13px;color:var(--teal-deep)}.selected-customer-card{padding:12px;border:1px solid #C9DAD6;border-radius:var(--r);background:var(--foam)}.selected-customer-copy h2{color:var(--ink)}.sale-firm-switch{position:static}.sale-firm-switch button.active{background:var(--teal-deep);color:#fff}.sale-scan-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.sale-item-card{grid-template-columns:84px minmax(0,1fr);border-radius:var(--r-lg)}.sale-item-card img{width:84px;height:112px;object-fit:cover;object-position:center top;border-radius:var(--r-xs)}.sale-qty-row{display:flex;align-items:center;justify-content:center;gap:8px}.sale-qty-row button,.qty button,.qty-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:20px;font-weight:800}.sale-qty-row input,.qty input,.qty-input{width:60px!important;height:44px!important;text-align:center;font-size:16px!important;font-weight:800!important}.sale-savebar{position:sticky;bottom:calc(var(--nav-h) + 8px);z-index:20;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.96);box-shadow:var(--sh-pop)}
+/* Product catalogue */
+.product-master-head{gap:12px}.catalogue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.catalogue-card{position:relative;overflow:hidden;padding:0;border:1px solid var(--line);border-radius:var(--r);background:#fff;box-shadow:var(--sh-1)}.catalogue-thumb{display:block;width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;object-position:center top;background:#EEF2F0}.catalogue-design{display:block;overflow:hidden;padding:7px 4px;color:var(--ink);font-size:10px;font-weight:900;text-align:center;text-overflow:ellipsis;white-space:nowrap}.catalogue-state-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border:2px solid #fff;border-radius:50%;background:var(--success);box-shadow:var(--sh-1)}.catalogue-card.inactive .catalogue-state-dot{background:var(--error)}.catalogue-card.inactive{opacity:.65}.catalogue-group-head{margin:16px 0 8px}
+/* Team */
+.module-toggle-list{display:grid;gap:8px;margin-top:16px}.module-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff;text-transform:none;letter-spacing:0;cursor:pointer}.module-toggle:hover{background:#F8FBFA}.module-toggle span{display:block;min-width:0}.module-toggle b{display:block;color:var(--ink);font-size:13px}.module-toggle small{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:500;line-height:1.4}.module-toggle input{width:42px;height:24px;flex:0 0 auto;appearance:none;border:0;border-radius:var(--r-pill);background:#CBD5D1;cursor:pointer;position:relative;transition:background 120ms var(--ease)}.module-toggle input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--sh-1);transition:transform 120ms var(--ease)}.module-toggle input:checked{background:var(--teal-deep)}.module-toggle input:checked::after{transform:translateX(18px)}.module-toggle input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}.compact-toggle{margin-top:12px}.team-module-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.team-member-row{text-align:left;width:100%}
+/* Slots */
+.slot-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.slot-add-btn{margin-top:12px}.slot-day{margin-top:16px}.slot-day-title{color:var(--ink);font-size:13px;font-weight:800}.slot-card{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.slot-card-main b{color:var(--ink)}.slot-capacity{color:var(--muted);font-size:11px}.slot-status-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+/* Dashboard */
+.filter-bar{position:sticky;top:108px;z-index:35;border-color:var(--line);box-shadow:var(--sh-1)}.kpi{cursor:pointer;border-radius:var(--r);box-shadow:var(--sh-1)}.kpi:hover{background:#F8FBFA}.kpi.primary{background:linear-gradient(135deg,var(--teal-deep),var(--teal))}.rank-row{border-color:var(--line)}.rank-value{font-variant-numeric:tabular-nums;text-align:right}
+@keyframes ekum-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes toast-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes sheet-in{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media(min-width:720px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalogue-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.sheet{max-width:460px;border-radius:var(--r-lg);margin:auto}.modal{align-items:center;padding:20px}.slot-form-grid{grid-template-columns:1fr 1fr}.page{padding-top:20px}}
+@media(max-width:600px){.grid2,.grid3,.grid4,.slot-form-grid{grid-template-columns:1fr}.sale-scan-row{grid-template-columns:1fr}.entry-card{grid-template-columns:1fr}.entry-actions{display:grid;grid-template-columns:1fr 1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
+@media(max-width:399px){.appbar .firm-logo,.appbar .divider{display:none}.catalogue-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nav-item{font-size:9px}.page{padding-left:8px;padding-right:8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}}
+</style>
+</head>
 <body>
 <header class="appbar hidden" id="top">
 <div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
@@ -83,7 +135,7 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </section>
 </div>
 </div></section>
-<section class="subpanel hidden" id="reception-registration"><div class="card"><span class="section-kicker">New visitor</span><h1>Welcome and register</h1><p class="copy">Create their access in a few quick steps, then continue to check-in or Sale Order.</p><div class="grid2"><div><label>Company</label><input id="reg-company"/></div><div><label>Contact</label><input id="reg-contact"/></div><div><label>City</label><input id="reg-city" list="dl-city"/></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent" list="dl-agent"/></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"/></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"/></div></div><button class="btn" id="register-customer" style="margin-top:12px">Register visitor</button><div id="registration-result"></div></div></section>
+<section class="subpanel hidden" id="reception-registration"><div class="card"><span class="section-kicker">New visitor</span><h1>Welcome and register</h1><p class="copy">Create their access in a few quick steps, then continue to check-in or Sale Order.</p><div class="grid2"><div><label>Company</label><input id="reg-company"/></div><div><label>Contact</label><input id="reg-contact"/></div><div><label>City</label><input id="reg-city"/></div><div><label>State</label><select id="reg-state"></select></div><div><label>Agent</label><input id="reg-agent"/></div><div><label>GSTIN <span class="optional">optional</span></label><input id="reg-gstin"/></div><div><label>Mobile</label><input id="reg-phone" inputmode="numeric" maxlength="10"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="reg-pass"/></div></div><button class="btn" id="register-customer" style="margin-top:12px">Register visitor</button><div id="registration-result"></div></div></section>
 <section class="subpanel hidden" id="reception-password"><div class="card"><h1>Password support</h1><p class="copy">Set a temporary password and share it directly with the customer.</p><label>Customer mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"/><label>New password</label><input id="reset-password" minlength="8" type="text"/><div class="row" style="margin-top:12px"><button class="btn secondary" id="generate-customer-pass">Generate</button><button class="btn" id="reset-customer-pass">Reset password</button></div><div id="password-result"></div></div></section>
 </main>
 <main class="page" id="page-dashboard">
@@ -121,13 +173,12 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 </section>
 </main>
 <main class="page" id="page-products">
-<div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="lookups">Lookups</button></div>
+<div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button></div>
 <section class="subpanel" id="products-master"><div class="card product-master-card">
   <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Products</h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
   <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
 </div></section>
 <section class="subpanel hidden" id="products-mapping"><div class="card"><h1>Barcode Mapping</h1><div class="grid2"><div><label>Barcode</label><input id="map-barcode"/></div><div><label>Design</label><input id="map-design" list="dl-design"/></div></div><div class="row" style="margin-top:10px"><button class="btn" id="map-save">Save mapping</button><button class="btn secondary" id="map-camera">Camera</button></div><div class="reader" id="map-reader"></div></div><div class="card"><h2>Batch mapping</h2><textarea id="map-batch" placeholder="BARCODE,DESIGNNO"></textarea><button class="btn" id="map-batch-save" style="margin-top:9px">Save batch</button></div><div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
-<section class="subpanel hidden" id="products-lookups"><div class="card"><h1>Lookups</h1><div class="grid2"><div><label>Type</label><select id="lookup-kind"><option value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="agent">Agent</option><option value="city">City</option></select></div><div><label>Value</label><input id="lookup-value"/></div></div><button class="btn" id="lookup-add" style="margin-top:10px">Add value</button><div class="list" id="lookup-list"></div></div></section>
 </main>
 <main class="page" id="page-admin">
 <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button></div>
@@ -137,7 +188,29 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
   <button class="btn slot-add-btn" id="slot-add">Add visit slot</button>
   <div class="slot-groups" id="slot-list"></div>
 </div></section>
-<section class="subpanel hidden" id="admin-staff"><div class="card"><span class="section-kicker">Access and permissions</span><h1>Add Team Member</h1><p class="copy">Give each person the access they need. Their Team ID is used only for login.</p><div class="grid2"><div><label>Team member name</label><input id="staff-fullname"/></div><div><label>Team ID</label><input id="staff-id" placeholder="sales01"/></div><div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div><div><label>Preset</label><select id="staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select></div><div><label>Default section</label><select id="staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select></div></div><details style="margin-top:10px"><summary style="color:var(--deep);font-size:12px;font-weight:800;cursor:pointer">Custom permissions</summary><div class="permission-grid" id="permission-grid"></div></details><button class="btn" id="staff-create" style="margin-top:12px">Add Team Member</button><div id="staff-result"></div></div><div class="card"><h2>Team Members</h2><p class="copy">Tap a member to update access, reset their password or remove the account.</p><div class="list" id="staff-list"></div></div></section>
+<section class="subpanel hidden" id="admin-staff">
+<div class="card team-create-card">
+  <span class="section-kicker">Team access</span>
+  <h1>Add Team Member</h1>
+  <p class="copy">Choose the work areas this person needs. Detailed safeguards stay enforced automatically.</p>
+  <div class="grid2 team-account-grid">
+    <div><label>Team member name</label><input id="staff-fullname"/></div>
+    <div><label>Team ID</label><input id="staff-id" placeholder="sales01"/></div>
+    <div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div>
+    <div><label>Default section</label><select id="staff-default"><option value="reception">Reception</option><option value="sale" selected>Sale Order</option><option value="products">Products</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select></div>
+  </div>
+  <div class="module-toggle-list" aria-label="Team access modules">
+    <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="staff-group-reception" type="checkbox"/></label>
+    <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="staff-group-sales" type="checkbox" checked/></label>
+    <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="staff-group-products" type="checkbox"/></label>
+    <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="staff-group-dashboard" type="checkbox"/></label>
+    <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="staff-group-admin" type="checkbox"/></label>
+  </div>
+  <button class="btn primary block" id="staff-create" style="margin-top:12px">Add Team Member</button>
+  <div id="staff-result"></div>
+</div>
+<div class="card"><h2>Team Members</h2><p class="copy">Tap a member to update access, reset their password or remove the account.</p><div class="list" id="staff-list"></div></div>
+</section>
 <section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
 </main>
 <nav class="bottom-nav hidden" id="bottom-nav">
@@ -150,11 +223,25 @@ html,body{touch-action:manipulation}input,select,textarea{font-size:16px!importa
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
-<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number"/></div><div><label>Category</label><input id="pm-category" list="dl-category"/></div><div><label>Style</label><input id="pm-style" list="dl-style"/></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
+<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div><label>Category</label><input id="pm-category"/></div><div><label>Style</label><input id="pm-style"/></div><div><label>Fabric</label><input id="pm-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
-<div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close" data-close="staff-modal">✕</button></div><label>Team member name</label><input id="edit-staff-name"/><label>Preset</label><select id="edit-staff-preset"><option value="sales">Sales</option><option value="reception">Reception</option><option value="products">Products</option><option value="manager">Manager</option><option value="administrator">Administrator</option><option value="custom">Custom</option></select><label>Default section</label><select id="edit-staff-default"><option value="sale">Sale Order</option><option value="reception">Reception</option><option value="dashboard">Dashboard</option><option value="products">Products</option><option value="admin">Admin</option></select><div class="permission-grid" id="edit-permission-grid"></div><label class="perm"><input id="edit-staff-active" type="checkbox"/> Account active</label><button class="btn" id="edit-staff-save" style="width:100%;margin-top:12px">Save permissions</button><button class="btn secondary" id="edit-staff-reset" style="width:100%;margin-top:8px">Generate new password</button><button class="btn danger-outline" id="edit-staff-delete" style="width:100%;margin-top:8px">Remove Team Member</button><div id="edit-staff-result"></div></div></div>
-<datalist id="dl-city"></datalist><datalist id="dl-agent"></datalist><datalist id="dl-category"></datalist><datalist id="dl-style"></datalist><datalist id="dl-fabric"></datalist><datalist id="dl-design"></datalist>
+<div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
+<label>Team member name</label><input id="edit-staff-name"/>
+<label>Default section</label><select id="edit-staff-default"><option value="reception">Reception</option><option value="sale">Sale Order</option><option value="products">Products</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select>
+<div class="module-toggle-list" aria-label="Edit team access modules">
+  <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="edit-group-reception" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="edit-group-sales" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="edit-group-products" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="edit-group-dashboard" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="edit-group-admin" type="checkbox"/></label>
+</div>
+<label class="module-toggle compact-toggle"><span><b>Account active</b><small>Disabled accounts cannot sign in or perform actions</small></span><input id="edit-staff-active" type="checkbox"/></label>
+<button class="btn primary block" id="edit-staff-save" style="margin-top:12px">Save access</button>
+<button class="btn secondary block" id="edit-staff-reset" style="margin-top:8px">Generate new password</button>
+<button class="btn danger-outline block" id="edit-staff-delete" style="margin-top:8px">Remove Team Member</button>
+<div id="edit-staff-result"></div></div></div>
+<datalist id="dl-design"></datalist>
 <div class="toast" id="toast"></div><div class="loading" id="loading"><div class="loader" id="loading-text">Working…</div></div>
 <script>
 const CONFIG = {
@@ -200,56 +287,14 @@ const STATES = [
   "Lakshadweep",
   "Puducherry",
 ];
-const PERMISSIONS = {
-  "reception.view": "View customers",
-  "reception.checkin": "Check in / revoke",
-  "reception.register": "Register customers",
-  "reception.password_reset": "Reset customer passwords",
-  "reception.customer_control": "Pause / reactivate customers",
-  "dashboard.view": "View dashboard",
-  "dashboard.export": "Export dashboard",
-  "sale.view": "Open Sale Order",
-  "sale.write": "Create / edit orders",
-  "sale.previous": "View previous orders",
-  "sale.pdf": "Download sale-order PDF",
-  "sale.lock": "Lock / reopen orders",
-  "products.view": "View products",
-  "products.edit": "Edit products",
-  "products.mapping": "Barcode mapping",
-  "products.lookups": "Manage lookups",
-  "admin.slots": "Manage slots",
-  "admin.bookings": "Manage visitor slots in Reception",
-  "admin.staff": "Manage team",
-  "admin.settings": "System settings",
+const TEAM_GROUPS = {
+  reception: { label: "Reception", description: "Visitors, registration and account support" },
+  sales: { label: "Sales", description: "Create orders and review previous orders" },
+  products: { label: "Products", description: "Product master and barcode mapping" },
+  dashboard: { label: "Dashboard", description: "Analytics and exports" },
+  admin: { label: "Admin", description: "Slots, Team and system settings" },
 };
-const PRESETS = {
-  sales: [
-    "sale.view",
-    "sale.write",
-    "sale.previous",
-    "sale.pdf",
-    "reception.view",
-  ],
-  reception: [
-    "reception.view",
-    "reception.checkin",
-    "reception.register",
-    "reception.password_reset",
-    "reception.customer_control",
-    "admin.bookings",
-  ],
-  products: [
-    "products.view",
-    "products.edit",
-    "products.mapping",
-    "products.lookups",
-  ],
-  manager: Object.keys(PERMISSIONS).filter(
-    (k) => !["admin.staff", "admin.settings"].includes(k),
-  ),
-  administrator: Object.keys(PERMISSIONS),
-  custom: [],
-};
+const GROUP_KEYS = Object.keys(TEAM_GROUPS);
 const COLORS = [
   "#225E63",
   "#FF9700",
@@ -293,7 +338,6 @@ const st = {
   sub: { reception: "entry", products: "master", admin: "slots" },
   designs: [],
   mappings: [],
-  lookups: [],
   slots: [],
   bookings: [],
   staff: [],
@@ -320,7 +364,6 @@ const st = {
   editEntry: null,
   editProduct: null,
   entryRows: [],
-  lookupData: {},
   cache: { designsAt: 0, mappingsAt: 0, dashboardAt: 0 },
 };
 function toast(m, t = "") {
@@ -365,9 +408,7 @@ function moduleAllowed(s) {
       : s === "sale"
         ? has("sale.view")
         : s === "products"
-          ? has("products.view") ||
-            has("products.mapping") ||
-            has("products.lookups")
+          ? has("products.view") || has("products.edit") || has("products.mapping")
           : Object.keys(st.me?.permissions || {}).some(
               (k) => k.startsWith("admin.") && st.me.permissions[k],
             );
@@ -426,7 +467,6 @@ function setupNavigation() {
     products: {
       master: "products.view",
       mapping: "products.mapping",
-      lookups: "products.lookups",
     },
     admin: {
       slots: "admin.slots",
@@ -524,37 +564,14 @@ $("logout").onclick = async () => {
 async function boot() {
   const data = await admin("bootstrap");
   st.me = data.me;
-  st.lookupData = data.lookups || {};
   setLogged(true);
   fillStates();
-  applyLookups(st.lookupData);
   setupNavigation();
 }
 function fillStates() {
   $("reg-state").innerHTML =
     '<option value="">Select state</option>' +
     STATES.map((s) => `<option>${s}</option>`).join("");
-}
-function applyLookups(L = {}) {
-  st.lookupData = L || {};
-  $("dl-city").innerHTML = (L.city || []).map((v) => `<option value="${esc(v)}">`).join("");
-  $("dl-agent").innerHTML = (L.agent || []).map((v) => `<option value="${esc(v)}">`).join("");
-  $("dl-category").innerHTML = (L.category || []).map((v) => `<option value="${esc(v)}">`).join("");
-  $("dl-style").innerHTML = (L.style || []).map((v) => `<option value="${esc(v)}">`).join("");
-  $("dl-fabric").innerHTML = (L.fabric || []).map((v) => `<option value="${esc(v)}">`).join("");
-}
-async function loadLookups(force = false) {
-  try {
-    if (!force && Object.keys(st.lookupData || {}).length) {
-      applyLookups(st.lookupData);
-      return st.lookupData;
-    }
-    const L = (await rpc("list_lookups")) || {};
-    applyLookups(L);
-    return L;
-  } catch {
-    return st.lookupData || {};
-  }
 }
 /* Reception */
 let entryTimer;
@@ -1419,22 +1436,12 @@ $("sale-camera").onclick = () =>
 async function loadProductsModule() {
   const sub = st.sub.products;
   if (sub === "master") {
-    if (!has("products.view"))
-      return denySub(
-        "products",
-        has("products.mapping") ? "mapping" : "lookups",
-      );
+    if (!has("products.view")) return denySub("products", "mapping");
     await loadProducts();
   }
   if (sub === "mapping") {
-    if (!has("products.mapping"))
-      return denySub("products", has("products.view") ? "master" : "lookups");
+    if (!has("products.mapping")) return denySub("products", "master");
     await loadMapping();
-  }
-  if (sub === "lookups") {
-    if (!has("products.lookups"))
-      return denySub("products", has("products.view") ? "master" : "mapping");
-    await loadAdminLookups();
   }
 }
 async function loadProducts(force = false) {
@@ -1475,7 +1482,7 @@ async function openProduct(dn) {
   $("pm-title").textContent = p.designNo;
   $("pm-sub").textContent = "Updated " + fmt(p.updatedAt);
   $("pm-firm").value = p.firm;
-  $("pm-pcs").value = p.pcsPerSet;
+  $("pm-pcs").value = p.pcsPerSet || 4;
   $("pm-category").value = p.category;
   $("pm-style").value = p.style;
   $("pm-fabric").value = p.fabric;
@@ -1584,46 +1591,6 @@ $("map-batch-save").onclick = async () => {
     toast(e.message, "error");
   }
 };
-async function loadAdminLookups() {
-  st.lookups = await admin("listLookupsAdmin");
-  renderAdminLookups();
-}
-function renderAdminLookups() {
-  const k = $("lookup-kind").value;
-  $("lookup-list").innerHTML =
-    st.lookups
-      .filter((x) => x.kind === k)
-      .map(
-        (x) =>
-          `<div class="list-row"><b>${esc(x.value)}</b><button class="btn ghost small" data-del-lookup="${esc(x.kind)}" data-del-value="${esc(x.value)}" style="color:var(--error)">Delete</button></div>`,
-      )
-      .join("") || '<div class="empty">No values</div>';
-}
-$("lookup-kind").onchange = renderAdminLookups;
-$("lookup-add").onclick = async () => {
-  try {
-    await admin("upsertLookup", {
-      kind: $("lookup-kind").value,
-      value: $("lookup-value").value,
-    });
-    $("lookup-value").value = "";
-    await loadAdminLookups();
-    await loadLookups();
-    toast("Lookup added", "success");
-  } catch (e) {
-    toast(e.message, "error");
-  }
-};
-$("lookup-list").onclick = async (e) => {
-  const b = e.target.closest("[data-del-lookup]");
-  if (!b) return;
-  await admin("deleteLookup", {
-    kind: b.dataset.delLookup,
-    value: b.dataset.delValue,
-  });
-  await loadAdminLookups();
-  await loadLookups();
-};
 /* Admin */
 async function loadAdminModule() {
   const sub = st.sub.admin;
@@ -1680,43 +1647,43 @@ $("slot-list").onclick = async (e) => {
   await loadSlots();
   toast(b.dataset.active === "true" ? "Slot activated" : "Slot deactivated", "success");
 };
-function permissionChecks(container, values = {}) {
-  $(container).innerHTML = Object.entries(PERMISSIONS)
-    .map(
-      ([k, v]) =>
-        `<label class="perm"><input type="checkbox" data-perm="${k}" ${values[k] ? "checked" : ""}> ${esc(v)}</label>`,
-    )
-    .join("");
+function readGroups(prefix) {
+  return Object.fromEntries(GROUP_KEYS.map((key) => [key, Boolean($(`${prefix}-group-${key}`)?.checked)]));
 }
-function readPermissions(container) {
-  const out = {};
-  $(container)
-    .querySelectorAll("[data-perm]")
-    .forEach((x) => (out[x.dataset.perm] = x.checked));
-  return out;
+function writeGroups(prefix, groups = {}) {
+  GROUP_KEYS.forEach((key) => {
+    const input = $(`${prefix}-group-${key}`);
+    if (input) input.checked = Boolean(groups[key]);
+  });
 }
-function applyPreset(container, preset) {
-  const set = new Set(PRESETS[preset] || []);
-  $(container)
-    .querySelectorAll("[data-perm]")
-    .forEach((x) => (x.checked = set.has(x.dataset.perm)));
+function groupChips(groups = {}) {
+  const enabled = GROUP_KEYS.filter((key) => groups[key]);
+  return enabled.length
+    ? `<span class="team-module-chips">${enabled.map((key) => `<span class="badge info">${esc(TEAM_GROUPS[key].label)}</span>`).join("")}</span>`
+    : '<span class="badge off">No modules</span>';
 }
-permissionChecks("permission-grid");
-$("staff-preset").onchange = () =>
-  applyPreset("permission-grid", $("staff-preset").value);
-applyPreset("permission-grid", "sales");
+function defaultGroupForSection(section) {
+  return section === "sale" ? "sales" : section;
+}
+function ensureDefaultGroup(prefix, selectId) {
+  const group = defaultGroupForSection($(selectId).value);
+  const input = $(`${prefix}-group-${group}`);
+  if (input) input.checked = true;
+}
+$("staff-default").onchange = () => ensureDefaultGroup("staff", "staff-default");
 $("staff-create").onclick = async () => {
   try {
+    ensureDefaultGroup("staff", "staff-default");
+    const groups = readGroups("staff");
     const d = await admin("createStaff", {
       staffName: $("staff-fullname").value,
       staffId: $("staff-id").value,
       password: $("staff-pass").value,
-      preset: $("staff-preset").value,
       defaultSection: $("staff-default").value,
-      permissions: readPermissions("permission-grid"),
+      groups,
     });
     $("staff-result").innerHTML =
-      `<div class="cred">Team ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br>Email is handled securely in the background.</div>`;
+      `<div class="cred">Team ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br><small>Share these details privately with the team member.</small></div>`;
     await loadStaff();
     toast("Team member added", "success");
   } catch (e) {
@@ -1729,7 +1696,7 @@ async function loadStaff() {
     st.staff
       .map(
         (s) =>
-          `<button class="list-row click" data-staff="${s.authUserId}"><div><b>${esc(s.staffName)} · ${esc(s.staffId)}</b><p>${esc(s.preset)} · opens ${esc(s.defaultSection)}</p></div><span class="badge ${s.active ? "ok" : "off"}">${s.active ? "Active" : "Disabled"}</span></button>`,
+          `<button class="list-row click team-member-row" data-staff="${s.authUserId}"><div><b>${esc(s.staffName)} · ${esc(s.staffId)}</b><p>Opens ${esc(s.defaultSection === "sale" ? "Sale Order" : s.defaultSection)}</p>${groupChips(s.groups)}</div><span class="badge ${s.active ? "ok" : "off"}">${s.active ? "Active" : "Disabled"}</span></button>`,
       )
       .join("") || '<div class="empty">No team members yet</div>';
 }
@@ -1744,23 +1711,21 @@ function openStaff(id) {
   $("staff-modal-title").textContent = s.staffName;
   $("staff-modal-sub").textContent = s.staffId;
   $("edit-staff-name").value = s.staffName;
-  $("edit-staff-preset").value = s.preset;
   $("edit-staff-default").value = s.defaultSection;
   $("edit-staff-active").checked = s.active;
-  permissionChecks("edit-permission-grid", s.permissions);
+  writeGroups("edit", s.groups || {});
   openModal("staff-modal");
 }
-$("edit-staff-preset").onchange = () =>
-  applyPreset("edit-permission-grid", $("edit-staff-preset").value);
+$("edit-staff-default").onchange = () => ensureDefaultGroup("edit", "edit-staff-default");
 $("edit-staff-save").onclick = async () => {
   try {
+    ensureDefaultGroup("edit", "edit-staff-default");
     await admin("updateStaff", {
       authUserId: st.editStaff.authUserId,
       staffName: $("edit-staff-name").value,
-      preset: $("edit-staff-preset").value,
       defaultSection: $("edit-staff-default").value,
       active: $("edit-staff-active").checked,
-      permissions: readPermissions("edit-permission-grid"),
+      groups: readGroups("edit"),
     });
     closeModal("staff-modal");
     await loadStaff();
@@ -1778,7 +1743,16 @@ $("edit-staff-reset").onclick = async () => {
 };
 $("edit-staff-delete").onclick = async () => {
   if (!st.editStaff) return;
-  if (!confirm(`Remove ${st.editStaff.staffName} from the team? This login will stop working immediately.`)) return;
+  const button = $("edit-staff-delete");
+  if (button.dataset.confirm !== "yes") {
+    button.dataset.confirm = "yes";
+    button.textContent = `Tap again to remove ${st.editStaff.staffName}`;
+    setTimeout(() => {
+      button.dataset.confirm = "";
+      button.textContent = "Remove Team Member";
+    }, 5000);
+    return;
+  }
   try {
     await admin("deleteStaff", { authUserId: st.editStaff.authUserId });
     closeModal("staff-modal");

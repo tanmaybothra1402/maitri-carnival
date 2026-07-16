@@ -26,10 +26,10 @@ npx supabase db push
 The latest migration is:
 
 ```text
-supabase/migrations/202607170006_merge_notes_style_pcs.sql
+supabase/migrations/202607170009_simplify_permissions_pcs4_drop_lookups.sql
 ```
 
-It adds merge-safe order operations, style, pieces per set, per-design notes, total sets and actual total pieces.
+It sets new/unset product pieces-per-set defaults to 4 without backfilling existing rows, removes the lookup subsystem, and keeps granular permissions internally while the Team interface uses five module toggles.
 
 ## 2. Deploy Edge Functions
 
@@ -87,7 +87,7 @@ Log into the admin console, open **Slots**, and create the active windows for 19
 ## 7. Required production checks
 
 1. Customer registration and login work without a platform missing-JWT error.
-2. Staff login is rejected unless `app_metadata.role` equals `admin`.
+2. Team login is accepted only when `app_metadata.role` equals `admin` or `staff`.
 3. Entry check-in unlocks customer ordering.
 4. Two stale devices adding different designs preserve both additions.
 5. Customer and Assisted admin adding different designs preserve both additions.
@@ -97,7 +97,7 @@ Log into the admin console, open **Slots**, and create the active windows for 19
 9. Total pieces equals the sum of `sets x pcs_per_set`.
 10. Sale-order PDF completes even when one product image cannot be fetched.
 11. An expired order reopened by staff can be saved from the customer page.
-12. Sheet `_delete` is rejected for operational tables and accepted only for Lookups.
+12. Sheet deletes are unavailable on every mirrored tab.
 
 ## Event-day flow
 

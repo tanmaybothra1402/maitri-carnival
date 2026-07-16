@@ -64,7 +64,6 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "products.view": true,
   "products.edit": true,
   "products.mapping": true,
-  "products.lookups": true,
   "admin.slots": true,
   "admin.bookings": true,
   "admin.staff": true,
@@ -74,11 +73,61 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
 const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   sales: { "sale.view": true, "sale.write": true, "sale.previous": true, "sale.pdf": true, "reception.view": true },
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
-  products: { "products.view": true, "products.edit": true, "products.mapping": true, "products.lookups": true },
+  products: { "products.view": true, "products.edit": true, "products.mapping": true },
   manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
 };
+
+const GROUPS: Record<string, string[]> = {
+  reception: [
+    "reception.view",
+    "reception.checkin",
+    "reception.register",
+    "reception.password_reset",
+    "reception.customer_control",
+    "admin.bookings",
+  ],
+  sales: [
+    "sale.view",
+    "sale.write",
+    "sale.previous",
+    "sale.pdf",
+    "sale.lock",
+    "reception.view",
+  ],
+  products: ["products.view", "products.edit", "products.mapping"],
+  dashboard: ["dashboard.view", "dashboard.export"],
+  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings"],
+};
+
+function expandGroups(value: unknown): Record<string, boolean> {
+  const selected = value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+  const output: Record<string, boolean> = Object.fromEntries(
+    Object.keys(ALL_PERMISSIONS).map((key) => [key, false]),
+  );
+  for (const [group, permissions] of Object.entries(GROUPS)) {
+    if (!selected[group]) continue;
+    for (const permission of permissions) output[permission] = true;
+  }
+  return output;
+}
+
+function collapseGroups(permissions: Record<string, boolean>): Record<string, boolean> {
+  return {
+    reception: Boolean(permissions["reception.view"]),
+    sales: Boolean(permissions["sale.view"]),
+    products: Boolean(permissions["products.view"]),
+    dashboard: Boolean(permissions["dashboard.view"]),
+    admin: Boolean(
+      permissions["admin.staff"] ||
+      permissions["admin.settings"] ||
+      permissions["admin.slots"]
+    ),
+  };
+}
 
 type StaffContext = {
   authUserId: string;
@@ -86,6 +135,7 @@ type StaffContext = {
   staffName: string;
   preset: string;
   permissions: Record<string, boolean>;
+  groups: Record<string, boolean>;
   defaultSection: string;
   active: boolean;
   legacyAdmin: boolean;
@@ -127,6 +177,7 @@ async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffCon
       staffName: profile.staff_name,
       preset: profile.preset,
       permissions: normalizePermissions(profile.permissions, profile.preset),
+      groups: collapseGroups(normalizePermissions(profile.permissions, profile.preset)),
       defaultSection: profile.default_section,
       active: profile.active !== false,
       legacyAdmin: role === "admin",
@@ -139,6 +190,7 @@ async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffCon
       staffName: clean(user.user_metadata?.name) || clean(user.email).split("@")[0] || "Administrator",
       preset: "administrator",
       permissions: { ...ALL_PERMISSIONS },
+      groups: collapseGroups({ ...ALL_PERMISSIONS }),
       defaultSection: "dashboard",
       active: true,
       legacyAdmin: true,
@@ -180,9 +232,6 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   deleteStaff: ["admin.staff"],
   getSettings: ["admin.settings"],
   updateSettings: ["admin.settings"],
-  listLookupsAdmin: ["products.lookups"],
-  upsertLookup: ["products.lookups"],
-  deleteLookup: ["products.lookups"],
 };
 
 function requireActionPermission(context: StaffContext, action: string) {
@@ -407,6 +456,7 @@ Deno.serve(async (request: Request) => {
       staffName: staff.staffName,
       preset: staff.preset,
       permissions: staff.permissions,
+      groups: staff.groups,
       defaultSection: staff.defaultSection,
       active: staff.active,
     };
@@ -418,12 +468,7 @@ Deno.serve(async (request: Request) => {
 
     if (action === "bootstrap") {
       if (!staff.active) throw new Error("TEAM_ACCOUNT_DISABLED");
-      const { data: lookups, error: lookupError } = await db.rpc("list_lookups");
-      if (lookupError) throw lookupError;
-      return jsonResponse(request, {
-        ok: true,
-        data: { me, lookups: lookups ?? {} },
-      });
+      return jsonResponse(request, { ok: true, data: { me } });
     }
 
     requireActionPermission(staff, action);
@@ -778,30 +823,6 @@ Deno.serve(async (request: Request) => {
       return jsonResponse(request, { ok: true, data });
     }
 
-    if (action === "listLookupsAdmin") {
-      const { data, error } = await db.from("lookup_values").select("kind,value,created_at").order("kind").order("value");
-      if (error) throw error;
-      return jsonResponse(request, { ok: true, data });
-    }
-
-    if (action === "upsertLookup") {
-      const kind = clean(body.kind).toLowerCase();
-      const value = clean(body.value);
-      if (!["city","agent","category","style","fabric"].includes(kind)) throw new Error("Invalid lookup type");
-      if (!value) throw new Error("Lookup value is required");
-      const { data, error } = await db.from("lookup_values")
-        .upsert({ kind, value }, { onConflict: "kind,value" })
-        .select("kind,value").single();
-      if (error) throw error;
-      return jsonResponse(request, { ok: true, data });
-    }
-
-    if (action === "deleteLookup") {
-      const { error } = await db.from("lookup_values").delete()
-        .eq("kind", clean(body.kind).toLowerCase()).eq("value", clean(body.value));
-      if (error) throw error;
-      return jsonResponse(request, { ok: true, data: { deleted: true } });
-    }
 
     // ---- Assisted registration & ordering -----------------------------
     if (action === "assistedRegister") {
@@ -839,8 +860,10 @@ Deno.serve(async (request: Request) => {
       const staffId = normalizeStaffId(body.staffId);
       const staffName = clean(body.staffName);
       if (staffName.length < 2) throw new Error("Team member name is required");
-      const preset = ["sales","reception","products","manager","administrator","custom"].includes(clean(body.preset)) ? clean(body.preset) : "custom";
-      const permissions = normalizePermissions(body.permissions, preset);
+      const preset = clean(body.preset) || "custom";
+      const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
+        ? expandGroups(body.groups)
+        : normalizePermissions(body.permissions, preset);
       const allowedSections = ["reception","dashboard","sale","products","admin"];
       const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", admin:"admin.slots" };
@@ -872,7 +895,7 @@ Deno.serve(async (request: Request) => {
         await db.auth.admin.deleteUser(userId).catch(() => undefined);
         throw profileError;
       }
-      return jsonResponse(request, { ok: true, data: { id: userId, staffId, staffName, email, password, preset, permissions, defaultSection } });
+      return jsonResponse(request, { ok: true, data: { id: userId, staffId, staffName, email, password, preset, permissions, groups: collapseGroups(permissions), defaultSection } });
     }
 
     if (action === "listStaff") {
@@ -882,15 +905,19 @@ Deno.serve(async (request: Request) => {
       if (error) throw error;
       return jsonResponse(request, { ok: true, data: (data ?? []).map((row: any) => ({
         authUserId: row.auth_user_id, staffId: row.staff_id, staffName: row.staff_name,
-        preset: row.preset, permissions: normalizePermissions(row.permissions,row.preset),
+        preset: row.preset,
+        permissions: normalizePermissions(row.permissions,row.preset),
+        groups: collapseGroups(normalizePermissions(row.permissions,row.preset)),
         defaultSection: row.default_section, active: row.active, createdAt: row.created_at, updatedAt: row.updated_at,
       })) });
     }
 
     if (action === "updateStaff") {
       const authUserId = clean(body.authUserId);
-      const preset = ["sales","reception","products","manager","administrator","custom"].includes(clean(body.preset)) ? clean(body.preset) : "custom";
-      const permissions = normalizePermissions(body.permissions,preset);
+      const preset = clean(body.preset) || "custom";
+      const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
+        ? expandGroups(body.groups)
+        : normalizePermissions(body.permissions,preset);
       const defaultSection = ["reception","dashboard","sale","products","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
       if (body.staffName !== undefined) row.staff_name = clean(body.staffName);
@@ -898,7 +925,16 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.from("staff_profiles").update(row).eq("auth_user_id",authUserId)
         .select("auth_user_id,staff_id,staff_name,preset,permissions,default_section,active").single();
       if (error) throw error;
-      return jsonResponse(request,{ok:true,data});
+      return jsonResponse(request,{ok:true,data:{
+        authUserId: data.auth_user_id,
+        staffId: data.staff_id,
+        staffName: data.staff_name,
+        preset: data.preset,
+        permissions: normalizePermissions(data.permissions,data.preset),
+        groups: collapseGroups(normalizePermissions(data.permissions,data.preset)),
+        defaultSection: data.default_section,
+        active: data.active,
+      }});
     }
 
     if (action === "resetStaffPassword") {
