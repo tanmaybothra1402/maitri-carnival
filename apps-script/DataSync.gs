@@ -1,10 +1,12 @@
+
 /**
  * Maitri Carnival 2026 — Supabase two-way data mirror.
  *
  * Supabase is the master database. This workbook lets you PULL every table into
  * tabs, edit values, and PUSH changes back. Only editable columns are written;
  * system columns (ids, versions, timestamps) are shown for reference and ignored
- * on push. Mark a row's `_delete` column TRUE to delete that row on push.
+ * on push. `_delete` is intentionally accepted only on the low-risk Lookups tab;
+ * use active/status or the admin console for every operational table.
  *
  * Setup:
  *   1. Extensions -> Apps Script, paste this file, Save, reload the sheet.
@@ -38,11 +40,11 @@ const DS_TABS = {
 
 // Columns that are editable and pushed back (everything else is reference-only).
 const DS_EDITABLE = {
-  designs: ['firm','image_url','category','fabric','color','description','active'],
+  designs: ['firm','image_url','category','style','fabric','pcs_per_set','description','active'],
   barcode_mappings: ['design_no','active'],
   customers: ['company_name','contact_name','city','state','gstin','agent','active'],
   orders: ['status','admin_unlocked'],
-  order_items: ['qty'],
+  order_items: ['qty','line_note'],
   slots: ['starts_at','ends_at','label','capacity','active'],
   bookings: ['party_size','note','status','slot_id'],
   lookup_values: ['kind','value'],

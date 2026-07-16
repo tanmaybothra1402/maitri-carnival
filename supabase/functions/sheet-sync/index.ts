@@ -1,3 +1,4 @@
+
 import { optionsResponse } from "../_shared/cors.ts";
 import { clean, errorMessage, jsonResponse } from "../_shared/http.ts";
 import { secureEqual } from "../_shared/secure.ts";
@@ -8,8 +9,9 @@ type ProductRow = {
   Firm: string;
   ImageURL: string;
   Category: string;
+  Style: string;
   Fabric: string;
-  Color: string;
+  PcsPerSet: number;
   Description: string;
   Active: boolean | string;
   UpdatedAt?: string;
@@ -40,8 +42,9 @@ function normalizeRows(input: unknown): ProductRow[] {
       Firm: firm,
       ImageURL: clean(row.ImageURL ?? row.image_url),
       Category: clean(row.Category ?? row.category),
+      Style: clean(row.Style ?? row.style),
       Fabric: clean(row.Fabric ?? row.fabric),
-      Color: clean(row.Color ?? row.color),
+      PcsPerSet: Math.max(1, Math.min(9999, Math.round(Number(row.PcsPerSet ?? row.pcs_per_set ?? row.Pcs ?? 1) || 1))),
       Description: clean(row.Description ?? row.description),
       Active: row.Active ?? row.active ?? true,
       UpdatedAt: clean(row.UpdatedAt ?? row.updated_at) || new Date().toISOString(),

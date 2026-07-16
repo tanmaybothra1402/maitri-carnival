@@ -1,3 +1,4 @@
+
 project_id = "maitri-office-exhibition"
 
 [api]
@@ -37,3 +38,8 @@ verify_jwt = false
 [functions.admin-api]
 verify_jwt = false
 
+[functions.customer-auth]
+verify_jwt = false
+
+[functions.data-sync]
+verify_jwt = false

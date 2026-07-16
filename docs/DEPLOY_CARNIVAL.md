@@ -1,101 +1,123 @@
-# Maitri Carnival 2026 — Deploy runbook
+# Maitri Carnival 2026 - Deploy runbook
 
-The new build adds an admin entry gate, slot booking, a 24-hour edit window, assisted
-admin ordering, and EKUM branding, on top of the existing `ezmtiiftolcaslqfvozu` project.
-Everything below runs from the repo root. The sandbox that generated these files cannot
-reach Supabase, so you run the push/deploy steps.
+Production project: `ezmtiiftolcaslqfvozu`
 
-## What changed (files)
+The current build consists of two static pages, cumulative database migrations, four Edge Functions, and the Google Sheets mirror.
 
-- `supabase/migrations/202607170001_carnival_entry_slots_window.sql` — event settings, customer check-in + account edit-window columns, `orders.admin_unlocked`, `slots` + `bookings` tables, RLS/grants.
-- `supabase/migrations/202607170002_carnival_functions.sql` — guarded `save_my_order`, shared `_write_order`, `admin_save_order`, `get_my_status`, `list_slots`, `book_slot`, `cancel_my_booking`, `check_in_customer`, `revoke_entry`.
-- `supabase/functions/admin-api/index.ts` — new actions: `directory`, `checkIn`, `revokeEntry`, `listSlots`, `upsertSlot`, `deleteSlot`, `listBookings`, `assistedRegister`, `assistedSaveOrder`, `getCustomerOrders`; `setOrderLocked` now toggles `admin_unlocked`.
-- `web/user.html` — customer app (register + credentials card, slot booking, entry-pending gate, order form, 24h countdown, thumbnail PDF).
-- `web/admin.html` — one tabbed console (Dashboard, Entry, Slots, Mapping, Products, Assisted order).
-- `web/index.html` — redirects to `user.html`.
+## Active files
 
-The old `web/app.html`, `web/mapping.html`, `web/dashboard.html` are superseded by
-`user.html` + `admin.html`. Leave or delete them; nothing links to them.
+- Customer app: `web/user.html`
+- Admin console: `web/admin-a106dc80eeabd658.html`
+- Database: `supabase/migrations/`
+- Customer registration/login: `supabase/functions/customer-auth/index.ts`
+- Admin service operations: `supabase/functions/admin-api/index.ts`
+- Full Sheet mirror: `supabase/functions/data-sync/index.ts`
+- Legacy product importer: `supabase/functions/sheet-sync/index.ts`
+- Google Apps Script: `apps-script/DataSync.gs`
 
-## 1. Apply migrations
+## 1. Apply cumulative migrations
+
+From the repository root:
 
 ```bash
 npx supabase db push
 ```
 
-Confirm the new tables exist (Dashboard → Table editor): `slots`, `bookings`, and the new
-`customers` columns `checked_in_at`, `ordering_started_at`, `edit_deadline`.
+The latest migration is:
 
-## 2. Redeploy the admin function; confirm customer-auth JWT posture
+```text
+supabase/migrations/202607170006_merge_notes_style_pcs.sql
+```
+
+It adds merge-safe order operations, style, pieces per set, per-design notes, total sets and actual total pieces.
+
+## 2. Deploy Edge Functions
 
 ```bash
-npx supabase functions deploy admin-api --no-verify-jwt
-# customer-auth must remain callable without a bearer token:
 npx supabase functions deploy customer-auth --no-verify-jwt
+npx supabase functions deploy admin-api --no-verify-jwt
+npx supabase functions deploy data-sync --no-verify-jwt
+npx supabase functions deploy sheet-sync --no-verify-jwt
 npx supabase functions list
 ```
 
-Quick check (should return a clean 401 "Incorrect mobile number or password", i.e. the
-function ran, not a platform "missing JWT" error):
+`customer-auth`, `admin-api`, `data-sync`, and `sheet-sync` intentionally perform their own authentication/secret checks, so their `verify_jwt` setting is false in `supabase/config.toml`.
 
-```bash
-curl -s -X POST "https://ezmtiiftolcaslqfvozu.supabase.co/functions/v1/customer-auth" \
-  -H "apikey: sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG" \
-  -H "Content-Type: application/json" \
-  -d '{"action":"login","phone":"9111100001","password":"wrongpass"}'
-```
+Confirm the deployed secrets include:
 
-## 3. Retire the dead image-proxy (optional cleanup)
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SHEET_SYNC_SECRET`
+- `ALLOWED_ORIGINS` containing the GitHub Pages origin
 
-It references the dropped `design_assets` table and is unused.
+## 3. Retire the dead image proxy
+
+The final app reads `designs.image_url` directly. The old image proxy references the dropped `design_assets` table and is unused.
 
 ```bash
 npx supabase functions delete image-proxy
 ```
 
-## 4. Publish the pages
+## 4. Update the Google Sheet mirror
 
-The three HTML files already carry the live URL + publishable key — no placeholders to
-replace. Commit and push; GitHub Actions publishes `web/`.
+1. Open the workbook's Apps Script project.
+2. Replace its code with `apps-script/DataSync.gs`.
+3. Save and reload the Sheet.
+4. Run **Supabase Sync -> Test connection**.
+5. Run **Supabase Sync -> Pull ALL tables**.
 
-- **Customer link:** `https://tanmaybothra1402.github.io/maitri-carnival/user.html`
-- **Admin link:** `https://tanmaybothra1402.github.io/maitri-carnival/admin.html`
+The Designs tab must now show `category`, `style`, `fabric`, and `pcs_per_set`. Fill valid `pcs_per_set` values before live ordering and push the Designs tab.
 
-For privacy, rename the admin page to an unguessable filename before committing and keep it
-private (auth is still required regardless):
+Legacy `color` columns are deliberately hidden. Customer colour instructions belong in `order_items.line_note`.
 
-```bash
-git mv web/admin.html web/admin-$(openssl rand -hex 8).html
-```
+## 5. Publish the static pages
 
-Record the resulting filename. Confirm `ALLOWED_ORIGINS` in the deployed function secrets
-includes the Pages origin (it already does in `.env.production`).
+Commit and publish the contents of `web/` through GitHub Pages.
 
-## 5. Create the visit slots
+- Customer page: `web/user.html`
+- Admin page: `web/admin-a106dc80eeabd658.html`
 
-Log into admin → **Slots** tab → add windows across 19–21 July 2026 (e.g. hourly, optional
-capacity). Booked counts and a traffic bar appear as customers book.
+Keep the unguessable admin filename unchanged unless you also update the private admin link used by staff. Authentication remains the real security boundary.
 
-## 6. Event-day operating flow
+## 6. Create visit slots
 
-1. Customer registers (open link), saves the credentials card, optionally books a slot.
-2. On arrival, staff open admin → **Entry**, search the customer's mobile, tap **Check in**.
-3. Customer's page auto-unlocks; they build Maitri/Niharika orders by scanning barcodes.
-4. First save starts the account-wide 24-hour edit window (shown as a live countdown).
-5. For anyone who can't use the site, admin → **Assisted order**: register (if needed) and
-   build the order for them — this bypasses the gate and the lock.
-6. Locked/expired orders can be reopened per order from the Dashboard order detail (Unlock).
+Log into the admin console, open **Slots**, and create the active windows for 19-21 July 2026. Capacity is optional.
 
-## 7. Google Sheets full mirror — deferred phase
+## 7. Required production checks
 
-The current `sheet-sync` remains one-way (ProductMaster → Supabase) for designs. The
-full two-way overview/edit workbook (all tables, pull + guarded push) is the agreed final
-phase, to be built after this app is verified live.
+1. Customer registration and login work without a platform missing-JWT error.
+2. Staff login is rejected unless `app_metadata.role` equals `admin`.
+3. Entry check-in unlocks customer ordering.
+4. Two stale devices adding different designs preserve both additions.
+5. Customer and Assisted admin adding different designs preserve both additions.
+6. Explicit deletion removes only the selected design.
+7. Same-design simultaneous changes resolve to the last completed save.
+8. Notes persist after refresh and appear in admin detail and PDF.
+9. Total pieces equals the sum of `sets x pcs_per_set`.
+10. Sale-order PDF completes even when one product image cannot be fetched.
+11. An expired order reopened by staff can be saved from the customer page.
+12. Sheet `_delete` is rejected for operational tables and accepted only for Lookups.
+
+## Event-day flow
+
+1. Customer registers and saves their phone/password.
+2. Customer optionally books a visit slot.
+3. Staff searches the Entry directory and checks the customer in.
+4. Customer scans Maitri and Niharika designs, enters sets and line notes, and saves.
+5. The first successful save starts the account-wide edit window.
+6. Every save merges its changed designs into the latest order, protecting unrelated concurrent changes.
+7. Customer downloads a separate sale-order PDF for each firm.
+8. Staff handles exceptions through Assisted ordering, password reset, customer control, and order reopening.
 
 ## Post-event
 
 ```sql
-update public.system_settings set registration_enabled = false where singleton = true;
--- optional hard lock:
-update public.orders set status = 'Locked', admin_unlocked = false where status <> 'Locked';
+update public.system_settings
+set registration_enabled = false
+where singleton = true;
+
+update public.orders
+set status = 'Locked', admin_unlocked = false
+where status <> 'Locked';
 ```

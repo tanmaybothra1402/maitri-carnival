@@ -1,36 +1,37 @@
-# Maitri × Niharika Self-Service Exhibition Orders
+# Maitri x Niharika Self-Service Exhibition Orders
 
-Disposable, reliability-first order system for the 19–21 July 2026 in-office exhibition.
+Production ordering system for Maitri Carnival 2026, 19-21 July 2026.
 
 ## Included
 
-- Customer phone + password registration/login through Supabase Auth.
-- Exactly one editable Maitri order and one editable Niharika order per customer.
-- PostgreSQL RLS and an atomic, versioned save RPC.
-- Barcode-to-design lookup and mobile camera scanning.
-- Protected low-resolution thumbnails through an authenticated Edge Function proxy.
-- Client-side order PDFs with low-resolution thumbnails.
-- Separate admin barcode mapping tool and admin dashboard.
-- Google Sheets → Supabase product-master synchronization.
-- Excel product-master template.
-- GitHub Pages workflow.
+- Customer phone/password registration through the `customer-auth` Edge Function.
+- Exactly one Maitri order and one Niharika order per customer.
+- Admin check-in gate and an account-wide edit window.
+- Merge-safe concurrent customer/admin ordering with explicit deletions.
+- Product master fields: category, style, fabric, and pieces per set.
+- Per-design order notes and computed sets/pieces totals.
+- Barcode lookup, mobile camera scanning, and direct ImageKit thumbnails.
+- Client-generated sale-order PDFs.
+- Role-gated admin console for entry, slots, mapping, products, assisted orders, staff, and analytics.
+- Supabase-master Google Sheets mirror with guarded writable columns.
+
+## Active application files
+
+- `web/user.html` - customer app.
+- `web/admin-a106dc80eeabd658.html` - admin console.
+- `supabase/migrations/` - cumulative schema and function definitions; highest numbered definition wins.
+- `supabase/functions/customer-auth/index.ts` - customer registration/login.
+- `supabase/functions/admin-api/index.ts` - service-role admin operations.
+- `supabase/functions/data-sync/index.ts` - full two-way Google Sheet mirror.
+- `supabase/functions/sheet-sync/index.ts` - retained legacy product importer.
+- `apps-script/DataSync.gs` - Google Sheet client.
 
 ## Start here
 
-1. Read `docs/SETUP.md`.
-2. Work through its numbered checkpoints in order.
-3. Use `docs/TEST_PLAN.md` before the exhibition.
+1. Read `IMPLEMENTATION_NOTES.md` for the latest coordinated change.
+2. Follow `docs/DEPLOY_CARNIVAL.md` in order.
+3. Use `docs/SHEETS_MIRROR.md` when updating the workbook.
 
-## Important security boundary
+## Security boundary
 
-The public Supabase URL and publishable/anon key belong in the HTML pages. The service-role key, ImageKit private key and Sheet sync secret must never be committed or inserted into a browser file.
-
-## Main files
-
-- `web/app.html` — customer registration, login, scanning, order editing and PDF.
-- `web/mapping.html` — admin barcode mapping.
-- `web/dashboard.html` — admin analytics, export and password reset.
-- `supabase/migrations/` — schema, Auth trigger, RLS and database functions.
-- `supabase/functions/` — Sheet sync, admin API and image proxy.
-- `apps-script/Sync.gs` — Google Sheets sync.
-- `templates/Maitri_Niharika_Product_Master.xlsx` — product-master starter workbook.
+The Supabase project URL and publishable key are expected in the static pages. Never place the service-role key or `SHEET_SYNC_SECRET` in browser files or the repository.

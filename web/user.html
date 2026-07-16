@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +72,7 @@
     .firm-tabs{position:sticky;top:60px;z-index:29;display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 -1px 11px;padding:5px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px)}
     .firm-tab{min-height:46px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer;letter-spacing:.04em}
     .firm-tab.active{background:var(--teal-deep);color:#fff}
-    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:11px}
     .metric{padding:11px;border-radius:11px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--teal-deep);font-size:20px}.metric span{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
     .scan-actions{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.scan-actions .btn{width:auto;min-width:104px;margin:0}
     .reader{display:none;margin-top:12px;overflow:hidden;border-radius:13px}.reader.open{display:block}
@@ -81,7 +82,7 @@
     .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
     .item h3{font-size:14px;color:var(--teal-deep)}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45}
     .qty{display:flex;align-items:center;gap:5px;margin-top:9px}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}
-    .qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{margin-left:auto!important;color:var(--error)!important}
+    .qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{margin-left:auto!important;color:var(--error)!important}.line-total{margin-top:7px;color:var(--teal-deep);font-size:11px;font-weight:800}.line-note{min-height:58px;margin-top:7px;padding:8px 10px;font-size:13px;line-height:1.35}.line-note-label{margin-top:9px;font-size:9px}
     .savebar{position:sticky;bottom:8px;z-index:25;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 30px rgba(34,55,52,.14);backdrop-filter:blur(10px)}.savebar .btn{margin:0}
     .empty{padding:26px 12px;border:1px dashed #BCD0CB;border-radius:13px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}
     .toast{position:fixed;left:50%;top:70px;z-index:200;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%);box-shadow:0 9px 25px rgba(0,0,0,.18)}.toast.open{display:block}.toast.error{background:#B91C1C}.toast.success{background:#166534}
@@ -93,7 +94,7 @@
     .config-warning{padding:12px;background:#FEE2E2;color:#991B1B;font-size:12px;text-align:center}
     .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:520px){.firmlogos,.bdiv{display:none}}
-    @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
+    @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
   </style>
 </head>
 <body oncontextmenu="return false">
@@ -182,7 +183,7 @@
       <div class="firm-tabs"><button class="firm-tab active" data-firm="Maitri">Maitri</button><button class="firm-tab" data-firm="Niharika">Niharika</button></div>
       <div class="card">
         <h2 id="order-title">Maitri order</h2><p class="copy" id="order-status">Draft</p>
-        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="piece-count">0</b><span>Sets</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
+        <div class="summary"><div class="metric"><b id="design-count">0</b><span>Designs</span></div><div class="metric"><b id="set-count">0</b><span>Sets</span></div><div class="metric"><b id="piece-count">0</b><span>Total pcs</span></div><div class="metric"><b id="version-count">1</b><span>Version</span></div></div>
       </div>
       <div class="card">
         <h2>Scan a barcode</h2><p class="copy">Each design is added once. Change the quantity manually.</p>
@@ -236,7 +237,7 @@ if(!configured)document.getElementById('config-warning').classList.remove('hidde
 if(CONFIG.REQUIRE_ACCESS_CODE)document.getElementById('access-code-wrap').classList.remove('hidden');
 const sb=configured?supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 
-const state={profile:null,status:null,slots:[],pickedSlot:null,orders:{Maitri:null,Niharika:null},carts:{Maitri:[],Niharika:[]},activeFirm:'Maitri',scanner:null,scanning:false,poll:null,tick:null,screen:'auth'};
+const state={profile:null,status:null,slots:[],pickedSlot:null,orders:{Maitri:null,Niharika:null},carts:{Maitri:[],Niharika:[]},deleted:{Maitri:new Set(),Niharika:new Set()},activeFirm:'Maitri',scanner:null,scanning:false,poll:null,tick:null,screen:'auth'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 function toast(m,t=''){const el=$('toast');el.textContent=m;el.className='toast open '+t;clearTimeout(window.__t);window.__t=setTimeout(()=>el.className='toast',3200)}
@@ -332,27 +333,34 @@ $('enter-order-btn').onclick=async()=>{await loadOrders();show('order');render()
 $('back-lobby-btn').onclick=async()=>{await stopScanner();await refreshStatus().catch(()=>{});await loadSlots().catch(()=>{});show('lobby')};
 
 /* ---------- Orders ---------- */
-async function loadOrders(){loading(true,'Loading your orders…');try{const [m,n]=await Promise.all([sb.rpc('get_my_order_state',{p_firm:'Maitri'}),sb.rpc('get_my_order_state',{p_firm:'Niharika'})]);if(m.error)throw m.error;if(n.error)throw n.error;state.orders.Maitri=m.data;state.orders.Niharika=n.data;state.carts.Maitri=(m.data.items||[]).map(x=>({...x}));state.carts.Niharika=(n.data.items||[]).map(x=>({...x}))}catch(err){toast(err.message,'error')}finally{loading(false)}}
+async function loadOrders(){loading(true,'Loading your orders…');try{const [m,n]=await Promise.all([sb.rpc('get_my_order_state',{p_firm:'Maitri'}),sb.rpc('get_my_order_state',{p_firm:'Niharika'})]);if(m.error)throw m.error;if(n.error)throw n.error;state.orders.Maitri=m.data;state.orders.Niharika=n.data;state.carts.Maitri=(m.data.items||[]).map(hydrateItem);state.carts.Niharika=(n.data.items||[]).map(hydrateItem);state.deleted.Maitri.clear();state.deleted.Niharika.clear()}catch(err){toast(err.message,'error')}finally{loading(false)}}
+function hydrateItem(x){return{...x,qty:Number(x.qty)||1,pcsPerSet:Number(x.pcsPerSet)||1,note:String(x.note||''),_dirty:false,_serverExists:true}}
 function currentCart(){return state.carts[state.activeFirm]}
+function currentDeleted(){return state.deleted[state.activeFirm]}
+function hasUnsavedChanges(){return currentCart().some(x=>x._dirty)||currentDeleted().size>0}
+function markDirty(item){if(item)item._dirty=true}
 function windowClosed(){const s=state.status;if(!s||!s.editDeadline)return false;return new Date(s.editDeadline).getTime()<Date.now()}
 function fillAccount(){const p=state.profile||{};$('acc-company').value=p.company_name||'';$('acc-contact').value=p.contact_name||'';$('acc-city').value=p.city||'';$('acc-state').value=p.state||'';$('acc-agent').value=p.agent||'';$('acc-gstin').value=p.gstin||''}
 
 function render(){
   document.querySelectorAll('.firm-tab').forEach(b=>b.classList.toggle('active',b.dataset.firm===state.activeFirm));
   const order=state.orders[state.activeFirm]||{version:1,status:'Draft'};const cart=currentCart();
+  const totalSets=cart.reduce((sum,x)=>sum+(Number(x.qty)||0),0);
+  const totalPieces=cart.reduce((sum,x)=>sum+(Number(x.qty)||0)*(Number(x.pcsPerSet)||1),0);
   $('order-title').textContent=state.activeFirm+' order';
-  $('order-status').textContent=`${order.status||'Draft'} · Last saved ${order.updatedAt?new Date(order.updatedAt).toLocaleString('en-IN'):'not yet'}`;
-  $('design-count').textContent=cart.length;$('piece-count').textContent=cart.reduce((s,x)=>s+(Number(x.qty)||0),0);$('version-count').textContent=order.version||1;
+  $('order-status').textContent=`${order.status||'Draft'} · Last saved ${order.updatedAt?new Date(order.updatedAt).toLocaleString('en-IN'):'not yet'}${hasUnsavedChanges()?' · Unsaved changes':''}`;
+  $('design-count').textContent=cart.length;$('set-count').textContent=totalSets;$('piece-count').textContent=totalPieces;$('version-count').textContent=order.version||1;
   const host=$('items');
   if(!cart.length){host.innerHTML='<div class="empty">No designs added yet. Scan the first sticker above.</div>'}
-  else{host.innerHTML=cart.map((it,i)=>`<article class="item">${it.imageUrl?`<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl,'w-240,h-320,c-at_max,q-55'))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">`:'<div class="thumb"></div>'}<div><h3>${esc(it.designNo)}</h3><div class="meta">${esc([it.category,it.fabric,it.color].filter(Boolean).join(' · '))}<br>${esc(it.description||'')}</div><div class="qty"><button data-act="minus" data-i="${i}">−</button><input data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty)||1}"><button data-act="plus" data-i="${i}">+</button><button class="remove" data-act="remove" data-i="${i}">✕</button></div></div></article>`).join('');
+  else{host.innerHTML=cart.map((it,i)=>{const linePieces=(Number(it.qty)||1)*(Number(it.pcsPerSet)||1);return `<article class="item">${it.imageUrl?`<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl,'w-240,h-320,c-at_max,q-55'))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">`:'<div class="thumb"></div>'}<div><h3>${esc(it.designNo)}</h3><div class="meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(' · '))}${it.description?'<br>'+esc(it.description):''}</div><div class="qty"><button data-act="minus" data-i="${i}">−</button><input data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty)||1}"><button data-act="plus" data-i="${i}">+</button><button class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.qty)||1} set${Number(it.qty)===1?'':'s'} × ${Number(it.pcsPerSet)||1} pcs = ${linePieces} pcs</div><label class="line-note-label">Design note <span class="optional">(usually colour)</span></label><textarea class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="e.g. Red 2 sets, Blue 1 set">${esc(it.note||'')}</textarea></div></article>`}).join('');
     cart.forEach((it,i)=>{const el=$('thumb-'+i);if(el)protect(el)})}
   renderCountdown();
 }
 function protect(el){el.draggable=false;el.addEventListener('contextmenu',e=>e.preventDefault());el.addEventListener('dragstart',e=>e.preventDefault())}
-function renderCountdown(){const s=state.status;const box=$('countdown');const closed=windowClosed();
+function renderCountdown(){const s=state.status;const order=state.orders[state.activeFirm]||{};const box=$('countdown');const closed=windowClosed();
   if(!s||!s.editDeadline){box.classList.add('hidden');$('save-btn').disabled=false;return}
   box.classList.remove('hidden');
+  if(closed&&order.adminUnlocked){box.classList.remove('closed');$('countdown-text').textContent='reopened by staff for this '+state.activeFirm+' order';$('save-btn').disabled=false;return}
   if(closed){box.classList.add('closed');$('countdown-text').textContent='closed — ask staff to reopen';$('save-btn').disabled=true;return}
   box.classList.remove('closed');$('save-btn').disabled=false;
   const ms=new Date(s.editDeadline).getTime()-Date.now();const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1000);
@@ -361,57 +369,63 @@ function renderCountdown(){const s=state.status;const box=$('countdown');const c
 function startTick(){stopTick();state.tick=setInterval(renderCountdown,1000)}
 function stopTick(){if(state.tick){clearInterval(state.tick);state.tick=null}}
 
-$('items').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;const i=Number(b.dataset.i),cart=currentCart();if(b.dataset.act==='plus')cart[i].qty=Math.min(9999,(Number(cart[i].qty)||1)+1);if(b.dataset.act==='minus')cart[i].qty=Math.max(1,(Number(cart[i].qty)||1)-1);if(b.dataset.act==='remove')cart.splice(i,1);render()});
-$('items').addEventListener('change',e=>{if(e.target.dataset.act!=='qty')return;const i=Number(e.target.dataset.i);currentCart()[i].qty=Math.max(1,Math.min(9999,Number(e.target.value)||1));render()});
+$('items').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT'||b.tagName==='TEXTAREA')return;const i=Number(b.dataset.i),cart=currentCart(),it=cart[i];if(!it)return;if(b.dataset.act==='plus'){it.qty=Math.min(9999,(Number(it.qty)||1)+1);markDirty(it)}if(b.dataset.act==='minus'){it.qty=Math.max(1,(Number(it.qty)||1)-1);markDirty(it)}if(b.dataset.act==='remove'){const [removed]=cart.splice(i,1);if(removed?._serverExists)currentDeleted().add(removed.designNo)}render()});
+$('items').addEventListener('change',e=>{if(e.target.dataset.act!=='qty')return;const i=Number(e.target.dataset.i),it=currentCart()[i];if(!it)return;it.qty=Math.max(1,Math.min(9999,Number(e.target.value)||1));markDirty(it);render()});
+$('items').addEventListener('input',e=>{if(e.target.dataset.act!=='note')return;const i=Number(e.target.dataset.i),it=currentCart()[i];if(!it)return;it.note=e.target.value.slice(0,500);markDirty(it);$('order-status').textContent=(state.orders[state.activeFirm]?.status||'Draft')+' · Unsaved changes'});
 document.querySelectorAll('.firm-tab').forEach(b=>b.onclick=async()=>{await stopScanner();state.activeFirm=b.dataset.firm;render()});
 
-async function addBarcode(raw){const barcode=String(raw||'').trim();if(!barcode)return;try{$('scan-note').classList.add('hidden');const{data,error}=await sb.rpc('lookup_barcode',{p_barcode:barcode});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('Barcode is not mapped to an active design');if(![state.activeFirm,'Both'].includes(row.firm))throw new Error(`${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`);const cart=currentCart();if(cart.some(x=>x.designNo===row.design_no))throw new Error(`${row.design_no} is already in this order`);cart.push({barcode:row.barcode,designNo:row.design_no,imageUrl:row.image_url||'',qty:1,category:row.category,fabric:row.fabric,color:row.color,description:row.description});$('barcode-input').value='';render();note(`Added ${row.design_no}`,'success');navigator.vibrate?.(80)}catch(err){note(err.message,'error');navigator.vibrate?.([100,70,100])}}
+async function addBarcode(raw){const barcode=String(raw||'').trim();if(!barcode)return;try{$('scan-note').classList.add('hidden');const{data,error}=await sb.rpc('lookup_barcode',{p_barcode:barcode});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('Barcode is not mapped to an active design');if(![state.activeFirm,'Both'].includes(row.firm))throw new Error(`${row.design_no} belongs to ${row.firm}. Switch firm tabs first.`);const cart=currentCart();if(cart.some(x=>x.designNo===row.design_no))throw new Error(`${row.design_no} is already in this order`);currentDeleted().delete(row.design_no);cart.push({barcode:row.barcode,designNo:row.design_no,imageUrl:row.image_url||'',qty:1,category:row.category,style:row.style,fabric:row.fabric,pcsPerSet:Number(row.pcs_per_set)||1,note:'',description:row.description||'',_dirty:true,_serverExists:false});$('barcode-input').value='';render();note(`Added ${row.design_no}`,'success');navigator.vibrate?.(80)}catch(err){note(err.message,'error');navigator.vibrate?.([100,70,100])}}
 function note(t,type=''){$('scan-note').textContent=t;$('scan-note').className='notice '+type}
 $('add-barcode').onclick=()=>addBarcode($('barcode-input').value);$('barcode-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addBarcode(e.target.value)}});
 $('camera-btn').onclick=async()=>{if(state.scanning){await stopScanner();return}try{await ensureScanner();state.scanner=new Html5Qrcode('reader');$('reader').classList.add('open');await state.scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:260,height:160}},async d=>{await addBarcode(d);await stopScanner()},()=>{});state.scanning=true;$('camera-btn').textContent='Close camera scanner'}catch(err){toast('Camera could not start: '+err.message,'error');await stopScanner()}};
 async function stopScanner(){if(state.scanner){try{if(state.scanning)await state.scanner.stop()}catch{}try{await state.scanner.clear()}catch{}}state.scanner=null;state.scanning=false;$('reader').classList.remove('open');$('camera-btn').textContent='Open camera scanner'}
 
-$('save-btn').onclick=async()=>{try{loading(true,'Saving order…');const firm=state.activeFirm,order=state.orders[firm];const items=currentCart().map(x=>({barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1}));const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok){state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));render();throw new Error(data.message)}state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(x=>({...x}));await refreshStatus();render();toast(`${firm} order saved`,'success')}catch(err){if(isAuthErr(err.message)){toast('Your session expired — please log in again.','error');show('auth')}else toast(friendlySave(err.message),'error')}finally{loading(false)}};
-function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';return m}
+$('save-btn').onclick=async()=>{const firm=state.activeFirm,order=state.orders[firm];const upserts=currentCart().filter(x=>x._dirty).map(x=>({_op:'upsert',barcode:x.barcode||'',designNo:x.designNo,qty:Number(x.qty)||1,note:String(x.note||'').trim()}));const deletes=[...state.deleted[firm]].map(designNo=>({_op:'delete',designNo,_delete:true}));const items=upserts.concat(deletes);if(!items.length){toast('No unsaved changes');return}try{loading(true,'Saving and merging order…');const{data,error}=await sb.rpc('save_my_order',{p_firm:firm,p_base_version:order.version,p_items:items,p_request_id:crypto.randomUUID()});if(error)throw error;if(!data.ok)throw new Error(data.message||'Order could not be saved');state.orders[firm]=data.order;state.carts[firm]=(data.order.items||[]).map(hydrateItem);state.deleted[firm].clear();await refreshStatus();render();toast(data.code==='MERGED'?`${firm} changes merged with the latest order`:`${firm} order saved`,'success')}catch(err){if(isAuthErr(err.message)){toast('Your session expired — please log in again.','error');show('auth')}else toast(friendlySave(err.message),'error')}finally{loading(false)}};
+function friendlySave(m){if(/NOT_CHECKED_IN/.test(m))return 'You are not checked in yet. Please visit the counter.';if(/EDIT_WINDOW_CLOSED/.test(m))return 'Your 24-hour edit window has closed. Ask staff to reopen it.';if(/ORDER_LOCKED/.test(m))return 'This order is locked. Ask staff to reopen it.';if(/NOTE_TOO_LONG/.test(m))return 'A design note is too long. Keep it under 500 characters.';return m}
 
 /* ---------- PDF (sale order) ---------- */
 async function blobToDataUrl(b){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)})}
-async function fetchThumb(url){const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(ik(url,'w-300,h-400,c-at_max,q-45,f-jpg'),{mode:'cors',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('img');return await blobToDataUrl(await r.blob())}finally{clearTimeout(t)}}
-$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}
-  try{loading(true,'Preparing PDF…');await ensureJsPDF();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});const p=state.profile,firm=state.activeFirm,f=FIRMS[firm];const W=210;let y=14;
-    // Header
-    doc.setFillColor(34,94,99);doc.rect(0,0,W,26,'F');
-    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('EKUM · '+firm,12,12);
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(f.name,12,18);doc.text('GSTIN: '+f.gstin+'    Maitri Carnival 2026',12,22.5);
-    doc.setTextColor(51,39,27);y=34;
-    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('SALE ORDER',12,y);
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('Date: '+new Date().toLocaleDateString('en-IN'),W-12,y,{align:'right'});y+=7;
-    // Buyer block
-    doc.setDrawColor(220);doc.setFillColor(245,248,247);doc.rect(12,y,W-24,24,'FD');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('Buyer',15,y+5);
-    doc.setFont('helvetica','normal');
-    doc.text(`${p.company_name||''}  ·  ${p.contact_name||''}`,15,y+10);
-    doc.text(`Phone: +${p.phone_e164||''}    GSTIN: ${p.gstin||'—'}`,15,y+15);
-    doc.text(`${[p.city,p.state].filter(Boolean).join(', ')}    Agent: ${p.agent||'—'}`,15,y+20);
-    y+=30;
-    // Table header
-    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setFillColor(232,242,241);doc.rect(12,y,W-24,7,'F');
-    doc.text('#',15,y+5);doc.text('Design',33,y+5);doc.text('Details',75,y+5);doc.text('Sets',W-16,y+5,{align:'right'});
-    y+=7;doc.setFont('helvetica','normal');
-    const thumbs=await Promise.allSettled(cart.map(it=>fetchThumb(it.imageUrl)));
-    for(let i=0;i<cart.length;i++){const it=cart[i];if(y>272){doc.addPage();y=16}
-      const tv=thumbs[i];if(tv.status==='fulfilled'){try{doc.addImage(tv.value,'JPEG',15,y+1,12,16,undefined,'FAST')}catch{doc.setDrawColor(225);doc.rect(15,y+1,12,16)}}else{doc.setDrawColor(225);doc.rect(15,y+1,12,16)}
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(String(it.designNo||''),33,y+7);
-      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(doc.splitTextToSize([it.category,it.fabric,it.color].filter(Boolean).join(' · ')+(it.description?'  '+it.description:''),110),75,y+5);
-      doc.setFont('helvetica','bold');doc.setFontSize(9.5);doc.text(String(it.qty),W-16,y+8,{align:'right'});
-      doc.setDrawColor(235);doc.line(12,y+19,W-12,y+19);y+=20;
+async function fetchThumb(url){if(!url)throw new Error('no-image');const c=new AbortController();const t=setTimeout(()=>c.abort(),6000);try{const r=await fetch(ik(url,'w-300,h-400,c-at_max,q-45,f-jpg'),{mode:'cors',credentials:'omit',signal:c.signal});if(!r.ok)throw new Error('image-http-'+r.status);return await blobToDataUrl(await r.blob())}finally{clearTimeout(t)}}
+async function fetchThumbsLimited(items,limit=6){const out=new Array(items.length);let next=0;async function worker(){while(true){const i=next++;if(i>=items.length)return;try{out[i]={status:'fulfilled',value:await fetchThumb(items[i].imageUrl)}}catch(reason){out[i]={status:'rejected',reason}}}}const workers=Array.from({length:Math.min(limit,Math.max(1,items.length))},worker);await Promise.all(workers);return out}
+function pdfText(v,fallback='-'){const t=String(v??'').replace(/[\r\n\t]+/g,' ').replace(/\s{2,}/g,' ').trim();return t||fallback}
+async function buildSaleOrderPdf(){
+  await ensureJsPDF();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  const p=state.profile||{},firm=state.activeFirm,f=FIRMS[firm],cart=currentCart(),order=state.orders[firm]||{},W=210,M=10,contentW=W-M*2;
+  const totalSets=cart.reduce((sum,x)=>sum+(Number(x.qty)||0),0);const totalPieces=cart.reduce((sum,x)=>sum+(Number(x.qty)||0)*(Number(x.pcsPerSet)||1),0);
+  let y=0;
+  function pageHeader(first=false){
+    doc.setFillColor(34,94,99);doc.rect(0,0,W,25,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('EKUM - '+firm,M,10.5);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text(pdfText(f.name),M,16);doc.text('GSTIN: '+pdfText(f.gstin)+'   |   Maitri Carnival 2026',M,21);
+    doc.setTextColor(51,39,27);y=31;
+    if(first){doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('SALE ORDER',M,y);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text('Date: '+new Date().toLocaleDateString('en-IN'),W-M,y,{align:'right'});doc.setFontSize(7.2);doc.text('Order ref: '+pdfText(String(order.id||'').slice(0,8).toUpperCase())+' | Version '+(Number(order.version)||1),W-M,y+4,{align:'right'});y+=8;
+      doc.setDrawColor(220);doc.setFillColor(245,248,247);doc.roundedRect(M,y,contentW,25,2,2,'FD');doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('BUYER',M+3,y+5);doc.setFont('helvetica','normal');doc.text(pdfText(p.company_name)+' | '+pdfText(p.contact_name),M+3,y+10);doc.text('Phone: +'+pdfText(p.phone_e164)+' | GSTIN: '+pdfText(p.gstin),M+3,y+15);doc.text(pdfText([p.city,p.state].filter(Boolean).join(', '))+' | Agent: '+pdfText(p.agent),M+3,y+20);y+=30;
     }
-    doc.setFont('helvetica','bold');doc.setFontSize(10);
-    const totalSets=cart.reduce((s,x)=>s+Number(x.qty||0),0);
-    doc.text(`Total designs: ${cart.length}     Total sets: ${totalSets}`,12,Math.min(y+6,289));
-    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120);doc.text('Computer-generated sale order · Maitri Carnival 2026',12,293);
-    doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Sale-Order.pdf`);toast('PDF downloaded','success')
-  }catch(err){toast(err.message||'Could not generate the PDF','error')}finally{loading(false)}};
+    tableHeader();
+  }
+  function tableHeader(){doc.setFillColor(232,242,241);doc.rect(M,y,contentW,8,'F');doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(7.2);doc.text('#',M+2,y+5.3);doc.text('PHOTO',M+10,y+5.3);doc.text('DESIGN',M+29,y+5.3);doc.text('DETAILS',M+54,y+5.3);doc.text('NOTE',M+108,y+5.3);doc.text('SETS',M+148,y+5.3);doc.text('PCS/SET',M+162,y+5.3);doc.text('PCS',W-M-2,y+5.3,{align:'right'});doc.setTextColor(51,39,27);y+=8}
+  pageHeader(true);
+  const thumbs=await fetchThumbsLimited(cart,6);
+  for(let i=0;i<cart.length;i++){
+    const it=cart[i],sets=Number(it.qty)||1,pps=Number(it.pcsPerSet)||1,linePieces=sets*pps;
+    doc.setFont('helvetica','normal');doc.setFontSize(7.4);
+    const detail=pdfText([it.category,it.style,it.fabric].filter(Boolean).join(' / '));
+    const detailLines=doc.splitTextToSize(detail+(it.description?' - '+pdfText(it.description):''),50);
+    const noteLines=doc.splitTextToSize(pdfText(it.note),36);
+    const rowH=Math.max(22,5+Math.max(detailLines.length,noteLines.length)*4);
+    if(y+rowH>278){doc.addPage();pageHeader(false)}
+    const tv=thumbs[i];doc.setDrawColor(230);doc.rect(M+9,y+2,15,18);
+    if(tv.status==='fulfilled'){try{doc.addImage(tv.value,'JPEG',M+9,y+2,15,18,undefined,'FAST')}catch{/* keep placeholder */}}
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.text(String(i+1),M+2,y+8);
+    doc.setFont('helvetica','bold');doc.setFontSize(8.2);doc.text(pdfText(it.designNo),M+29,y+8,{maxWidth:23});
+    doc.setFont('helvetica','normal');doc.setFontSize(7.4);doc.text(detailLines,M+54,y+6);doc.text(noteLines,M+108,y+6);
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(sets),M+154,y+8,{align:'right'});doc.text(String(pps),M+174,y+8,{align:'right'});doc.text(String(linePieces),W-M-2,y+8,{align:'right'});
+    doc.setDrawColor(235);doc.line(M,y+rowH,W-M,y+rowH);y+=rowH;
+  }
+  if(y+22>280){doc.addPage();pageHeader(false)}
+  doc.setFillColor(245,248,247);doc.roundedRect(M,y+4,contentW,14,2,2,'F');doc.setTextColor(34,94,99);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`Total designs: ${cart.length}`,M+4,y+12);doc.text(`Total sets: ${totalSets}`,M+72,y+12);doc.text(`Total pieces: ${totalPieces}`,W-M-4,y+12,{align:'right'});
+  const pages=doc.getNumberOfPages();for(let pg=1;pg<=pages;pg++){doc.setPage(pg);doc.setTextColor(120);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('Computer-generated sale order - Maitri Carnival 2026',M,293);doc.text(`Page ${pg} of ${pages}`,W-M,293,{align:'right'})}
+  return doc;
+}
+$('pdf-btn').onclick=async()=>{const cart=currentCart();if(!cart.length){toast('Add at least one design before downloading a PDF','error');return}if(hasUnsavedChanges()){toast('Save your latest changes before downloading the sale order','error');return}try{loading(true,'Preparing PDF…');const doc=await buildSaleOrderPdf();const p=state.profile||{},firm=state.activeFirm;doc.save(`${(p.company_name||'order').replace(/[^a-z0-9]+/gi,'-')}-${firm}-Sale-Order.pdf`);toast('PDF downloaded','success')}catch(err){console.error('sale-order-pdf',err);toast('Could not generate the PDF. Check your connection and try again.','error')}finally{loading(false)}};
 
 /* ---------- Account ---------- */
 $('account-btn').onclick=()=>{fillAccount();show('account')};
