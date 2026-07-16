@@ -72,6 +72,12 @@ const TABLES: Record<string, TableCfg> = {
     insert: true,
     deletable: true,
   },
+  staff_profiles: {
+    pk: "auth_user_id",
+    cols: ["auth_user_id","staff_id","staff_name","preset","permissions","default_section","active","created_at","updated_at"],
+    write: [],
+    insert: false,
+  },
   system_settings: {
     pk: "singleton",
     cols: ["singleton","event_name","event_start_date","event_end_date","registration_enabled","edit_window_hours","customer_email_domain"],
@@ -135,6 +141,7 @@ async function push(db: SupabaseClient, table: string, rows: any[]) {
   const cfg = TABLES[table];
   if (!cfg) throw new Error("UNKNOWN_TABLE_" + table);
   if (!Array.isArray(rows)) throw new Error("ROWS_MUST_BE_AN_ARRAY");
+  if (cfg.write.length === 0 && rows.length) throw new Error(`READ_ONLY_TABLE_${table.toUpperCase()}`);
   const pkArr = Array.isArray(cfg.pk) ? cfg.pk : [cfg.pk];
   const affected = new Set<string>();
   const upserts: any[] = [];

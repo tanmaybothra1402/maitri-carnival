@@ -23,7 +23,7 @@ const DS_PATH = '/functions/v1/data-sync';
 // SECURITY: only paste the real secret into the Apps Script editor copy.
 // Keep the repo copy of this file blank so the secret is never committed to GitHub.
 const DS_URL = 'https://ezmtiiftolcaslqfvozu.supabase.co';
-const DS_SECRET = '';  // <-- paste your SHEET_SYNC_SECRET here (from supabase/.env.production)
+const DS_SECRET = '0cbd403785f28e9dde753b8d204827dec84d8b783b767a0417cafa33cf04431d';  // <-- paste your SHEET_SYNC_SECRET here (from supabase/.env.production)
 
 // Tab name -> Supabase table.
 const DS_TABS = {
@@ -35,7 +35,8 @@ const DS_TABS = {
   'Slots': 'slots',
   'Bookings': 'bookings',
   'Lookups': 'lookup_values',
-  'Settings': 'system_settings'
+  'Settings': 'system_settings',
+  'Staff': 'staff_profiles'
 };
 
 // Columns that are editable and pushed back (everything else is reference-only).
@@ -48,7 +49,8 @@ const DS_EDITABLE = {
   slots: ['starts_at','ends_at','label','capacity','active'],
   bookings: ['party_size','note','status','slot_id'],
   lookup_values: ['kind','value'],
-  system_settings: ['event_name','event_start_date','event_end_date','registration_enabled','edit_window_hours']
+  system_settings: ['event_name','event_start_date','event_end_date','registration_enabled','edit_window_hours'],
+  staff_profiles: []
 };
 
 function onOpen() {
@@ -114,7 +116,7 @@ function dsWrite_(tabName, res) {
   const header = cols.concat(['_delete']);
   const values = [header];
   (res.rows || []).forEach(function (r) {
-    const line = cols.map(function (c) { const v = r[c]; return (v === null || v === undefined) ? '' : v; });
+    const line = cols.map(function (c) { const v = r[c]; if (v === null || v === undefined) return ''; if (v && typeof v === 'object') return JSON.stringify(v); return v; });
     line.push('');
     values.push(line);
   });
