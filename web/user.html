@@ -82,7 +82,7 @@
     .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
     .item-content{min-width:0}.item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.item h3{min-width:0;font-size:14px;color:var(--teal-deep);overflow-wrap:anywhere}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}.line-piece-pill{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:var(--foam);color:var(--teal-deep);font-size:9px;font-weight:850;white-space:nowrap}
     .qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}.qty{display:flex;align-items:center;gap:5px;margin:0}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}.qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{flex:0 0 auto;width:36px!important;height:36px!important;margin:0!important;color:var(--error)!important}
-    .line-total{margin-top:8px;padding:7px 9px;border-radius:9px;background:#F6FAF9;color:var(--teal-deep);font-size:10.5px;font-weight:800;line-height:1.35;overflow-wrap:anywhere}.line-note-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px}.line-note-help{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.line-note{width:100%;min-height:62px;margin-top:6px;padding:9px 10px;font-size:16px!important;line-height:1.4;overflow-wrap:anywhere}
+    .line-total{margin-top:6px;color:var(--muted);font-size:10px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}.line-note-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px}.line-note-help{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.line-note{width:100%;min-height:62px;margin-top:6px;padding:9px 10px;font-size:16px!important;line-height:1.4;overflow-wrap:anywhere}
     .savebar{position:sticky;bottom:8px;z-index:25;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 30px rgba(34,55,52,.14);backdrop-filter:blur(10px)}.savebar .btn{margin:0}
     .empty{padding:26px 12px;border:1px dashed #BCD0CB;border-radius:13px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}
     .toast{position:fixed;left:50%;top:70px;z-index:200;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%);box-shadow:0 9px 25px rgba(0,0,0,.18)}.toast.open{display:block}.toast.error{background:#B91C1C}.toast.success{background:#166534}
@@ -1009,7 +1009,7 @@ function render() {
     host.innerHTML = cart
       .map((it, i) => {
         const linePieces = (Number(it.qty) || 1) * (Number(it.pcsPerSet) || 1);
-        return `<article class="item">${it.imageUrl ? `<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl, "w-240,h-320,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div><div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}">−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"><button aria-label="Increase sets" data-act="plus" data-i="${i}">+</button></div><button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.qty) || 1} set${Number(it.qty) === 1 ? "" : "s"} × ${Number(it.pcsPerSet) || 1} pcs per set = ${linePieces} pieces</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team">${esc(it.note || "")}</textarea></div></article>`;
+        return `<article class="item">${it.imageUrl ? `<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl, "w-240,h-320,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div><div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}">−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"><button aria-label="Increase sets" data-act="plus" data-i="${i}">+</button></div><button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.pcsPerSet) || 1} pcs/set</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team">${esc(it.note || "")}</textarea></div></article>`;
       })
       .join("");
     cart.forEach((it, i) => {
@@ -1307,6 +1307,71 @@ function pdfText(v, fallback = "-") {
     .trim();
   return t || fallback;
 }
+
+async function loadPdfBrandAsset(path) {
+  try {
+    const response = await fetch(
+      new URL(path, window.location.href),
+      { cache: "force-cache" },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Could not load ${path}`);
+    }
+
+    const blob = await response.blob();
+
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.warn("pdf-brand-asset", path, error);
+    return null;
+  }
+}
+
+function drawPdfBrandLogo(
+  doc,
+  dataUrl,
+  x,
+  y,
+  maxWidth,
+  maxHeight,
+) {
+  if (!dataUrl) return 0;
+
+  try {
+    const properties = doc.getImageProperties(dataUrl);
+
+    const scale = Math.min(
+      maxWidth / properties.width,
+      maxHeight / properties.height,
+    );
+
+    const width = properties.width * scale;
+    const height = properties.height * scale;
+
+    doc.addImage(
+      dataUrl,
+      "PNG",
+      x,
+      y,
+      width,
+      height,
+      undefined,
+      "FAST",
+    );
+
+    return width;
+  } catch (error) {
+    console.warn("pdf-logo-draw", error);
+    return 0;
+  }
+}
+
 async function buildSaleOrderPdf() {
   await ensureJsPDF();
   const { jsPDF } = window.jspdf;
@@ -1324,34 +1389,104 @@ async function buildSaleOrderPdf() {
     (sum, x) => sum + (Number(x.qty) || 0) * (Number(x.pcsPerSet) || 1),
     0,
   );
+
+  const [maitriLogo, niharikaLogo] = await Promise.all([
+    loadPdfBrandAsset("assets/maitri-logo.png"),
+    loadPdfBrandAsset("assets/niharika-logo.png"),
+  ]);
+
   let y = 0;
   function pageHeader(first = false) {
-    doc.setFillColor(34, 94, 99);
-    doc.rect(0, 0, W, 25, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.text("EKUM - " + firm, M, 10.5);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.text(pdfText(f.name), M, 16);
-    doc.text(
-      "GSTIN: " + pdfText(f.gstin) + "   |   Maitri Carnival 2026",
-      M,
-      21,
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, W, 29, "F");
+
+    doc.setDrawColor(220, 230, 227);
+    doc.line(0, 29, W, 29);
+
+    let logoX = M;
+
+    const maitriWidth = drawPdfBrandLogo(
+      doc,
+      maitriLogo,
+      logoX,
+      7,
+      31,
+      11,
     );
-    doc.setTextColor(51, 39, 27);
-    y = 31;
-    if (first) {
+
+    if (maitriWidth) {
+      logoX += maitriWidth + 5;
+    } else {
+      doc.setTextColor(46, 42, 107);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.text("SALE ORDER", M, y);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.text("Date: " + new Date().toLocaleDateString("en-IN"), W - M, y, {
+      doc.setFontSize(11);
+      doc.text("MAITRI", logoX, 14);
+      logoX += 27;
+    }
+
+    const niharikaWidth = drawPdfBrandLogo(
+      doc,
+      niharikaLogo,
+      logoX,
+      7,
+      30,
+      11,
+    );
+
+    if (!niharikaWidth) {
+      doc.setTextColor(230, 0, 126);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("NIHARIKA", logoX, 14);
+    }
+
+    doc.setTextColor(34, 94, 99);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("SALE ORDER", W - M, 10.5, {
+      align: "right",
+    });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(
+      `${firm} · Maitri Carnival 2026`,
+      W - M,
+      16,
+      { align: "right" },
+    );
+
+    doc.setFontSize(7);
+    doc.text(
+      pdfText(f.name),
+      W - M,
+      21,
+      {
         align: "right",
-      });
-      doc.setFontSize(7.2);
+        maxWidth: 88,
+      },
+    );
+
+    doc.text(
+      "GSTIN: " + pdfText(f.gstin),
+      W - M,
+      25.5,
+      { align: "right" },
+    );
+
+    doc.setTextColor(51, 39, 27);
+    y = 35;
+
+    if (first) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+
+      doc.text(
+        "Date: " + new Date().toLocaleDateString("en-IN"),
+        M,
+        y,
+      );
+
       doc.text(
         "Order ref: " +
           pdfText(
@@ -1359,39 +1494,59 @@ async function buildSaleOrderPdf() {
               .slice(0, 8)
               .toUpperCase(),
           ) +
-          " | Version " +
+          " · Version " +
           (Number(order.version) || 1),
         W - M,
-        y + 4,
+        y,
         { align: "right" },
       );
-      y += 8;
+
+      y += 6;
+
       doc.setDrawColor(220);
-      doc.setFillColor(245, 248, 247);
+      doc.setFillColor(247, 250, 249);
       doc.roundedRect(M, y, contentW, 25, 2, 2, "FD");
+
+      doc.setTextColor(34, 94, 99);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
-      doc.text("BUYER", M + 3, y + 5);
+      doc.text("CUSTOMER", M + 3, y + 5);
+
+      doc.setTextColor(51, 39, 27);
       doc.setFont("helvetica", "normal");
+
       doc.text(
-        pdfText(p.company_name) + " | " + pdfText(p.contact_name),
+        pdfText(p.company_name) +
+          " · " +
+          pdfText(p.contact_name),
         M + 3,
         y + 10,
       );
+
       doc.text(
-        "Phone: +" + pdfText(p.phone_e164) + " | GSTIN: " + pdfText(p.gstin),
+        "Phone: +" +
+          pdfText(p.phone_e164) +
+          " · GSTIN: " +
+          pdfText(p.gstin),
         M + 3,
         y + 15,
       );
+
       doc.text(
-        pdfText([p.city, p.state].filter(Boolean).join(", ")) +
-          " | Agent: " +
+        pdfText(
+          [p.city, p.state]
+            .filter(Boolean)
+            .join(", "),
+        ) +
+          " · Agent: " +
           pdfText(p.agent),
         M + 3,
         y + 20,
       );
+
       y += 30;
     }
+
     tableHeader();
   }
   function tableHeader() {
@@ -1485,8 +1640,17 @@ async function buildSaleOrderPdf() {
     doc.setTextColor(120);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.text("Computer-generated sale order - Maitri Carnival 2026", M, 293);
-    doc.text(`Page ${pg} of ${pages}`, W - M, 293, { align: "right" });
+    doc.text(
+      "Maitri Carnival 2026 · Computer-generated sale order",
+      M,
+      293,
+    );
+    doc.text("Powered by EKUM", W / 2, 293, {
+      align: "center",
+    });
+    doc.text(`Page ${pg} of ${pages}`, W - M, 293, {
+      align: "right",
+    });
   }
   return doc;
 }
