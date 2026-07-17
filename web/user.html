@@ -309,6 +309,7 @@ const sb = configured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+      storageKey: "maitri-carnival-customer-session",
       },
     })
   : null;
@@ -1743,37 +1744,105 @@ window.visualViewport?.addEventListener("resize", () => {
 
 /* ---------- Boot ---------- */
 let booted = false;
+let customerBootRetryTimer = null;
+let customerReconnectNotified = false;
+
+function clearCustomerBootRetry() {
+  if (customerBootRetryTimer) {
+    clearTimeout(customerBootRetryTimer);
+    customerBootRetryTimer = null;
+  }
+}
+
+function scheduleCustomerBootRetry() {
+  clearCustomerBootRetry();
+
+  customerBootRetryTimer = setTimeout(() => {
+    customerBootRetryTimer = null;
+    boot();
+  }, 2500);
+}
+
 async function boot() {
   if (booted) return;
+
   booted = true;
+
   try {
     loading(true, "Loading…");
+
     await loadProfileAndStatus();
+
+    clearCustomerBootRetry();
+    customerReconnectNotified = false;
+
     show("lobby");
   } catch (err) {
     booted = false;
-    if (!isAuthErr(err.message)) toast(err.message, "error");
-    show("auth");
+
+    const { data } = await sb.auth
+      .getSession()
+      .catch(() => ({
+        data: { session: null },
+      }));
+
+    if (!data?.session) {
+      clearCustomerBootRetry();
+      customerReconnectNotified = false;
+      show("auth");
+      return;
+    }
+
+    console.error("customer-session-resume", err);
+
+    if (!customerReconnectNotified) {
+      customerReconnectNotified = true;
+
+      toast(
+        "Connection interrupted. Retrying automatically…",
+        "error",
+      );
+    }
+
+    scheduleCustomerBootRetry();
   } finally {
     loading(false);
   }
 }
+
 if (sb) {
   sb.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT" || !session) {
+      clearCustomerBootRetry();
+      customerReconnectNotified = false;
       booted = false;
+      state.profile = null;
+
       show("auth");
       return;
     }
-    if (event === "SIGNED_IN") {
+
+    if (
+      event === "SIGNED_IN" ||
+      event === "TOKEN_REFRESHED"
+    ) {
       booted = false;
       setTimeout(boot, 0);
     }
   });
-  sb.auth.getSession().then(({ data }) => {
+
+  sb.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error("customer-session-load", error);
+      scheduleCustomerBootRetry();
+      return;
+    }
+
     data.session ? boot() : show("auth");
   });
-} else show("auth");
+} else {
+  show("auth");
+}
 
 </script>
 </body>
