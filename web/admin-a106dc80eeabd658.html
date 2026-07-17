@@ -336,7 +336,14 @@ const $ = (id) => document.getElementById(id),
 const sb = supabase.createClient(
     CONFIG.SUPABASE_URL,
     CONFIG.SUPABASE_ANON_KEY,
-    { auth: { persistSession: true, autoRefreshToken: true } },
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+        storageKey: "maitri-carnival-team-session",
+      },
+    },
   ),
   API = CONFIG.SUPABASE_URL + "/functions/v1/admin-api";
 const st = {
@@ -2753,21 +2760,115 @@ window.visualViewport?.addEventListener("resize", () => {
   __layoutViewportHeight = Math.max(__layoutViewportHeight, h);
 });
 
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (data.session) {
-    try {
-      loading(true);
-      await boot();
-    } catch (e) {
-      await sb.auth.signOut();
-      setLogged(false);
-      toast(e.message, "error");
-    } finally {
-      loading(false);
+let adminBootRetryTimer = null;
+let adminReconnectNotified = false;
+
+function clearAdminBootRetry() {
+  if (adminBootRetryTimer) {
+    clearTimeout(adminBootRetryTimer);
+    adminBootRetryTimer = null;
+  }
+}
+
+function scheduleAdminBootRetry() {
+  clearAdminBootRetry();
+
+  adminBootRetryTimer = setTimeout(() => {
+    adminBootRetryTimer = null;
+    resumeAdminSession();
+  }, 2500);
+}
+
+async function resumeAdminSession() {
+  const { data, error } = await sb.auth.getSession();
+
+  if (error) {
+    console.error("team-session-load", error);
+
+    if (!adminReconnectNotified) {
+      adminReconnectNotified = true;
+
+      toast(
+        "Connection interrupted. Retrying automatically…",
+        "error",
+      );
     }
-  } else setLogged(false);
-})();
+
+    scheduleAdminBootRetry();
+    return;
+  }
+
+  if (!data.session) {
+    clearAdminBootRetry();
+    adminReconnectNotified = false;
+    st.me = null;
+
+    setLogged(false);
+    return;
+  }
+
+  try {
+    loading(true, "Restoring your session…");
+
+    await boot();
+
+    clearAdminBootRetry();
+    adminReconnectNotified = false;
+  } catch (error) {
+    const message = String(
+      error?.message || error || "",
+    );
+
+    console.error("team-session-resume", error);
+
+    if (
+      /TEAM_ACCOUNT_DISABLED|TEAM_PROFILE_NOT_FOUND/.test(
+        message,
+      )
+    ) {
+      clearAdminBootRetry();
+
+      await sb.auth.signOut();
+
+      st.me = null;
+      setLogged(false);
+
+      toast(
+        message === "TEAM_ACCOUNT_DISABLED"
+          ? "This Team account is disabled."
+          : "This Team account is no longer available.",
+        "error",
+      );
+
+      return;
+    }
+
+    if (!adminReconnectNotified) {
+      adminReconnectNotified = true;
+
+      toast(
+        "Connection interrupted. Retrying automatically…",
+        "error",
+      );
+    }
+
+    scheduleAdminBootRetry();
+  } finally {
+    loading(false);
+  }
+}
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT" || !session) {
+    clearAdminBootRetry();
+    adminReconnectNotified = false;
+    st.me = null;
+
+    setLogged(false);
+  }
+});
+
+resumeAdminSession();
 
 /* Default section auto-follows the first ticked module (create + edit). */
 (function () {
