@@ -22,7 +22,7 @@ label{display:block;margin:13px 0 6px;color:#515B58;font-size:10px;font-weight:8
 .list{display:grid;gap:8px;margin-top:10px}.list-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}.list-row.click{cursor:pointer}.list-row.click:active{background:var(--foam);transform:scale(.995)}.list-row b{display:block;color:var(--deep);font-size:13px}.list-row p{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}.empty{min-height:110px;display:grid;place-items:center;padding:22px;border:1px dashed rgba(43,115,121,.2);border-radius:14px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}.badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:9px;font-weight:800}.badge.ok{background:#DCFCE7;color:#166534}.badge.wait{background:#FFF3D9;color:#8A5A09}.badge.off{background:#FEE2E2;color:#991B1B}.badge.info{background:var(--foam);color:var(--deep)}
 nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nav-h) + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);align-items:start;padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border-top:1px solid rgba(34,94,99,.1);box-shadow:0 -10px 28px rgba(34,55,52,.1);backdrop-filter:blur(14px)}.nav-item{position:relative;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#707674;font-size:10px;font-weight:600;cursor:pointer}.nav-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--deep);font-weight:800}.nav-item.active:not(.center)::before{content:"";position:absolute;top:7px;left:50%;width:26px;height:3px;border-radius:999px;background:var(--orange);transform:translateX(-50%)}.center .fab{width:56px;height:56px;display:grid;place-items:center;margin:-25px auto 0;border:3px solid #fff;border-radius:50%;background:var(--deep);box-shadow:0 8px 20px rgba(34,94,99,.3)}.center .fab svg{width:25px;height:25px;stroke:#fff}.center.active .fab{background:var(--orange);box-shadow:0 8px 20px rgba(255,151,0,.28)}
 .dashboard-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.dashboard-header h1{font-size:21px}.updated{margin-top:4px;color:var(--muted);font-size:10px}.dashboard-subnav{position:sticky;top:64px;z-index:42;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 16px rgba(34,94,99,.08)}.dashboard-subnav button{min-height:40px;padding:5px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}.dashboard-subnav button.active{background:var(--deep);color:#fff}.filter-bar{display:flex;align-items:center;gap:7px;min-height:50px;margin-bottom:10px;padding:8px;border:1px solid var(--border);border-radius:13px;background:#fff}.filter-chips{display:flex;flex:1;gap:6px;overflow-x:auto;scrollbar-width:none}.chip{flex:0 0 auto;min-height:32px;padding:5px 10px;border:0;border-radius:16px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:800}.kpi-strip{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.kpi{flex:0 0 116px;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.05)}.kpi.primary{background:linear-gradient(135deg,var(--deep),var(--teal));border-color:transparent;color:#fff}.kpi b{display:block;font-size:21px}.kpi span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.kpi.primary span{color:rgba(255,255,255,.75)}.dashboard-panel[hidden]{display:none!important}.viz-grid{display:grid;grid-template-columns:1fr;gap:10px}.viz-card{min-width:0;overflow:hidden;padding:14px}.viz-card.wide{grid-column:1/-1}.viz-card.hero{border-color:rgba(255,151,0,.34)}.viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.viz-title{color:var(--deep);font-size:14px;font-weight:800}.viz-copy{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}.mini-segment{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--foam)}.mini-segment button{min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:9px;font-weight:800}.mini-segment button.active{background:#fff;color:var(--deep);box-shadow:0 2px 7px rgba(34,94,99,.12)}.chart-frame{position:relative;height:245px;margin-top:8px}.chart-frame.hero{height:280px}.chart-frame canvas{width:100%!important;height:100%!important}.ranking{display:grid;gap:6px;margin-top:8px}.rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}.rank-no{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.rank-row:first-child .rank-no{background:var(--orange);color:#fff}.rank-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.rank-meta{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rank-value{color:var(--deep);font-size:11px;font-weight:850;white-space:nowrap}
-.modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;background:rgba(30,37,35,.54);backdrop-filter:blur(2px)}.modal.open{display:flex}.sheet{width:100%;max-height:88vh;overflow:auto;padding:19px 18px calc(24px + env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:#fff;box-shadow:0 -20px 50px rgba(0,0,0,.18)}.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}.sheet-head>div{min-width:0}.sheet-head button.close{margin-left:auto;width:40px;height:40px;border:0;border-radius:10px;background:var(--foam);color:var(--deep);font-weight:900}.detail-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.metric{padding:10px;border-radius:10px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--deep);font-size:17px}.metric span{color:var(--muted);font-size:9px;text-transform:uppercase}.product-line{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.product-line img{width:55px;height:72px;border-radius:8px;object-fit:cover;background:#EEF2F0}.product-line b{font-size:12px;color:var(--deep)}.product-line p{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.45}
+.modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;background:rgba(30,37,35,.54);backdrop-filter:blur(2px)}.modal.open{display:flex}.sheet{width:100%;max-height:88vh;overflow:auto;padding:19px 18px calc(24px + env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:#fff;box-shadow:0 -20px 50px rgba(0,0,0,.18)}.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}.sheet-head>div{min-width:0}.sheet-head button.close{margin-left:auto;width:40px;height:40px;border:0;border-radius:10px;background:var(--foam);color:var(--deep);font-weight:900}.detail-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.metric{min-width:0;padding:12px 8px;border:1px solid #D8E7E5;border-radius:12px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--deep);font-size:18px;line-height:1.2;font-variant-numeric:tabular-nums}.metric span{display:block;margin-top:4px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.drill-context{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:#F7FAF9;color:var(--body);font-size:12px;line-height:1.5}.drill-section{margin-top:18px}.drill-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.drill-section-head b{color:var(--ink);font-size:13px}.drill-section-head span{color:var(--muted);font-size:11px}.drill-list{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff}.drill-row{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--body);text-align:left;cursor:pointer}.drill-row:last-child{border-bottom:0}.drill-row:hover{background:#F8FBFA}.drill-row:active{transform:scale(.99)}.drill-row-main{min-width:0}.drill-row-main b{display:block;overflow:hidden;color:var(--ink);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}.drill-row-main span{display:block;margin-top:3px;overflow:hidden;color:var(--muted);font-size:10.5px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap}.drill-row-total{flex:0 0 auto;color:var(--deep);font-size:11px;font-weight:800;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.drill-empty{padding:18px 12px;color:var(--muted);font-size:12px;text-align:center}.drill-loading{padding:28px 12px;color:var(--muted);font-size:12px;text-align:center}@media(max-width:479px){.detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}.product-line{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.product-line img{width:55px;height:72px;border-radius:8px;object-fit:cover;background:#EEF2F0}.product-line b{font-size:12px;color:var(--deep)}.product-line p{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.45}
 .perm{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:700}.perm input{width:17px;height:17px;flex:0 0 auto}.cred{margin-top:12px;padding:12px;border:1px dashed var(--teal);border-radius:11px;background:var(--foam);font-size:12px;line-height:1.7}.toast{position:fixed;left:50%;top:72px;z-index:240;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%)}.toast.open{display:block}.toast.success{background:#166534}.toast.error{background:#B91C1C}.loading{position:fixed;inset:0;z-index:230;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader{padding:22px 28px;border-radius:15px;background:#fff;color:var(--deep);font-weight:800}.reader{display:none;margin-top:10px;border-radius:12px;overflow:hidden}.reader.open{display:block}
 @media(min-width:720px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet{width:620px;margin:0 auto;border-radius:20px}.modal{align-items:center}.kpi{flex:1 1 0}}
 @media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
@@ -816,53 +816,162 @@ function pieRows(rows) {
   });
   return first;
 }
-function chart(key, id, rows, dim) {
+function dashboardUnit(unit, value) {
+  const n = Number(value || 0);
+
+  if (unit === "Customers") {
+    return n === 1 ? "customer" : "customers";
+  }
+
+  if (unit === "Designs") {
+    return n === 1 ? "design" : "designs";
+  }
+
+  if (unit === "Sets") {
+    return n === 1 ? "set" : "sets";
+  }
+
+  return "pcs";
+}
+
+function chart(key, id, rows, dim, unit = "Pieces") {
   const data = pieRows(rows);
   const cv = $(id);
+
   if (!cv) return;
-  if (st.charts[key]) st.charts[key].destroy();
+
+  if (st.charts[key]) {
+    st.charts[key].destroy();
+  }
+
   st.charts[key] = new Chart(cv, {
     type: "doughnut",
+
     data: {
       labels: data.map((r) => r.label),
+
       datasets: [
         {
           data: data.map((r) => r.value),
-          backgroundColor: data.map((_, i) => COLORS[i % COLORS.length]),
+          backgroundColor: data.map(
+            (_, i) => COLORS[i % COLORS.length],
+          ),
           borderWidth: 2,
           borderColor: "#fff",
         },
       ],
     },
+
     options: {
       responsive: true,
       maintainAspectRatio: false,
       cutout: "56%",
+
       plugins: {
         legend: {
           position: "bottom",
-          labels: { boxWidth: 9, font: { size: 9 }, padding: 8 },
+          labels: {
+            boxWidth: 9,
+            font: { size: 9 },
+            padding: 8,
+          },
+        },
+
+        tooltip: {
+          callbacks: {
+            label(context) {
+              const row = data[context.dataIndex] || {};
+              const value = Number(row.value || 0);
+
+              return `${row.label}: ${value.toLocaleString(
+                "en-IN",
+              )} ${dashboardUnit(unit, value)}`;
+            },
+          },
         },
       },
+
       onClick: (_, els) => {
-        if (els[0]) openDrill(dim, data[els[0].index]);
+        if (!els[0]) return;
+
+        const row = data[els[0].index];
+
+        openDrill(dim, {
+          ...row,
+          valueLabel: unit,
+        });
       },
     },
   });
 }
-function ranking(id, rows, dim, limit = 50) {
+
+function ranking(
+  id,
+  rows,
+  dim,
+  limit = 50,
+  unit = "Pieces",
+) {
   const data = (rows || []).slice(0, limit);
+
   $(id).innerHTML = data.length
     ? data
-        .map(
-          (r, i) =>
-            `<button class="rank-row" data-rank="${i}"><span class="rank-no">${i + 1}</span><span class="rank-label">${esc(r.label)}<small class="rank-meta">${r.customers != null ? r.customers + " customers · " : ""}${r.sets != null ? r.sets + " sets" : ""}</small></span><span class="rank-value">${Number(r.value).toLocaleString("en-IN")}</span></button>`,
-        )
+        .map((r, i) => {
+          const value = Number(r.value || 0);
+
+          return `
+            <button
+              class="rank-row"
+              data-rank="${i}"
+              type="button"
+            >
+              <span class="rank-no">${i + 1}</span>
+
+              <span class="rank-label">
+                ${esc(r.label)}
+
+                <small class="rank-meta">
+                  ${
+                    r.customers != null
+                      ? `${r.customers} customers`
+                      : ""
+                  }
+                  ${
+                    r.customers != null && r.sets != null
+                      ? " · "
+                      : ""
+                  }
+                  ${
+                    r.sets != null
+                      ? `${r.sets} sets`
+                      : ""
+                  }
+                </small>
+              </span>
+
+              <span class="rank-value">
+                ${value.toLocaleString("en-IN")}
+                <small>
+                  ${dashboardUnit(unit, value)}
+                </small>
+              </span>
+            </button>
+          `;
+        })
         .join("")
     : '<div class="empty">No data</div>';
+
   $(id).onclick = (e) => {
-    const b = e.target.closest("[data-rank]");
-    if (b) openDrill(dim, data[Number(b.dataset.rank)]);
+    const button = e.target.closest("[data-rank]");
+
+    if (!button) return;
+
+    const row = data[Number(button.dataset.rank)];
+
+    openDrill(dim, {
+      ...row,
+      valueLabel: unit,
+    });
   };
 }
 async function loadDashboard(force = false) {
@@ -905,13 +1014,33 @@ function renderDashboard() {
 }
 function renderDashboardTab() {
   destroyCharts();
+
   document
     .querySelectorAll(".dashboard-panel")
-    .forEach((x) => (x.hidden = x.id !== "dash-" + st.dtab));
+    .forEach(
+      (panel) =>
+        (panel.hidden = panel.id !== "dash-" + st.dtab),
+    );
+
   const c = st.dashboard?.charts || {};
+
   if (st.dtab === "overview") {
-    chart("od", "chart-overview-design", c.designs, "designNo");
-    ranking("rank-overview-design", c.designs, "designNo", 20);
+    chart(
+      "od",
+      "chart-overview-design",
+      c.designs,
+      "designNo",
+      "Pieces",
+    );
+
+    ranking(
+      "rank-overview-design",
+      c.designs,
+      "designNo",
+      20,
+      "Pieces",
+    );
+
     chart(
       "oc",
       "chart-overview-customer",
@@ -921,32 +1050,135 @@ function renderDashboardTab() {
         : st.modes.customer === "stateCustomers"
           ? "state"
           : "city",
+      "Customers",
     );
-    chart("oz", "chart-overview-zone", c[st.modes.zone], "state");
+
+    chart(
+      "oz",
+      "chart-overview-zone",
+      c[st.modes.zone],
+      "state",
+      st.modes.zone === "stateCustomers"
+        ? "Customers"
+        : "Pieces",
+    );
+
     chart(
       "op",
       "chart-overview-product",
       c[st.modes.product],
-      st.modes.product === "firm" ? "firm" : st.modes.product,
+      st.modes.product === "firm"
+        ? "firm"
+        : st.modes.product,
+      "Pieces",
     );
   }
+
   if (st.dtab === "products") {
-    chart("pd", "chart-products-design", c.designs, "designNo");
-    ranking("rank-products-design", c.designs, "designNo");
-    chart("pc", "chart-products-category", c.category, "category");
-    chart("ps", "chart-products-style", c.style, "style");
-    chart("pf", "chart-products-fabric", c.fabric, "fabric");
+    chart(
+      "pd",
+      "chart-products-design",
+      c.designs,
+      "designNo",
+      "Pieces",
+    );
+
+    ranking(
+      "rank-products-design",
+      c.designs,
+      "designNo",
+      50,
+      "Pieces",
+    );
+
+    chart(
+      "pc",
+      "chart-products-category",
+      c.category,
+      "category",
+      "Pieces",
+    );
+
+    chart(
+      "ps",
+      "chart-products-style",
+      c.style,
+      "style",
+      "Pieces",
+    );
+
+    chart(
+      "pf",
+      "chart-products-fabric",
+      c.fabric,
+      "fabric",
+      "Pieces",
+    );
   }
+
   if (st.dtab === "customers") {
-    chart("ct", "chart-customers-top", c.customers, "companyName");
-    ranking("rank-customers", c.customers, "companyName");
-    chart("ca", "chart-customers-agent", c.agentCustomers, "agent");
-    chart("cs", "chart-customers-state", c.stateCustomers, "state");
-    chart("cx", "chart-customers-source", c.source, "source");
+    chart(
+      "ct",
+      "chart-customers-top",
+      c.customers,
+      "companyName",
+      "Pieces",
+    );
+
+    ranking(
+      "rank-customers",
+      c.customers,
+      "companyName",
+      50,
+      "Pieces",
+    );
+
+    chart(
+      "ca",
+      "chart-customers-agent",
+      c.agentCustomers,
+      "agent",
+      "Customers",
+    );
+
+    chart(
+      "cs",
+      "chart-customers-state",
+      c.stateCustomers,
+      "state",
+      "Customers",
+    );
+
+    chart(
+      "cx",
+      "chart-customers-source",
+      c.source,
+      "source",
+      "Pieces",
+    );
   }
+
   if (st.dtab === "zones") {
-    chart("zs", "chart-zones-state", c[st.modes.zone], "state");
-    ranking("rank-zones", c[st.modes.zone], "state");
+    const unit =
+      st.modes.zone === "stateCustomers"
+        ? "Customers"
+        : "Pieces";
+
+    chart(
+      "zs",
+      "chart-zones-state",
+      c[st.modes.zone],
+      "state",
+      unit,
+    );
+
+    ranking(
+      "rank-zones",
+      c[st.modes.zone],
+      "state",
+      50,
+      unit,
+    );
   }
 }
 document.querySelector(".dashboard-subnav").onclick = (e) => {
@@ -1043,6 +1275,8 @@ const FILTER_LABELS = {
   category: "Category",
   style: "Style",
   fabric: "Fabric",
+  designNo: "Design",
+  companyName: "Customer",
   status: "Order status",
   source: "Order source",
   checkedIn: "Checked in",
@@ -1107,14 +1341,268 @@ $("filter-values").onclick = (e) => {
   closeModal("filter-modal");
   loadDashboard(true);
 };
-function openDrill(dim, row) {
-  st.drill = { dim, row };
-  $("drill-title").textContent = row.label;
-  $("drill-sub").textContent = (FILTER_LABELS[dim] || dim) + " details";
-  $("drill-body").innerHTML =
-    `<div class="detail-metrics"><div class="metric"><b>${Number(row.value || 0).toLocaleString("en-IN")}</b><span>Value</span></div><div class="metric"><b>${row.sets ?? "—"}</b><span>Sets</span></div><div class="metric"><b>${row.customers ?? "—"}</b><span>Customers</span></div></div><p class="copy">${esc([row.category, row.style, row.fabric, row.city, row.state, row.agent].filter(Boolean).join(" · "))}</p>`;
-  openModal("drill-modal");
+function drillNumber(value) {
+  return Number(value || 0).toLocaleString("en-IN");
 }
+
+function drillMetric(value, label) {
+  return `
+    <div class="metric">
+      <b>${drillNumber(value)}</b>
+      <span>${esc(label)}</span>
+    </div>
+  `;
+}
+
+function drillBuyerRows(rows) {
+  if (!rows?.length) {
+    return `
+      <div class="drill-empty">
+        No customer purchases found for this selection.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="drill-list">
+      ${rows
+        .map(
+          (customer) => `
+            <button
+              type="button"
+              class="drill-row"
+              data-drill-dim="companyName"
+              data-drill-value="${esc(customer.companyName)}"
+            >
+              <span class="drill-row-main">
+                <b>${esc(customer.companyName)}</b>
+
+                <span>
+                  ${esc(
+                    [
+                      customer.contactName,
+                      customer.city,
+                      customer.state,
+                    ]
+                      .filter(Boolean)
+                      .join(" · "),
+                  )}
+                </span>
+              </span>
+
+              <span class="drill-row-total">
+                ${drillNumber(customer.pieces)} pcs
+                <br>
+                ${drillNumber(customer.sets)} sets
+              </span>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function drillDesignRows(rows) {
+  if (!rows?.length) {
+    return `
+      <div class="drill-empty">
+        No design purchases found for this selection.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="drill-list">
+      ${rows
+        .map(
+          (design) => `
+            <button
+              type="button"
+              class="drill-row"
+              data-drill-dim="designNo"
+              data-drill-value="${esc(design.designNo)}"
+            >
+              <span class="drill-row-main">
+                <b>${esc(design.designNo)}</b>
+
+                <span>
+                  ${esc(
+                    [
+                      design.category,
+                      design.style,
+                      design.fabric,
+                      design.firm,
+                    ]
+                      .filter(Boolean)
+                      .join(" · "),
+                  )}
+                </span>
+              </span>
+
+              <span class="drill-row-total">
+                ${drillNumber(design.pieces)} pcs
+                <br>
+                ${drillNumber(design.sets)} sets
+              </span>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+async function openDrill(dim, row) {
+  st.drill = { dim, row };
+
+  const dimensionLabel =
+    FILTER_LABELS[dim] || dim || "Dashboard";
+
+  $("drill-title").textContent = row.label;
+
+  $("drill-sub").textContent =
+    `${dimensionLabel} performance`;
+
+  $("drill-body").innerHTML = `
+    <div class="drill-loading">
+      Loading purchase summary…
+    </div>
+  `;
+
+  openModal("drill-modal");
+
+  try {
+    const detail = await rpc(
+      "admin_dashboard_drill_v1",
+      {
+        p_dimension: dim,
+        p_value: row.label,
+        p_filters: st.filters,
+        p_search: $("dash-search").value.trim(),
+      },
+    );
+
+    if (
+      st.drill?.dim !== dim ||
+      st.drill?.row?.label !== row.label
+    ) {
+      return;
+    }
+
+    const summary = detail?.summary || {};
+    const customers = detail?.customerDetails || [];
+    const designs = detail?.designDetails || [];
+
+    const context = [
+      row.category,
+      row.style,
+      row.fabric,
+      row.city,
+      row.state,
+      row.agent,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    let body = `
+      <div class="detail-metrics">
+        ${drillMetric(summary.pieces, "Pieces")}
+        ${drillMetric(summary.sets, "Sets")}
+        ${drillMetric(summary.customers, "Customers")}
+        ${drillMetric(summary.designs, "Designs")}
+      </div>
+
+      ${
+        context
+          ? `
+            <div class="drill-context">
+              ${esc(context)}
+            </div>
+          `
+          : ""
+      }
+    `;
+
+    if (dim === "companyName") {
+      body += `
+        <section class="drill-section">
+          <div class="drill-section-head">
+            <b>Designs purchased</b>
+            <span>
+              ${designs.length} designs ·
+              ${drillNumber(summary.orders)} orders
+            </span>
+          </div>
+
+          ${drillDesignRows(designs)}
+        </section>
+      `;
+    } else if (dim === "designNo") {
+      body += `
+        <section class="drill-section">
+          <div class="drill-section-head">
+            <b>Customers who purchased this design</b>
+            <span>
+              ${customers.length} customers
+            </span>
+          </div>
+
+          ${drillBuyerRows(customers)}
+        </section>
+      `;
+    } else {
+      body += `
+        <section class="drill-section">
+          <div class="drill-section-head">
+            <b>Top designs</b>
+            <span>
+              ${designs.length} designs
+            </span>
+          </div>
+
+          ${drillDesignRows(designs)}
+        </section>
+
+        <section class="drill-section">
+          <div class="drill-section-head">
+            <b>Customers who purchased</b>
+            <span>
+              ${customers.length} customers
+            </span>
+          </div>
+
+          ${drillBuyerRows(customers)}
+        </section>
+      `;
+    }
+
+    $("drill-body").innerHTML = body;
+  } catch (error) {
+    $("drill-body").innerHTML = `
+      <div class="drill-empty">
+        Could not load the purchase breakdown.
+        <br>
+        ${esc(error.message || "Unknown error")}
+      </div>
+    `;
+  }
+}
+
+$("drill-body").onclick = (event) => {
+  const button = event.target.closest(
+    "[data-drill-dim][data-drill-value]",
+  );
+
+  if (!button) return;
+
+  openDrill(
+    button.dataset.drillDim,
+    {
+      label: button.dataset.drillValue,
+    },
+  );
+};
 $("drill-apply").onclick = () => {
   const { dim, row } = st.drill || {};
   if (dim && row?.label) {
