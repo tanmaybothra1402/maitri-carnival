@@ -2477,6 +2477,19 @@ $("dispatch-save").onclick = async () => {
 $("map-search").oninput = renderMappings;
 
 /* ---------- Mapping: design typeahead + batch queue ---------- */
+// The server raises BARCODE_ALREADY_MAPPED|<barcode>|<design> when a live
+// sticker would be re-pointed at a different design.
+function mapError(msg) {
+  const m = String(msg || "");
+  // Design numbers contain spaces ("BS - 1032"), so capture to end of string.
+  const hit = /BARCODE_ALREADY_MAPPED\|([^|]+)\|(.+)$/.exec(m);
+  if (hit) {
+    return `${hit[1].trim()} is already mapped to ${hit[2].trim()}. Deactivate that mapping first, or change it in the Sheet.`;
+  }
+  if (/ACTIVE_DESIGN_NOT_FOUND/.test(m)) return "That design is inactive or does not exist.";
+  return m;
+}
+
 // Substring match, so "1234", "123", "12" and "1" all find MR-1234.
 const mapBatch = [];
 let mapSuggestIndex = -1;
@@ -2641,6 +2654,19 @@ function mapAddToBatch() {
     toast(`${barcode} is already queued`, "error");
     return;
   }
+  // Catch it here rather than after a 300-row batch fails on the server.
+  const live = (st.mappings || []).find(
+    (m) =>
+      String(m.barcode || "").toLowerCase() === barcode.toLowerCase() &&
+      m.active !== false,
+  );
+  if (live && String(live.designNo || "") !== designNo) {
+    toast(
+      `${barcode} is already mapped to ${live.designNo}. Deactivate it first.`,
+      "error",
+    );
+    return;
+  }
   mapBatch.push({ barcode, designNo });
   renderMapBatch();
   // Design stays put so many stickers can go to one design without retyping.
@@ -2697,12 +2723,16 @@ $("map-batch-save").onclick = async () => {
     keep.forEach((r) => mapBatch.push(r));
     renderMapBatch();
     await loadMapping();
-    toast(
-      bad.length
-        ? `${items.length - bad.length} saved, ${bad.length} left queued to fix`
-        : `${items.length} mappings saved`,
-      bad.length ? "error" : "success",
-    );
+    if (bad.length) {
+      // Name the first real reason instead of a bare count.
+      toast(
+        `${items.length - bad.length} saved · ${bad.length} failed — ${mapError(bad[0].error)}`,
+        "error",
+      );
+      console.warn("mapping failures", bad.map((b) => `${b.barcode}: ${b.error}`));
+    } else {
+      toast(`${items.length} mappings saved`, "success");
+    }
   } catch (e) {
     toast(e.message, "error");
   } finally {

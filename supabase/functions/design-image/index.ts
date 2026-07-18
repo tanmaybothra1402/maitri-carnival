@@ -16,12 +16,11 @@
 import { optionsResponse } from "../_shared/cors.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
-// Soft blur. The design must stay clearly identifiable at thumbnail size —
-// the customer has to confirm they ordered the right thing — while embroidery,
-// print detail and stitching do not survive being zoomed.
-// Higher width + lower blur = recognisable; low quality still kills fine detail.
-const CUSTOMER_TRANSFORM = "w-260,q-45,bl-3,f-jpg";
-const PDF_TRANSFORM = "w-220,q-40,bl-2,f-jpg";
+// Very light blur. The design reads clearly at thumbnail size; protection now
+// comes mainly from the small source width and low JPEG quality, which mean
+// there is simply no fine detail present to recover when zoomed.
+const CUSTOMER_TRANSFORM = "w-300,q-50,bl-1,f-jpg";
+const PDF_TRANSFORM = "w-260,q-45,bl-1,f-jpg";
 
 const DESIGN_NO = /^[A-Za-z0-9][A-Za-z0-9._\-\/ ]{0,63}$/;
 const CACHE = "public, max-age=86400, immutable";
