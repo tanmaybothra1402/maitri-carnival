@@ -90,6 +90,12 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .map-suggest-item span{font-size:9.5px;color:var(--muted);font-weight:600}
 .map-suggest-empty{padding:11px 12px;font-size:11px;color:var(--muted);font-weight:700}
 .map-inactive{display:block;margin-top:2px;font-size:9px;font-weight:800;font-style:normal;color:#B91C1C}
+.map-barcode-status{margin-top:6px;padding:7px 9px;border-radius:9px;font-size:10px;font-weight:800;line-height:1.4}
+.map-barcode-status.hidden{display:none}
+.map-barcode-status.taken{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B}
+.map-barcode-status.queued{background:#FEF3C7;border:1px solid #FDE68A;color:#92400E}
+.map-barcode-status.free{background:#DCFCE7;border:1px solid #BBF7D0;color:#166534}
+#map-barcode.is-taken{border-color:#DC2626;background:#FFF5F5}
 .map-build-actions{margin-top:12px}
 .map-batch-head{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap}
 .map-batch-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;margin-left:7px;border-radius:999px;background:var(--teal-deep);color:#fff;font-size:11px;font-weight:850}
@@ -265,7 +271,7 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="card map-build-card">
   <div><span class="section-kicker">Barcode mapping</span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
   <div class="map-build-grid">
-    <div><label for="map-barcode">Barcode</label><input id="map-barcode" autocomplete="off" placeholder="Scan or type"/></div>
+    <div><label for="map-barcode">Barcode</label><input id="map-barcode" autocomplete="off" placeholder="Scan or type"/><div class="map-barcode-status hidden" id="map-barcode-status"></div></div>
     <div class="map-design-field"><label for="map-design">Design</label><input id="map-design" autocomplete="off" placeholder="Type any part, e.g. 1234"/><div class="map-suggest hidden" id="map-suggest"></div></div>
   </div>
   <div class="row map-build-actions"><button class="btn" id="map-add">Add to batch</button><button class="btn secondary" id="map-camera">Camera</button></div>
@@ -2089,7 +2095,10 @@ async function startScanner(target) {
     (code) => {
       navigator.vibrate?.(70);
       if (target === "sale") saleAdd(code);
-      else $("map-barcode").value = code;
+      else {
+        $("map-barcode").value = code;
+        renderBarcodeStatus();
+      }
       stopScanner();
     },
     () => {},
@@ -2650,32 +2659,81 @@ function mapAddToBatch() {
     toast(`${designNo} is inactive — activate it or barcodes will not scan`, "error");
     return;
   }
-  if (mapBatch.some((r) => r.barcode.toLowerCase() === barcode.toLowerCase())) {
-    toast(`${barcode} is already queued`, "error");
+  // A used sticker is refused outright, whichever design is selected.
+  const state = mapBarcodeState(barcode);
+  if (state?.kind === "queued") {
+    toast(`${barcode} is already in this batch (${state.designNo})`, "error");
+    $("map-barcode").select();
     return;
   }
-  // Catch it here rather than after a 300-row batch fails on the server.
-  const live = (st.mappings || []).find(
-    (m) =>
-      String(m.barcode || "").toLowerCase() === barcode.toLowerCase() &&
-      m.active !== false,
-  );
-  if (live && String(live.designNo || "") !== designNo) {
+  if (state?.kind === "taken") {
     toast(
-      `${barcode} is already mapped to ${live.designNo}. Deactivate it first.`,
+      `${barcode} is already mapped to ${state.designNo}. Deactivate that mapping first.`,
       "error",
     );
+    $("map-barcode").select();
     return;
   }
   mapBatch.push({ barcode, designNo });
   renderMapBatch();
   // Design stays put so many stickers can go to one design without retyping.
   $("map-barcode").value = "";
+  renderBarcodeStatus();
   $("map-barcode").focus();
 }
 
 $("map-add").onclick = mapAddToBatch;
 renderMapBatch();
+
+// Verdict on the barcode the instant it lands, so a scanner gun tells the
+// operator "already used" before they waste time picking a design.
+function mapBarcodeState(barcode) {
+  const bc = String(barcode || "").trim().toLowerCase();
+  if (!bc) return null;
+  if (mapBatch.some((r) => r.barcode.toLowerCase() === bc)) {
+    const q = mapBatch.find((r) => r.barcode.toLowerCase() === bc);
+    return { kind: "queued", designNo: q.designNo };
+  }
+  const live = (st.mappings || []).find(
+    (m) => String(m.barcode || "").toLowerCase() === bc && m.active !== false,
+  );
+  if (live) return { kind: "taken", designNo: live.designNo };
+  const dead = (st.mappings || []).find(
+    (m) => String(m.barcode || "").toLowerCase() === bc,
+  );
+  if (dead) return { kind: "free", designNo: dead.designNo, wasInactive: true };
+  return { kind: "free" };
+}
+
+function renderBarcodeStatus() {
+  const host = $("map-barcode-status");
+  const input = $("map-barcode");
+  const state = mapBarcodeState(input.value);
+  input.classList.remove("is-taken");
+  if (!state) {
+    host.className = "map-barcode-status hidden";
+    host.textContent = "";
+    return;
+  }
+  if (state.kind === "taken") {
+    input.classList.add("is-taken");
+    host.className = "map-barcode-status taken";
+    host.textContent = `Already mapped to ${state.designNo}. Deactivate that mapping before reusing this sticker.`;
+    navigator.vibrate?.([90, 60, 90]);
+    return;
+  }
+  if (state.kind === "queued") {
+    host.className = "map-barcode-status queued";
+    host.textContent = `Already in this batch, queued for ${state.designNo}.`;
+    return;
+  }
+  host.className = "map-barcode-status free";
+  host.textContent = state.wasInactive
+    ? `Free to map. Previously ${state.designNo}, now inactive.`
+    : "Free to map.";
+}
+
+$("map-barcode").oninput = renderBarcodeStatus;
 $("map-barcode").onkeydown = (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
