@@ -64,6 +64,8 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "products.view": true,
   "products.edit": true,
   "products.mapping": true,
+  "dispatch.view": true,
+  "dispatch.write": true,
   "admin.slots": true,
   "admin.bookings": true,
   "admin.staff": true,
@@ -74,6 +76,7 @@ const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   sales: { "sale.view": true, "sale.write": true, "sale.previous": true, "sale.pdf": true, "reception.view": true },
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
   products: { "products.view": true, "products.edit": true, "products.mapping": true },
+  dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
   manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
@@ -97,6 +100,9 @@ const GROUPS: Record<string, string[]> = {
     "reception.view",
   ],
   products: ["products.view", "products.edit", "products.mapping"],
+  // sale.pdf is included so a dispatch-only packer can print a packing sheet
+  // without being granted any Sales rights.
+  dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
   dashboard: ["dashboard.view", "dashboard.export"],
   admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings"],
 };
@@ -120,6 +126,7 @@ function collapseGroups(permissions: Record<string, boolean>): Record<string, bo
     reception: Boolean(permissions["reception.view"]),
     sales: Boolean(permissions["sale.view"]),
     products: Boolean(permissions["products.view"]),
+    dispatch: Boolean(permissions["dispatch.view"]),
     dashboard: Boolean(permissions["dashboard.view"]),
     admin: Boolean(
       permissions["admin.staff"] ||
@@ -225,6 +232,9 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   assistedSaveOrder: ["sale.write"],
   recentOrders: ["sale.previous", "sale.write"],
   getCustomerOrders: ["dashboard.view", "sale.previous", "sale.write"],
+  listDispatch: ["dispatch.view"],
+  getDispatch: ["dispatch.view"],
+  saveDispatch: ["dispatch.write"],
   createStaff: ["admin.staff"],
   listStaff: ["admin.staff"],
   updateStaff: ["admin.staff"],
@@ -864,9 +874,9 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions, preset);
-      const allowedSections = ["reception","dashboard","sale","products","admin"];
+      const allowedSections = ["reception","dashboard","sale","products","dispatch","admin"];
       const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
-      const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", admin:"admin.slots" };
+      const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", dispatch:"dispatch.view", admin:"admin.slots" };
       if (!permissions[modulePermission[defaultSection]] && defaultSection !== "admin") throw new Error("Default section must be permitted");
       if (defaultSection === "admin" && !Object.keys(permissions).some((key) => key.startsWith("admin.") && permissions[key])) throw new Error("Default section must be permitted");
       const password = clean(body.password) || generatePassword();
@@ -918,7 +928,7 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions,preset);
-      const defaultSection = ["reception","dashboard","sale","products","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
+      const defaultSection = ["reception","dashboard","sale","products","dispatch","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
       if (body.staffName !== undefined) row.staff_name = clean(body.staffName);
       if (body.active !== undefined) row.active = Boolean(body.active);
@@ -989,6 +999,93 @@ Deno.serve(async (request: Request) => {
         companyName:o.customers?.company_name??"",contactName:o.customers?.contact_name??"",phone:o.customers?.phone_e164??"",
         city:o.customers?.city??"",state:o.customers?.state??"",agent:o.customers?.agent??""
       }))});
+    }
+
+    // ── Dispatch ───────────────────────────────────────────────────────────
+    // The queue. Draft orders with nothing in them are excluded: there is
+    // nothing to pack.
+    if (action === "listDispatch") {
+      const q = clean(body.query);
+      const firm = clean(body.firm);
+      const statusFilter = clean(body.dispatchStatus);
+
+      let query = db.from("orders")
+        .select(
+          "id,customer_id,firm,status,dispatch_status,total_designs,total_sets,total_pieces,updated_at," +
+          "customers(company_name,contact_name,phone_e164,city,state,agent)",
+        )
+        .gt("total_designs", 0)
+        .order("updated_at", { ascending: false })
+        .limit(300);
+
+      if (firm === "Maitri" || firm === "Niharika") query = query.eq("firm", firm);
+      if (["Pending", "Partial", "Completed"].includes(statusFilter)) {
+        query = query.eq("dispatch_status", statusFilter);
+      }
+      if (q) {
+        const { data: customers, error: cErr } = await db.from("customers")
+          .select("id")
+          .or(`company_name.ilike.%${q}%,contact_name.ilike.%${q}%,phone_e164.ilike.%${q}%`)
+          .limit(300);
+        if (cErr) throw cErr;
+        const ids = (customers ?? []).map((row) => row.id);
+        if (!ids.length) return jsonResponse(request, { ok: true, data: [] });
+        query = query.in("customer_id", ids);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return jsonResponse(request, {
+        ok: true,
+        data: (data ?? []).map((o: any) => ({
+          orderId: o.id,
+          customerId: o.customer_id,
+          firm: o.firm,
+          status: o.status,
+          dispatchStatus: o.dispatch_status ?? "Pending",
+          designs: Number(o.total_designs) || 0,
+          sets: Number(o.total_sets) || 0,
+          pieces: Number(o.total_pieces) || 0,
+          updatedAt: o.updated_at,
+          companyName: o.customers?.company_name ?? "",
+          contactName: o.customers?.contact_name ?? "",
+          phone: o.customers?.phone_e164 ?? "",
+          city: o.customers?.city ?? "",
+          state: o.customers?.state ?? "",
+          agent: o.customers?.agent ?? "",
+        })),
+      });
+    }
+
+    // Full-resolution images here by design: dispatch staff must be able to
+    // open an image and identify the physical product.
+    if (action === "getDispatch") {
+      const orderId = clean(body.orderId);
+      if (!orderId) throw new Error("ORDER_ID_REQUIRED");
+      const { data, error } = await db.rpc("admin_dispatch_detail", {
+        p_order_id: orderId,
+      });
+      if (error) throw error;
+      if (!data) throw new Error("ORDER_NOT_FOUND");
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "saveDispatch") {
+      const orderId = clean(body.orderId);
+      if (!orderId) throw new Error("ORDER_ID_REQUIRED");
+      const lines = Array.isArray(body.lines) ? body.lines : [];
+      const { data, error } = await db.rpc("admin_save_dispatch", {
+        p_order_id: orderId,
+        p_lines: lines,
+        p_note: clean(body.note),
+        p_actor_id: admin.id,
+      });
+      if (error) throw error;
+      const { data: detail, error: dErr } = await db.rpc("admin_dispatch_detail", {
+        p_order_id: orderId,
+      });
+      if (dErr) throw dErr;
+      return jsonResponse(request, { ok: true, data: { result: data, detail } });
     }
 
     if (action === "getCustomerOrders") {

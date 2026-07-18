@@ -8,7 +8,8 @@
 <meta content="#225E63" name="theme-color"/>
 <title>Maitri Carnival 2026 · Orders</title>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
-<link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
+<!-- Images are served through the design-image proxy, never from ImageKit
+     directly, so the customer page must not hint at the origin CDN. -->
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
@@ -82,6 +83,10 @@
     .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
     .item-content{min-width:0}.item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.item h3{min-width:0;font-size:14px;color:var(--teal-deep);overflow-wrap:anywhere}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}.line-piece-pill{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:var(--foam);color:var(--teal-deep);font-size:9px;font-weight:850;white-space:nowrap}
     .qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}.qty{display:flex;align-items:center;gap:5px;margin:0}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}.qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{flex:0 0 auto;width:36px!important;height:36px!important;margin:0!important;color:var(--error)!important}
+    .item-locked{background:var(--warm);border-color:#E6D9BE}
+    .item-locked .thumb{opacity:.72}
+    .line-locked-note{margin-top:8px;padding:7px 9px;border-radius:9px;background:#FFF4E0;border:1px solid #F0DCB4;color:#8A5A12;font-size:10px;font-weight:700;line-height:1.4}
+    .item-locked input,.item-locked textarea,.item-locked .qty button{opacity:.55;cursor:not-allowed}
     .line-total{margin-top:6px;color:var(--muted);font-size:10px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}.line-note-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px}.line-note-help{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.line-note{width:100%;min-height:62px;margin-top:6px;padding:9px 10px;font-size:16px!important;line-height:1.4;overflow-wrap:anywhere}
     .savebar{position:sticky;bottom:8px;z-index:25;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding:8px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.97);box-shadow:0 10px 30px rgba(34,55,52,.14);backdrop-filter:blur(10px)}.savebar .btn{margin:0}
     .empty{padding:26px 12px;border:1px dashed #BCD0CB;border-radius:13px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}
@@ -357,9 +362,15 @@ function normalizePhone(v) {
     throw new Error("Enter a valid 10-digit Indian mobile number");
   return "91" + d;
 }
-function ik(url, tr) {
-  if (!url) return "";
-  return url + (url.includes("?") ? "&" : "?") + "tr=" + tr;
+// Customers never receive the master ImageKit URL. The server returns a design
+// key and the design-image function streams back a medium-blur JPEG, so there
+// is no sharper source reachable from this page — zooming only enlarges an
+// already-degraded image.
+function designImg(key, variant) {
+  if (!key) return "";
+  const q = new URLSearchParams({ d: String(key) });
+  if (variant) q.set("v", variant);
+  return `${CONFIG.SUPABASE_URL}/functions/v1/design-image?${q.toString()}`;
 }
 function fmtTime(iso) {
   if (!iso) return "";
@@ -948,6 +959,7 @@ function hydrateItem(x) {
     qty: Number(x.qty) || 1,
     pcsPerSet: Number(x.pcsPerSet) || 1,
     note: String(x.note || ""),
+    locked: x.locked === true,
     _dirty: false,
     _serverExists: true,
   };
@@ -1010,7 +1022,8 @@ function render() {
     host.innerHTML = cart
       .map((it, i) => {
         const linePieces = (Number(it.qty) || 1) * (Number(it.pcsPerSet) || 1);
-        return `<article class="item">${it.imageUrl ? `<img class="thumb" id="thumb-${i}" src="${esc(ik(it.imageUrl, "w-240,h-320,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div><div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}">−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"><button aria-label="Increase sets" data-act="plus" data-i="${i}">+</button></div><button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button></div><div class="line-total">${Number(it.pcsPerSet) || 1} pcs/set</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team">${esc(it.note || "")}</textarea></div></article>`;
+        const lk = it.locked === true;
+        return `<article class="item${lk ? " item-locked" : ""}">${it.imageKey ? `<img class="thumb" id="thumb-${i}" src="${esc(designImg(it.imageKey))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div>${lk ? '<div class="line-locked-note">Dispatched — this design can no longer be changed. Ask our team if you need it altered.</div>' : ""}<div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}"${lk ? " disabled" : ""}>−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"${lk ? " disabled" : ""}><button aria-label="Increase sets" data-act="plus" data-i="${i}"${lk ? " disabled" : ""}>+</button></div>${lk ? "" : `<button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button>`}</div><div class="line-total">${Number(it.pcsPerSet) || 1} pcs/set</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team"${lk ? " disabled" : ""}>${esc(it.note || "")}</textarea></div></article>`;
       })
       .join("");
     cart.forEach((it, i) => {
@@ -1076,6 +1089,12 @@ $("items").addEventListener("click", (e) => {
     cart = currentCart(),
     it = cart[i];
   if (!it) return;
+  // Dispatched lines are frozen. The server rejects them anyway; this stops
+  // the customer building a change that can only fail on save.
+  if (it.locked) {
+    note("This design has been dispatched and can no longer be changed.", "error");
+    return;
+  }
   if (b.dataset.act === "plus") {
     it.qty = Math.min(9999, (Number(it.qty) || 1) + 1);
     markDirty(it);
@@ -1094,7 +1113,7 @@ $("items").addEventListener("change", (e) => {
   if (e.target.dataset.act !== "qty") return;
   const i = Number(e.target.dataset.i),
     it = currentCart()[i];
-  if (!it) return;
+  if (!it || it.locked) return;
   it.qty = Math.max(1, Math.min(9999, Number(e.target.value) || 1));
   markDirty(it);
   render();
@@ -1103,7 +1122,7 @@ $("items").addEventListener("input", (e) => {
   if (e.target.dataset.act !== "note") return;
   const i = Number(e.target.dataset.i),
     it = currentCart()[i];
-  if (!it) return;
+  if (!it || it.locked) return;
   it.note = e.target.value.slice(0, 500);
   markDirty(it);
   $("order-status").textContent =
@@ -1140,7 +1159,7 @@ async function addBarcode(raw) {
     cart.push({
       barcode: row.barcode,
       designNo: row.design_no,
-      imageUrl: row.image_url || "",
+      imageKey: row.image_key || row.design_no || "",
       qty: 1,
       category: row.category,
       style: row.style,
@@ -1241,6 +1260,9 @@ $("save-btn").onclick = async () => {
 };
 
 function friendlySave(m) {
+  const dispatched = /DESIGN_DISPATCHED_(.+?)(?:\s|$)/.exec(m);
+  if (dispatched)
+    return `${dispatched[1]} has already been dispatched and can no longer be changed. Please speak to our team.`;
   if (/NOT_CHECKED_IN/.test(m))
     return "You are not checked in yet. Please visit the counter.";
   if (/EDIT_WINDOW_CLOSED/.test(m))
@@ -1261,12 +1283,12 @@ async function blobToDataUrl(b) {
     r.readAsDataURL(b);
   });
 }
-async function fetchThumb(url) {
-  if (!url) throw new Error("no-image");
+async function fetchThumb(key) {
+  if (!key) throw new Error("no-image");
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), 6000);
   try {
-    const r = await fetch(ik(url, "w-300,h-400,c-at_max,q-45,f-jpg"), {
+    const r = await fetch(designImg(key, "pdf"), {
       mode: "cors",
       credentials: "omit",
       signal: c.signal,
@@ -1287,7 +1309,7 @@ async function fetchThumbsLimited(items, limit = 6) {
       try {
         out[i] = {
           status: "fulfilled",
-          value: await fetchThumb(items[i].imageUrl),
+          value: await fetchThumb(items[i].imageKey),
         };
       } catch (reason) {
         out[i] = { status: "rejected", reason };

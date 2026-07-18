@@ -8,3 +8,4 @@ node_modules/
 
 # Local Supabase secrets
 supabase/.env.production
+apps-script/SHEET_SYNC_SECRET.txt

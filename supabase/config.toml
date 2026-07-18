@@ -43,3 +43,8 @@ verify_jwt = false
 
 [functions.data-sync]
 verify_jwt = false
+
+# <img src> cannot send an Authorization header, so this must be open.
+# It only ever returns pre-blurred bytes and never reveals the master URL.
+[functions.design-image]
+verify_jwt = false

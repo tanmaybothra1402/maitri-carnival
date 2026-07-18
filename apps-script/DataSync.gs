@@ -44,7 +44,7 @@ const DS_EDITABLE = {
   barcode_mappings: ['design_no','active'],
   customers: ['company_name','contact_name','city','state','gstin','agent','active'],
   orders: ['status','admin_unlocked'],
-  order_items: ['qty','line_note'],
+  order_items: [],
   slots: ['starts_at','ends_at','label','capacity','active'],
   bookings: ['party_size','note','status','slot_id'],
   system_settings: ['event_name','event_start_date','event_end_date','registration_enabled','edit_window_hours'],
@@ -53,29 +53,24 @@ const DS_EDITABLE = {
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Supabase Sync')
-    .addItem('1. Configure connection', 'dsConfigure')
+    .addItem('① Configure & test', 'dsConfigure')
+    .addItem('② Pull ALL tables', 'dsPullAll')
     .addSeparator()
-    .addItem('Pull ALL tables', 'dsPullAll')
-    .addItem('Pull this tab', 'dsPullActive')
     .addItem('Push this tab', 'dsPushActive')
-    .addSeparator()
-    .addItem('Test connection', 'dsTest')
     .addToUi();
 }
 
+// No prompts. Uses the DS_URL + DS_SECRET embedded at the top of the script,
+// saves them to Script Properties (so they survive), and tests the connection.
 function dsConfigure() {
-  const ui = SpreadsheetApp.getUi();
-  const props = PropertiesService.getScriptProperties();
-  const u = ui.prompt('Supabase project URL', 'e.g. https://ezmtiiftolcaslqfvozu.supabase.co', ui.ButtonSet.OK_CANCEL);
-  if (u.getSelectedButton() !== ui.Button.OK) return;
-  const url = String(u.getResponseText() || '').trim().replace(/\/$/, '');
-  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) throw new Error('Enter a valid Supabase project URL.');
-  const s = ui.prompt('SHEET_SYNC_SECRET', 'The same secret configured in Supabase.', ui.ButtonSet.OK_CANCEL);
-  if (s.getSelectedButton() !== ui.Button.OK) return;
-  const secret = String(s.getResponseText() || '').trim();
-  if (secret.length < 24) throw new Error('Use the full secret (24+ characters).');
-  props.setProperties({ [DS_PROP_URL]: url, [DS_PROP_SECRET]: secret }, false);
-  ui.alert('Saved. Now run "Pull ALL tables".');
+  if (!DS_URL || !DS_SECRET) { dsAlert_('Paste your key into DS_SECRET at the top of the script, then run this again.'); return; }
+  PropertiesService.getScriptProperties().setProperties({ [DS_PROP_URL]: DS_URL, [DS_PROP_SECRET]: DS_SECRET }, false);
+  try {
+    const d = dsCall_({ action: 'ping' });
+    dsAlert_('Connected ✓\nTables: ' + (d.tables || []).join(', '));
+  } catch (e) {
+    dsAlert_('Saved, but connection failed:\n' + e.message + '\n\nIf this says SHEET_SYNC_AUTH_REQUIRED, set the same secret on the server:\nnpx supabase secrets set SHEET_SYNC_SECRET=...  then redeploy data-sync.');
+  }
 }
 
 function dsAlert_(msg) { try { SpreadsheetApp.getUi().alert(msg); } catch (e) { Logger.log(msg); } }

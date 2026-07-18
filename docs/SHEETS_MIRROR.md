@@ -24,7 +24,7 @@ Each tab shows all columns for reference; **only the tinted columns are written 
 | BarcodeMappings | design_no, active | Yes (give a new barcode) |
 | Customers | company_name, contact_name, city, state, gstin, agent, active | No (created by registration) |
 | Orders | status, admin_unlocked | No |
-| OrderItems | qty, line_note | No |
+| OrderItems | Read-only | No |
 | Slots | starts_at, ends_at, label, capacity, active | Yes (leave id blank) |
 | Bookings | party_size, note, status, slot_id | No |
 | Staff | Read-only | No |
@@ -36,7 +36,7 @@ Each tab shows all columns for reference; **only the tinted columns are written 
 - Destructive deletes are not available from any Sheet tab. Use `active`, `status`, or the guarded admin workflow instead.
 - **Add a design:** new row with a unique `design_no` + firm + category + style + fabric + pcs_per_set (+ image_url). Push.
 - **Product images:** put the ImageKit link in `image_url` on the Designs tab and push — that's how images get attached.
-- Editing `OrderItems.qty` automatically recomputes total sets and total pieces using `pcs_per_set_snapshot`. `line_note` stores the customer/staff note for that design.
+- **OrderItems is read-only.** A Sheet push runs with the service role and would bypass `_write_order`, defeating the 24-hour edit window, the order lock and the dispatch lock — you could have edited a line that had already shipped. Change order lines in the admin console instead.
 - Dates/times must be full timestamps (e.g. `2026-07-19T10:00:00+05:30`) for slots/settings.
 
 ## Safety notes

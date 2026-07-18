@@ -48,7 +48,10 @@ const TABLES: Record<string, TableCfg> = {
   order_items: {
     pk: "id",
     cols: ["id","order_id","barcode","design_no","qty","category_snapshot","style_snapshot","fabric_snapshot","pcs_per_set_snapshot","line_note","description_snapshot","created_by_type","last_modified_by_type","last_modified_by_user_id"],
-    write: ["qty","line_note"],
+    // Read-only. A Sheet push runs with the service role and would bypass
+    // _write_order entirely, defeating the edit window, the order lock and
+    // the dispatch lock. Order lines must be changed in the app.
+    write: [],
     hide: ["color_snapshot"],
     insert: false,
     recomputeOrders: true,

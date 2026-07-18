@@ -26,10 +26,15 @@ npx supabase db push
 The latest migration is:
 
 ```text
-supabase/migrations/202607170009_simplify_permissions_pcs4_drop_lookups.sql
+supabase/migrations/202607170011_dispatch_and_image_privacy.sql
 ```
 
-It sets new/unset product pieces-per-set defaults to 4 without backfilling existing rows, removes the lookup subsystem, and keeps granular permissions internally while the Team interface uses five module toggles.
+It adds the Dispatch module (`dispatch_lines`, `dispatch_events`, `orders.dispatch_status`), locks dispatched lines inside `_write_order`, adds a sixth `dispatch` module toggle, and removes the master image URL from every customer-facing reader.
+
+**Two behaviour changes worth knowing before you run it:**
+
+1. **Dispatch outranks `admin_unlocked`.** Reopening an order no longer makes a dispatched line editable. Staff must reduce the line's dispatched sets to 0 first. Tell the floor team — "reopen the order" is no longer the universal fix.
+2. **`select on public.designs` is revoked from `authenticated`.** That grant let any logged-in customer read every master ImageKit URL straight from PostgREST, which would have defeated the blur entirely. `lookup_barcode` becomes `SECURITY DEFINER` to compensate. If you later add a client that reads `designs` directly, it will now fail — route it through an RPC or the service role instead.
 
 ## 2. Deploy Edge Functions
 
@@ -38,6 +43,7 @@ npx supabase functions deploy customer-auth --no-verify-jwt
 npx supabase functions deploy admin-api --no-verify-jwt
 npx supabase functions deploy data-sync --no-verify-jwt
 npx supabase functions deploy sheet-sync --no-verify-jwt
+npx supabase functions deploy design-image --no-verify-jwt
 npx supabase functions list
 ```
 
@@ -98,6 +104,16 @@ Log into the admin console, open **Slots**, and create the active windows for 19
 10. Sale-order PDF completes even when one product image cannot be fetched.
 11. An expired order reopened by staff can be saved from the customer page.
 12. Sheet deletes are unavailable on every mirrored tab.
+13. A customer thumbnail is identifiable but its detail does not survive zooming.
+14. `GET /rest/v1/designs?select=image_url` with a customer token returns a permission error, not data.
+15. No `ik.imagekit.io` URL appears anywhere in the customer page's DOM or network tab.
+16. Ticking a design in Dispatch prevents the customer from editing or deleting it.
+17. Reopening a dispatched order still does not unlock the dispatched line.
+18. Setting a dispatched line back to 0 sets restores normal editing.
+19. Partial dispatch shows `Partial`; every line full shows `Completed`.
+20. Mapping typeahead finds `MR-1234` from `1`, `12`, `123` and `1234`.
+21. A batch of mappings saves in one call; failures stay queued, successes clear.
+22. A dispatch-only staff member sees only the Dispatch tab, with no gap in the bottom bar.
 
 ## Event-day flow
 

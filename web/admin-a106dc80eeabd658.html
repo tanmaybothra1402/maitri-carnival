@@ -20,10 +20,79 @@ label{display:block;margin:13px 0 6px;color:#515B58;font-size:10px;font-weight:8
 .btn{min-height:48px;padding:0 16px;border:0;border-radius:11px;background:var(--deep);color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 5px 13px rgba(34,94,99,.12)}.btn.secondary{border:1.5px solid var(--deep);background:#fff;color:var(--deep);box-shadow:none}.btn.ghost{border:1px solid var(--border);background:#fff;color:var(--slate);box-shadow:none}.btn.danger{background:var(--error)}.btn.small{min-height:40px;padding:0 12px;font-size:11px}.btn:disabled{background:#E8ECEA;color:#929895;box-shadow:none;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grid2,.grid3,.grid4{display:grid;gap:9px}.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}
 .segment{position:sticky;top:64px;z-index:42;display:flex;gap:4px;margin-bottom:12px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(232,242,241,.97);backdrop-filter:blur(10px)}.segment button{flex:1;min-height:40px;padding:6px;border:0;border-radius:10px;background:transparent;color:var(--deep);font-size:11px;font-weight:800;cursor:pointer}.segment button.active{background:#fff;box-shadow:0 2px 8px rgba(34,94,99,.14)}
 .list{display:grid;gap:8px;margin-top:10px}.list-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}.list-row.click{cursor:pointer}.list-row.click:active{background:var(--foam);transform:scale(.995)}.list-row b{display:block;color:var(--deep);font-size:13px}.list-row p{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}.empty{min-height:110px;display:grid;place-items:center;padding:22px;border:1px dashed rgba(43,115,121,.2);border-radius:14px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}.badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:9px;font-weight:800}.badge.ok{background:#DCFCE7;color:#166534}.badge.wait{background:#FFF3D9;color:#8A5A09}.badge.off{background:#FEE2E2;color:#991B1B}.badge.info{background:var(--foam);color:var(--deep)}
-nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nav-h) + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);align-items:start;padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border-top:1px solid rgba(34,94,99,.1);box-shadow:0 -10px 28px rgba(34,55,52,.1);backdrop-filter:blur(14px)}.nav-item{position:relative;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#707674;font-size:10px;font-weight:600;cursor:pointer}.nav-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--deep);font-weight:800}.nav-item.active:not(.center)::before{content:"";position:absolute;top:7px;left:50%;width:26px;height:3px;border-radius:999px;background:var(--orange);transform:translateX(-50%)}.center .fab{width:56px;height:56px;display:grid;place-items:center;margin:-25px auto 0;border:3px solid #fff;border-radius:50%;background:var(--deep);box-shadow:0 8px 20px rgba(34,94,99,.3)}.center .fab svg{width:25px;height:25px;stroke:#fff}.center.active .fab{background:var(--orange);box-shadow:0 8px 20px rgba(255,151,0,.28)}
+nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nav-h) + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,1fr);align-items:start;padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border-top:1px solid rgba(34,94,99,.1);box-shadow:0 -10px 28px rgba(34,55,52,.1);backdrop-filter:blur(14px)}.nav-item{position:relative;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#707674;font-size:10px;font-weight:600;cursor:pointer}.nav-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--deep);font-weight:800}.nav-item.active:not(.center)::before{content:"";position:absolute;top:7px;left:50%;width:26px;height:3px;border-radius:999px;background:var(--orange);transform:translateX(-50%)}.center .fab{width:56px;height:56px;display:grid;place-items:center;margin:-25px auto 0;border:3px solid #fff;border-radius:50%;background:var(--deep);box-shadow:0 8px 20px rgba(34,94,99,.3)}.center .fab svg{width:25px;height:25px;stroke:#fff}.center.active .fab{background:var(--orange);box-shadow:0 8px 20px rgba(255,151,0,.28)}
 .dashboard-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.dashboard-header h1{font-size:21px}.updated{margin-top:4px;color:var(--muted);font-size:10px}.dashboard-subnav{position:sticky;top:64px;z-index:42;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 16px rgba(34,94,99,.08)}.dashboard-subnav button{min-height:40px;padding:5px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}.dashboard-subnav button.active{background:var(--deep);color:#fff}.filter-bar{display:flex;align-items:center;gap:7px;min-height:50px;margin-bottom:10px;padding:8px;border:1px solid var(--border);border-radius:13px;background:#fff}.filter-chips{display:flex;flex:1;gap:6px;overflow-x:auto;scrollbar-width:none}.chip{flex:0 0 auto;min-height:32px;padding:5px 10px;border:0;border-radius:16px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:800}.kpi-strip{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.kpi{flex:0 0 116px;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.05)}.kpi.primary{background:linear-gradient(135deg,var(--deep),var(--teal));border-color:transparent;color:#fff}.kpi b{display:block;font-size:21px}.kpi span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.kpi.primary span{color:rgba(255,255,255,.75)}.dashboard-panel[hidden]{display:none!important}.viz-grid{display:grid;grid-template-columns:1fr;gap:10px}.viz-card{min-width:0;overflow:hidden;padding:14px}.viz-card.wide{grid-column:1/-1}.viz-card.hero{border-color:rgba(255,151,0,.34)}.viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.viz-title{color:var(--deep);font-size:14px;font-weight:800}.viz-copy{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}.mini-segment{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--foam)}.mini-segment button{min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:9px;font-weight:800}.mini-segment button.active{background:#fff;color:var(--deep);box-shadow:0 2px 7px rgba(34,94,99,.12)}.chart-frame{position:relative;height:245px;margin-top:8px}.chart-frame.hero{height:280px}.chart-frame canvas{width:100%!important;height:100%!important}.ranking{display:grid;gap:6px;margin-top:8px}.rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}.rank-no{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.rank-row:first-child .rank-no{background:var(--orange);color:#fff}.rank-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.rank-meta{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rank-value{color:var(--deep);font-size:11px;font-weight:850;white-space:nowrap}
 .modal{position:fixed;inset:0;z-index:180;display:none;align-items:flex-end;background:rgba(30,37,35,.54);backdrop-filter:blur(2px)}.modal.open{display:flex}.sheet{width:100%;max-height:88vh;overflow:auto;padding:19px 18px calc(24px + env(safe-area-inset-bottom));border-radius:20px 20px 0 0;background:#fff;box-shadow:0 -20px 50px rgba(0,0,0,.18)}.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}.sheet-head>div{min-width:0}.sheet-head button.close{margin-left:auto;width:40px;height:40px;border:0;border-radius:10px;background:var(--foam);color:var(--deep);font-weight:900}.detail-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 16px}.metric{min-width:0;padding:12px 8px;border:1px solid #D8E7E5;border-radius:12px;background:var(--foam);text-align:center}.metric b{display:block;color:var(--deep);font-size:18px;line-height:1.2;font-variant-numeric:tabular-nums}.metric span{display:block;margin-top:4px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.drill-context{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:#F7FAF9;color:var(--body);font-size:12px;line-height:1.5}.drill-section{margin-top:18px}.drill-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.drill-section-head b{color:var(--ink);font-size:13px}.drill-section-head span{color:var(--muted);font-size:11px}.drill-list{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff}.drill-row{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:#fff;color:var(--body);text-align:left;cursor:pointer}.drill-row:last-child{border-bottom:0}.drill-row:hover{background:#F8FBFA}.drill-row:active{transform:scale(.99)}.drill-row-main{min-width:0}.drill-row-main b{display:block;overflow:hidden;color:var(--ink);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}.drill-row-main span{display:block;margin-top:3px;overflow:hidden;color:var(--muted);font-size:10.5px;line-height:1.4;text-overflow:ellipsis;white-space:nowrap}.drill-row-total{flex:0 0 auto;color:var(--deep);font-size:11px;font-weight:800;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.drill-empty{padding:18px 12px;color:var(--muted);font-size:12px;text-align:center}.drill-loading{padding:28px 12px;color:var(--muted);font-size:12px;text-align:center}@media(max-width:479px){.detail-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}.product-line{display:grid;grid-template-columns:55px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.product-line img{width:55px;height:72px;border-radius:8px;object-fit:cover;background:#EEF2F0}.product-line b{font-size:12px;color:var(--deep)}.product-line p{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.45}
 .perm{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:700}.perm input{width:17px;height:17px;flex:0 0 auto}.cred{margin-top:12px;padding:12px;border:1px dashed var(--teal);border-radius:11px;background:var(--foam);font-size:12px;line-height:1.7}.toast{position:fixed;left:50%;top:72px;z-index:240;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%)}.toast.open{display:block}.toast.success{background:#166534}.toast.error{background:#B91C1C}.loading{position:fixed;inset:0;z-index:230;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader{padding:22px 28px;border-radius:15px;background:#fff;color:var(--deep);font-weight:800}.reader{display:none;margin-top:10px;border-radius:12px;overflow:hidden}.reader.open{display:block}
+/* ── Dispatch ─────────────────────────────────────────────────────────── */
+.dispatch-head-card>input{margin-top:12px}
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip-row .chip{cursor:pointer;border:1px solid transparent;transition:background .15s,border-color .15s}
+.chip-row .chip.active{background:var(--teal-deep);color:#fff}
+.chip-row .chip:hover:not(.active){border-color:var(--teal)}
+.dispatch-card{display:block;padding:12px;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.055);cursor:pointer;text-align:left;width:100%}
+.dispatch-card+.dispatch-card{margin-top:9px}
+.dispatch-card:hover{border-color:var(--teal)}
+.dispatch-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.dispatch-card-top b{font-size:13px;color:var(--teal-deep);overflow-wrap:anywhere}
+.dispatch-card-meta{margin-top:3px;font-size:10px;color:var(--muted);font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.dispatch-card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px}
+.firm-pill{padding:3px 8px;border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.03em}
+.firm-pill.maitri{background:#EAE9F5;color:#2E2A6B}
+.firm-pill.niharika{background:#FCE7F3;color:#E6007E}
+.status-pill{padding:3px 8px;border-radius:999px;font-size:9px;font-weight:850}
+.status-pill.pending{background:#FEF3C7;color:#92400E}
+.status-pill.partial{background:#DBEAFE;color:#1E40AF}
+.status-pill.completed{background:#DCFCE7;color:#166534}
+.dispatch-card-actions{display:flex;gap:7px;margin-top:10px}
+.dispatch-sheet{max-width:660px}
+.dispatch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-top:12px}
+.dispatch-progress{font-size:11px;font-weight:800;color:var(--teal-deep)}
+.dispatch-lines{margin-top:11px;display:grid;gap:9px;max-height:52vh;overflow-y:auto}
+.dispatch-line{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:11px;align-items:start;padding:10px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.dispatch-line.done{background:#F2FBF5;border-color:#BBF7D0}
+.dispatch-thumb{width:56px;height:74px;border-radius:9px;object-fit:cover;background:#EEF2F0;cursor:zoom-in;border:1px solid var(--border)}
+.dispatch-line-body{min-width:0}
+.dispatch-line-body b{font-size:12.5px;color:var(--teal-deep);overflow-wrap:anywhere}
+.dispatch-line-meta{margin-top:3px;font-size:9.5px;color:var(--muted);font-weight:600;line-height:1.45;overflow-wrap:anywhere}
+.dispatch-line-note{margin-top:6px;padding:6px 8px;border-radius:8px;background:var(--warm);font-size:10px;color:#6B5A38;font-weight:700;line-height:1.45;overflow-wrap:anywhere}
+.dispatch-qty{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.dispatch-ordered{font-size:9.5px;color:var(--muted);font-weight:800;white-space:nowrap}
+.dispatch-check{width:22px;height:22px;flex:0 0 auto;cursor:pointer}
+.dispatch-sets{width:66px;padding:6px 7px;font-size:13px;text-align:center;border:1px solid var(--border);border-radius:9px}
+.dispatch-note-label{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:14px;font-size:10px;font-weight:800}
+#dispatch-note{width:100%;min-height:74px;margin-top:6px;padding:9px 10px;font-size:13px;line-height:1.45}
+.dispatch-history{margin-top:12px;display:grid;gap:6px;max-height:150px;overflow-y:auto}
+.dispatch-history-row{padding:7px 9px;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;background:var(--foam);font-size:10px;line-height:1.5;color:var(--deep);overflow-wrap:anywhere}
+.dispatch-history-row time{display:block;color:var(--muted);font-weight:700;font-size:9px;margin-bottom:2px}
+.dispatch-save-btn{width:100%;margin-top:14px}
+.lightbox{position:fixed;inset:0;z-index:260;display:none;place-items:center;padding:22px;background:rgba(16,22,21,.93)}
+.lightbox.open{display:grid}
+.lightbox img{max-width:100%;max-height:82vh;border-radius:12px;object-fit:contain}
+.lightbox-caption{margin-top:11px;color:#fff;font-size:12px;font-weight:800;letter-spacing:.03em}
+.lightbox-close{position:absolute;top:16px;right:16px;width:38px;height:38px;border:0;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:16px;cursor:pointer}
+.lightbox-close:hover{background:rgba(255,255,255,.28)}
+@media(max-width:520px){.dispatch-line{grid-template-columns:48px minmax(0,1fr)}.dispatch-thumb{width:48px;height:64px}.dispatch-qty{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:flex-end}}
+/* ── Barcode mapping: typeahead + batch queue ─────────────────────────── */
+.map-build-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px}
+.map-design-field{position:relative;min-width:0}
+.map-suggest{position:absolute;z-index:60;top:100%;left:0;right:0;margin-top:5px;max-height:266px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 12px 30px rgba(34,94,99,.16)}
+.map-suggest.hidden{display:none}
+.map-suggest-item{display:flex;flex-direction:column;gap:2px;width:100%;padding:9px 11px;border:0;border-bottom:1px solid var(--border);background:#fff;text-align:left;cursor:pointer}
+.map-suggest-item:last-child{border-bottom:0}
+.map-suggest-item:hover,.map-suggest-item.active{background:var(--foam)}
+.map-suggest-item b{font-size:12px;color:var(--teal-deep)}
+.map-suggest-item span{font-size:9.5px;color:var(--muted);font-weight:600}
+.map-build-actions{margin-top:12px}
+.map-batch-head{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap}
+.map-batch-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;margin-left:7px;border-radius:999px;background:var(--teal-deep);color:#fff;font-size:11px;font-weight:850}
+.map-batch-list{margin-top:12px;max-height:340px;overflow-y:auto;display:grid;gap:7px}
+.map-batch-row{display:flex;align-items:center;justify-content:space-between;gap:11px;padding:9px 11px;border:1px solid var(--border);border-radius:11px;background:#fff}
+.map-batch-row b{display:block;font-size:12px;color:var(--teal-deep)}
+.map-batch-row span{display:block;margin-top:2px;font-size:10px;color:var(--muted);font-weight:700}
+.map-batch-remove{flex:0 0 auto;width:28px;height:28px;border:1px solid var(--border);border-radius:9px;background:#fff;color:#B91C1C;font-size:13px;cursor:pointer}
+.map-batch-remove:hover{background:#FEF2F2;border-color:#FECACA}
+@media(max-width:640px){.map-build-grid{grid-template-columns:1fr}}
 @media(min-width:720px){.viz-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet{width:620px;margin:0 auto;border-radius:20px}.modal{align-items:center}.kpi{flex:1 1 0}}
 @media(max-width:600px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:390px){.page{padding-left:9px;padding-right:9px}.firm-logo,.divider{display:none}.staff-meta b{max-width:90px}.dashboard-subnav button{font-size:10px}.chart-frame,.chart-frame.hero{height:235px}}
@@ -185,8 +254,62 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
   <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Products</h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
   <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
 </div></section>
-<section class="subpanel hidden" id="products-mapping"><div class="card"><h1>Barcode Mapping</h1><div class="grid2"><div><label>Barcode</label><input id="map-barcode"/></div><div><label>Design</label><input id="map-design" list="dl-design"/></div></div><div class="row" style="margin-top:10px"><button class="btn" id="map-save">Save mapping</button><button class="btn secondary" id="map-camera">Camera</button></div><div class="reader" id="map-reader"></div></div><div class="card"><h2>Batch mapping</h2><textarea id="map-batch" placeholder="BARCODE,DESIGNNO"></textarea><button class="btn" id="map-batch-save" style="margin-top:9px">Save batch</button></div><div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
+<section class="subpanel hidden" id="products-mapping">
+<div class="card map-build-card">
+  <div><span class="section-kicker">Barcode mapping</span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
+  <div class="map-build-grid">
+    <div><label for="map-barcode">Barcode</label><input id="map-barcode" autocomplete="off" placeholder="Scan or type"/></div>
+    <div class="map-design-field"><label for="map-design">Design</label><input id="map-design" autocomplete="off" placeholder="Type any part, e.g. 1234"/><div class="map-suggest hidden" id="map-suggest"></div></div>
+  </div>
+  <div class="row map-build-actions"><button class="btn" id="map-add">Add to batch</button><button class="btn secondary" id="map-camera">Camera</button></div>
+  <div class="reader" id="map-reader"></div>
+</div>
+<div class="card map-batch-card">
+  <div class="map-batch-head"><h2>Batch <span class="map-batch-count" id="map-batch-count">0</span></h2><div class="row"><button class="btn secondary small" id="map-batch-clear">Clear</button><button class="btn" id="map-batch-save">Save batch</button></div></div>
+  <div class="map-batch-list" id="map-batch-list"></div>
+</div>
+<div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
 </main>
+<main class="page" id="page-dispatch">
+<div class="card dispatch-head-card">
+  <div><span class="section-kicker">Warehouse</span><h1>Dispatch</h1><p class="copy">Confirm what physically leaves for each order. Dispatched designs lock automatically.</p></div>
+  <input id="dispatch-search" placeholder="Search company, mobile or contact"/>
+  <div class="chip-row" id="dispatch-firm-chips">
+    <button class="chip active" data-firm="">All firms</button>
+    <button class="chip" data-firm="Maitri">Maitri</button>
+    <button class="chip" data-firm="Niharika">Niharika</button>
+  </div>
+  <div class="chip-row" id="dispatch-status-chips">
+    <button class="chip active" data-status="">All</button>
+    <button class="chip" data-status="Pending">Pending</button>
+    <button class="chip" data-status="Partial">Partially completed</button>
+    <button class="chip" data-status="Completed">Completed</button>
+  </div>
+</div>
+<div class="list" id="dispatch-list"></div>
+</main>
+
+<div class="modal" id="dispatch-modal"><div class="sheet dispatch-sheet">
+  <div class="sheet-head">
+    <div><h2 id="dispatch-title">Dispatch</h2><p class="copy" id="dispatch-subtitle"></p></div>
+    <button class="close" data-close="dispatch-modal">✕</button>
+  </div>
+  <div class="dispatch-toolbar">
+    <span class="dispatch-progress" id="dispatch-progress"></span>
+    <div class="row">
+      <button class="btn secondary small" id="dispatch-all">Tick all</button>
+      <button class="btn secondary small" id="dispatch-pdf">PDF</button>
+    </div>
+  </div>
+  <div class="dispatch-lines" id="dispatch-lines"></div>
+  <label class="dispatch-note-label" for="dispatch-note">Internal dispatch note <span class="optional">not visible to the customer</span></label>
+  <textarea id="dispatch-note" maxlength="2000" placeholder="Short supply, damages, pending cartons, courier details…"></textarea>
+  <div class="dispatch-history" id="dispatch-history"></div>
+  <button class="btn dispatch-save-btn" id="dispatch-save">Save dispatch</button>
+</div></div>
+
+<div class="lightbox" id="dispatch-lightbox"><button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button><img alt="" id="lightbox-img"/><span class="lightbox-caption" id="lightbox-caption"></span></div>
+
 <main class="page" id="page-admin">
 <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button></div>
 <section class="subpanel" id="admin-slots"><div class="card slot-manager-card">
@@ -204,12 +327,13 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
     <div><label>Team member name</label><input id="staff-fullname"/></div>
     <div><label>Team ID</label><input id="staff-id" placeholder="sales01"/></div>
     <div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div>
-    <div><label>Default section</label><select id="staff-default"><option value="reception">Reception</option><option value="sale" selected>Sale Order</option><option value="products">Products</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select></div>
+    <div><label>Default section</label><select id="staff-default"><option value="reception">Reception</option><option value="sale" selected>Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select></div>
   </div>
   <div class="module-toggle-list" aria-label="Team access modules">
     <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="staff-group-reception" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="staff-group-sales" type="checkbox" checked/></label>
     <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="staff-group-products" type="checkbox"/></label>
+    <label class="module-toggle"><span><b>Dispatch</b><small>Confirm what physically ships and lock those lines</small></span><input id="staff-group-dispatch" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="staff-group-dashboard" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="staff-group-admin" type="checkbox"/></label>
   </div>
@@ -225,7 +349,8 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <button class="nav-item" data-section="dashboard" id="nav-dashboard" style="grid-column:2"><svg viewbox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19V2"></path></svg>Dashboard</button>
 <button class="nav-item center" data-section="sale" id="nav-sale" style="grid-column:3"><span class="fab"><svg viewbox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"></path></svg></span>Sale Order</button>
 <button class="nav-item" data-section="products" id="nav-products" style="grid-column:4"><svg viewbox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><path d="M7 7h.01"></path></svg>Products</button>
-<button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:5"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
+<button class="nav-item" data-section="dispatch" id="nav-dispatch" style="grid-column:5"><svg viewbox="0 0 24 24"><path d="M16 3h-3v10h3V3zM21 8l-3-2v7l3-2V8z"></path><path d="M3 7h8v10H3zM3 17l4 4h10"></path></svg>Dispatch</button>
+<button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:6"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
 </nav>
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
@@ -235,11 +360,12 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
 <div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
 <label>Team member name</label><input id="edit-staff-name"/>
-<label>Default section</label><select id="edit-staff-default"><option value="reception">Reception</option><option value="sale">Sale Order</option><option value="products">Products</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select>
+<label>Default section</label><select id="edit-staff-default"><option value="reception">Reception</option><option value="sale">Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select>
 <div class="module-toggle-list" aria-label="Edit team access modules">
   <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="edit-group-reception" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="edit-group-sales" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="edit-group-products" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>Dispatch</b><small>Confirm what physically ships and lock those lines</small></span><input id="edit-group-dispatch" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="edit-group-dashboard" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="edit-group-admin" type="checkbox"/></label>
 </div>
@@ -298,6 +424,7 @@ const TEAM_GROUPS = {
   reception: { label: "Reception", description: "Visitors, registration and account support" },
   sales: { label: "Sales", description: "Create orders and review previous orders" },
   products: { label: "Products", description: "Product master and barcode mapping" },
+  dispatch: { label: "Dispatch", description: "Confirm what physically ships and lock those lines" },
   dashboard: { label: "Dashboard", description: "Analytics and exports" },
   admin: { label: "Admin", description: "Slots, Team and system settings" },
 };
@@ -378,6 +505,7 @@ const st = {
   editEntry: null,
   editProduct: null,
   entryRows: [],
+  dispatch: { rows: [], detail: null, firm: "", status: "" },
   cache: { designsAt: 0, mappingsAt: 0, dashboardAt: 0 },
 };
 function toast(m, t = "") {
@@ -423,7 +551,9 @@ function moduleAllowed(s) {
         ? has("sale.view")
         : s === "products"
           ? has("products.view") || has("products.edit") || has("products.mapping")
-          : Object.keys(st.me?.permissions || {}).some(
+          : s === "dispatch"
+            ? has("dispatch.view") || has("dispatch.write")
+            : Object.keys(st.me?.permissions || {}).some(
               (k) => k.startsWith("admin.") && st.me.permissions[k],
             );
 }
@@ -467,9 +597,15 @@ function setLogged(on) {
       .forEach((p) => p.id !== "login-screen" && p.classList.remove("active"));
 }
 function setupNavigation() {
-  ["reception", "dashboard", "sale", "products", "admin"].forEach((s) =>
+  const navSections = ["reception", "dashboard", "sale", "products", "dispatch", "admin"];
+  navSections.forEach((s) =>
     $("nav-" + s).classList.toggle("hidden", !moduleAllowed(s)),
   );
+  // The bottom bar has fixed grid-column positions, so it must be re-flowed
+  // to whatever the person can actually see, or hidden modules leave gaps.
+  const visible = navSections.filter(moduleAllowed);
+  $("bottom-nav").style.gridTemplateColumns = `repeat(${Math.max(1, visible.length)},1fr)`;
+  visible.forEach((s, i) => ($("nav-" + s).style.gridColumn = String(i + 1)));
   $("dash-export").classList.toggle("hidden", !has("dashboard.export"));
   document.querySelector("[data-open-registration]")?.classList.toggle("hidden", !has("reception.register"));
   const subPerm = {
@@ -499,7 +635,7 @@ function setupNavigation() {
   go(
     moduleAllowed(st.me.defaultSection)
       ? st.me.defaultSection
-      : ["sale", "reception", "dashboard", "products", "admin"].find(
+      : ["sale", "reception", "dashboard", "products", "dispatch", "admin"].find(
           moduleAllowed,
         ) || "sale",
   );
@@ -525,6 +661,7 @@ function go(section) {
     setTimeout(() => $("sale-search").focus(), 60);
   }
   if (section === "products") loadProductsModule();
+  if (section === "dispatch") loadDispatch();
   if (section === "admin") loadAdminModule();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1862,7 +1999,7 @@ async function loadPrevious() {
       rows
         .map(
           (o) =>
-            `<div class="list-row"><div><b>${esc(o.companyName)} · ${esc(o.firm)}</b><p>${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs · ${fmt(o.updatedAt)}</p></div><div class="row"><button class="btn ghost small" data-view-prev='${esc(JSON.stringify(o))}'>View</button><button class="btn small" data-prev='${esc(JSON.stringify(o))}'>Edit</button></div></div>`,
+            `<div class="list-row"><div><b>${esc(o.companyName)} ${firmPill(o.firm)}</b><p>${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs · ${fmt(o.updatedAt)}</p></div><div class="row"><button class="btn ghost small" data-view-prev='${esc(JSON.stringify(o))}'>View</button><button class="btn small" data-prev='${esc(JSON.stringify(o))}'>Edit</button>${has("dispatch.view") ? `<button class="btn secondary small" data-dispatch-prev="${esc(o.orderId)}">Dispatch</button>` : ""}${has("sale.pdf") ? `<button class="btn ghost small" data-pdf-prev='${esc(JSON.stringify(o))}' aria-label="Download PDF" title="Download PDF">PDF</button>` : ""}</div></div>`,
         )
         .join("") || '<div class="empty">No orders</div>';
   } catch (e) {
@@ -1870,6 +2007,22 @@ async function loadPrevious() {
   }
 }
 $("previous-list").onclick = (e) => {
+  const disp = e.target.closest("[data-dispatch-prev]");
+  if (disp) {
+    closeModal("previous-modal");
+    go("dispatch");
+    openDispatch(disp.dataset.dispatchPrev);
+    return;
+  }
+  const pdf = e.target.closest("[data-pdf-prev]");
+  if (pdf) {
+    const o = JSON.parse(pdf.dataset.pdfPrev);
+    closeModal("previous-modal");
+    openOrder(o.customerId, o.firm)
+      .then(() => downloadAdminOrderPdf())
+      .catch((err) => toast(err.message, "error"));
+    return;
+  }
   const view = e.target.closest("[data-view-prev]");
   if (view) {
     const o = JSON.parse(view.dataset.viewPrev);
@@ -2051,20 +2204,410 @@ function renderMappings() {
       )
       .join("") || '<div class="empty">No mappings</div>';
 }
-$("map-search").oninput = renderMappings;
-$("map-save").onclick = async () => {
+/* ---------- Dispatch ---------- */
+// Full-resolution images here on purpose: dispatch staff must be able to open
+// an image and identify the physical product before ticking it off.
+
+function dispatchStatusPill(status) {
+  const s = String(status || "Pending");
+  const cls = s === "Completed" ? "completed" : s === "Partial" ? "partial" : "pending";
+  const label = s === "Partial" ? "Partially completed" : s;
+  return `<span class="status-pill ${cls}">${esc(label)}</span>`;
+}
+
+function firmPill(firm) {
+  const f = String(firm || "");
+  return `<span class="firm-pill ${f.toLowerCase()}">${esc(f)}</span>`;
+}
+
+async function loadDispatch() {
+  if (!has("dispatch.view")) return;
   try {
-    await admin("mapBarcode", {
-      barcode: $("map-barcode").value,
-      designNo: $("map-design").value,
+    const rows = await admin("listDispatch", {
+      query: $("dispatch-search").value.trim(),
+      firm: st.dispatch.firm,
+      dispatchStatus: st.dispatch.status,
     });
-    $("map-barcode").value = "";
-    await loadMapping();
-    toast("Mapping saved", "success");
+    st.dispatch.rows = rows || [];
+    renderDispatchList();
   } catch (e) {
     toast(e.message, "error");
   }
+}
+
+function renderDispatchList() {
+  const rows = st.dispatch.rows || [];
+  $("dispatch-list").innerHTML = rows.length
+    ? rows
+        .map(
+          (o) =>
+            `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div><div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`,
+        )
+        .join("")
+    : '<div class="empty">No orders match these filters.</div>';
+}
+
+$("dispatch-search").oninput = debounceDispatch();
+function debounceDispatch() {
+  let t;
+  return () => {
+    clearTimeout(t);
+    t = setTimeout(loadDispatch, 260);
+  };
+}
+
+$("dispatch-firm-chips").onclick = (e) => {
+  const b = e.target.closest("[data-firm]");
+  if (!b) return;
+  st.dispatch.firm = b.dataset.firm;
+  [...$("dispatch-firm-chips").children].forEach((c) =>
+    c.classList.toggle("active", c === b),
+  );
+  loadDispatch();
 };
+
+$("dispatch-status-chips").onclick = (e) => {
+  const b = e.target.closest("[data-status]");
+  if (!b) return;
+  st.dispatch.status = b.dataset.status;
+  [...$("dispatch-status-chips").children].forEach((c) =>
+    c.classList.toggle("active", c === b),
+  );
+  loadDispatch();
+};
+
+$("dispatch-list").onclick = (e) => {
+  const b = e.target.closest("[data-order]");
+  if (b) openDispatch(b.dataset.order);
+};
+
+async function openDispatch(orderId) {
+  try {
+    loading(true, "Loading order…");
+    const d = await admin("getDispatch", { orderId });
+    st.dispatch.detail = d;
+    renderDispatchDetail();
+    openModal("dispatch-modal");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+
+function renderDispatchDetail() {
+  const d = st.dispatch.detail;
+  if (!d) return;
+  const c = d.customer || {};
+  $("dispatch-title").textContent = c.companyName || c.contactName || "Dispatch";
+  $("dispatch-subtitle").innerHTML = `${firmPill(d.firm)} ${esc([c.contactName, c.phone, [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}`;
+
+  const lines = d.lines || [];
+  const done = lines.filter((l) => Number(l.dispatchedSets) >= Number(l.qty) && Number(l.dispatchedSets) > 0).length;
+  $("dispatch-progress").innerHTML = `${done} of ${lines.length} designs fully dispatched ${dispatchStatusPill(d.dispatchStatus)}`;
+
+  const writable = has("dispatch.write");
+  $("dispatch-lines").innerHTML = lines.length
+    ? lines
+        .map((l, i) => {
+          const ordered = Number(l.qty) || 0;
+          const sent = Number(l.dispatchedSets) || 0;
+          const full = sent >= ordered && sent > 0;
+          const meta = [l.category, l.style, l.fabric].filter(Boolean).join(" · ");
+          return `<div class="dispatch-line${full ? " done" : ""}" data-line="${i}">
+            ${l.imageUrl ? `<img class="dispatch-thumb" src="${esc(ik(l.imageUrl, "w-160,h-210,c-at_max,q-70"))}" alt="${esc(l.designNo)}" loading="lazy" data-zoom="${esc(l.imageUrl)}" data-zoom-label="${esc(l.designNo)}"/>` : '<div class="dispatch-thumb"></div>'}
+            <div class="dispatch-line-body"><b>${esc(l.designNo)}</b><div class="dispatch-line-meta">${esc(meta)}${meta ? "<br>" : ""}${ordered} sets ordered · ${Number(l.pcsPerSet) || 1} pcs/set</div>${l.note ? `<div class="dispatch-line-note">${esc(l.note)}</div>` : ""}</div>
+            <div class="dispatch-qty">
+              <input class="dispatch-check" type="checkbox" data-check="${i}" ${full ? "checked" : ""} ${writable ? "" : "disabled"} aria-label="Dispatch all ${esc(l.designNo)}"/>
+              <input class="dispatch-sets" type="number" min="0" max="${ordered}" value="${sent}" data-sets="${i}" ${writable ? "" : "disabled"} aria-label="Sets dispatched for ${esc(l.designNo)}"/>
+              <span class="dispatch-ordered">of ${ordered}</span>
+            </div>
+          </div>`;
+        })
+        .join("")
+    : '<div class="empty">This order has no designs.</div>';
+
+  $("dispatch-note").value = "";
+  $("dispatch-note").disabled = !writable;
+  $("dispatch-save").classList.toggle("hidden", !writable);
+  $("dispatch-all").classList.toggle("hidden", !writable);
+  $("dispatch-pdf").classList.toggle("hidden", !has("sale.pdf"));
+
+  const events = d.events || [];
+  $("dispatch-history").innerHTML = events.length
+    ? events
+        .map(
+          (ev) =>
+            `<div class="dispatch-history-row"><time>${esc(fmt(ev.createdAt))} · ${esc(ev.status)}</time>${ev.note ? esc(ev.note) : "<i>No note</i>"}</div>`,
+        )
+        .join("")
+    : "";
+}
+
+// Checkbox and number field drive the same value: ticking means "all of it".
+$("dispatch-lines").onchange = (e) => {
+  const d = st.dispatch.detail;
+  if (!d) return;
+  const check = e.target.closest("[data-check]");
+  if (check) {
+    const i = Number(check.dataset.check);
+    const line = d.lines[i];
+    if (!line) return;
+    line.dispatchedSets = check.checked ? Number(line.qty) || 0 : 0;
+    renderDispatchDetail();
+    return;
+  }
+  const sets = e.target.closest("[data-sets]");
+  if (sets) {
+    const i = Number(sets.dataset.sets);
+    const line = d.lines[i];
+    if (!line) return;
+    const ordered = Number(line.qty) || 0;
+    line.dispatchedSets = Math.max(0, Math.min(ordered, Number(sets.value) || 0));
+    renderDispatchDetail();
+  }
+};
+
+$("dispatch-lines").onclick = (e) => {
+  const img = e.target.closest("[data-zoom]");
+  if (!img) return;
+  $("lightbox-img").src = ik(img.dataset.zoom, "w-1400,q-92");
+  $("lightbox-caption").textContent = img.dataset.zoomLabel || "";
+  $("dispatch-lightbox").classList.add("open");
+};
+
+$("lightbox-close").onclick = () => closeLightbox();
+$("dispatch-lightbox").onclick = (e) => {
+  if (e.target.id === "dispatch-lightbox") closeLightbox();
+};
+function closeLightbox() {
+  $("dispatch-lightbox").classList.remove("open");
+  $("lightbox-img").removeAttribute("src");
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && $("dispatch-lightbox").classList.contains("open")) {
+    closeLightbox();
+  }
+});
+
+$("dispatch-all").onclick = () => {
+  const d = st.dispatch.detail;
+  if (!d) return;
+  // If everything is already ticked, this untick-all becomes the fast path
+  // for correcting a mistaken full dispatch.
+  const allDone = (d.lines || []).every(
+    (l) => Number(l.dispatchedSets) >= Number(l.qty) && Number(l.qty) > 0,
+  );
+  (d.lines || []).forEach((l) => {
+    l.dispatchedSets = allDone ? 0 : Number(l.qty) || 0;
+  });
+  renderDispatchDetail();
+};
+
+$("dispatch-pdf").onclick = () => {
+  const d = st.dispatch.detail;
+  if (!d) return;
+  const lines = d.lines || [];
+  // Reshape the dispatch payload into what the PDF builder expects.
+  downloadAdminOrderPdf({
+    firm: d.firm,
+    customer: d.customer || {},
+    order: {
+      id: d.id,
+      status: d.status,
+      version: 1,
+      totalDesigns: lines.length,
+      totalSets: lines.reduce((s, l) => s + (Number(l.qty) || 0), 0),
+      totalPieces: lines.reduce(
+        (s, l) => s + (Number(l.qty) || 0) * (Number(l.pcsPerSet) || 1),
+        0,
+      ),
+      items: lines,
+    },
+  }).catch((e) => toast(e.message, "error"));
+};
+
+$("dispatch-save").onclick = async () => {
+  const d = st.dispatch.detail;
+  if (!d) return;
+  const button = $("dispatch-save"), oldText = button.textContent;
+  try {
+    button.disabled = true;
+    button.textContent = "Saving…";
+    const res = await admin("saveDispatch", {
+      orderId: d.id,
+      note: $("dispatch-note").value,
+      lines: (d.lines || []).map((l) => ({
+        designNo: l.designNo,
+        dispatchedSets: Number(l.dispatchedSets) || 0,
+      })),
+    });
+    st.dispatch.detail = res.detail;
+    renderDispatchDetail();
+    await loadDispatch();
+    toast("Dispatch saved", "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
+};
+
+$("map-search").oninput = renderMappings;
+
+/* ---------- Mapping: design typeahead + batch queue ---------- */
+// Substring match, so "1234", "123", "12" and "1" all find MR-1234.
+const mapBatch = [];
+let mapSuggestIndex = -1;
+
+function mapMatches(term) {
+  const q = String(term || "").trim().toLowerCase();
+  const pool = (st.designs || []).filter((d) => d.active !== false);
+  if (!q) return pool.slice(0, 12);
+  return pool
+    .filter((d) => {
+      const no = String(d.designNo || d.design_no || "").toLowerCase();
+      return no.includes(q);
+    })
+    .sort((a, b) => {
+      // Prefix matches first, then shortest, then alphabetical.
+      const an = String(a.designNo || a.design_no || "").toLowerCase();
+      const bn = String(b.designNo || b.design_no || "").toLowerCase();
+      const ap = an.startsWith(q) ? 0 : 1;
+      const bp = bn.startsWith(q) ? 0 : 1;
+      return ap - bp || an.length - bn.length || an.localeCompare(bn);
+    })
+    .slice(0, 12);
+}
+
+function renderMapSuggest() {
+  const host = $("map-suggest");
+  const rows = mapMatches($("map-design").value);
+  if (!rows.length) {
+    host.classList.add("hidden");
+    host.innerHTML = "";
+    mapSuggestIndex = -1;
+    return;
+  }
+  host.innerHTML = rows
+    .map((d, i) => {
+      const no = d.designNo || d.design_no || "";
+      const meta = [d.firm, d.category, d.fabric].filter(Boolean).join(" · ");
+      return `<button type="button" class="map-suggest-item${i === mapSuggestIndex ? " active" : ""}" data-design="${esc(no)}"><b>${esc(no)}</b><span>${esc(meta)}</span></button>`;
+    })
+    .join("");
+  host.classList.remove("hidden");
+}
+
+function hideMapSuggest() {
+  $("map-suggest").classList.add("hidden");
+  mapSuggestIndex = -1;
+}
+
+$("map-design").oninput = () => {
+  mapSuggestIndex = -1;
+  renderMapSuggest();
+};
+$("map-design").onfocus = renderMapSuggest;
+$("map-design").onblur = () => setTimeout(hideMapSuggest, 140);
+$("map-design").onkeydown = (e) => {
+  const items = [...$("map-suggest").querySelectorAll("[data-design]")];
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (!items.length) return;
+    e.preventDefault();
+    mapSuggestIndex =
+      e.key === "ArrowDown"
+        ? Math.min(items.length - 1, mapSuggestIndex + 1)
+        : Math.max(0, mapSuggestIndex - 1);
+    renderMapSuggest();
+    return;
+  }
+  if (e.key === "Escape") return hideMapSuggest();
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (mapSuggestIndex >= 0 && items[mapSuggestIndex]) {
+      $("map-design").value = items[mapSuggestIndex].dataset.design;
+      hideMapSuggest();
+    }
+    mapAddToBatch();
+  }
+};
+$("map-suggest").onmousedown = (e) => {
+  const b = e.target.closest("[data-design]");
+  if (!b) return;
+  e.preventDefault();
+  $("map-design").value = b.dataset.design;
+  hideMapSuggest();
+  $("map-barcode").focus();
+};
+
+function renderMapBatch() {
+  $("map-batch-count").textContent = String(mapBatch.length);
+  $("map-batch-list").innerHTML = mapBatch.length
+    ? mapBatch
+        .map(
+          (r, i) =>
+            `<div class="map-batch-row"><div><b>${esc(r.barcode)}</b><span>${esc(r.designNo)}</span></div><button class="map-batch-remove" data-remove="${i}" aria-label="Remove ${esc(r.barcode)}">✕</button></div>`,
+        )
+        .join("")
+    : '<div class="empty">Nothing queued. Scan a barcode and pick a design.</div>';
+}
+
+function mapAddToBatch() {
+  const barcode = $("map-barcode").value.trim();
+  const designNo = $("map-design").value.trim();
+  if (!barcode) {
+    toast("Scan or type a barcode first", "error");
+    $("map-barcode").focus();
+    return;
+  }
+  if (!designNo) {
+    toast("Pick a design", "error");
+    $("map-design").focus();
+    return;
+  }
+  const known = (st.designs || []).some(
+    (d) =>
+      d.active !== false &&
+      String(d.designNo || d.design_no || "").toLowerCase() ===
+        designNo.toLowerCase(),
+  );
+  if (!known) {
+    toast(`${designNo} is not an active design`, "error");
+    return;
+  }
+  if (mapBatch.some((r) => r.barcode.toLowerCase() === barcode.toLowerCase())) {
+    toast(`${barcode} is already queued`, "error");
+    return;
+  }
+  mapBatch.push({ barcode, designNo });
+  renderMapBatch();
+  // Design stays put so many stickers can go to one design without retyping.
+  $("map-barcode").value = "";
+  $("map-barcode").focus();
+}
+
+$("map-add").onclick = mapAddToBatch;
+renderMapBatch();
+$("map-barcode").onkeydown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    mapAddToBatch();
+  }
+};
+$("map-batch-list").onclick = (e) => {
+  const b = e.target.closest("[data-remove]");
+  if (!b) return;
+  mapBatch.splice(Number(b.dataset.remove), 1);
+  renderMapBatch();
+};
+$("map-batch-clear").onclick = () => {
+  if (!mapBatch.length) return;
+  mapBatch.length = 0;
+  renderMapBatch();
+};
+
 $("map-camera").onclick = () =>
   startScanner("map").catch((e) => toast(e.message, "error"));
 $("mapping-list").onclick = async (e) => {
@@ -2074,27 +2617,37 @@ $("mapping-list").onclick = async (e) => {
   await loadMapping();
 };
 $("map-batch-save").onclick = async () => {
-  const items = $("map-batch")
-    .value.split(/\n/)
-    .map((x) => x.split(","))
-    .filter((x) => x.length >= 2)
-    .map(([barcode, designNo]) => ({
-      barcode: barcode.trim(),
-      designNo: designNo.trim(),
-    }));
+  if (!mapBatch.length) {
+    toast("Nothing queued to save", "error");
+    return;
+  }
+  const items = mapBatch.map((r) => ({ barcode: r.barcode, designNo: r.designNo }));
+  const button = $("map-batch-save"), oldText = button.textContent;
   try {
+    button.disabled = true;
+    button.textContent = "Saving…";
     const d = await admin("mapBatch", { items });
-    const bad = d.results.filter((x) => !x.ok);
-    $("map-batch").value = "";
+    const results = d?.results ?? [];
+    const bad = results.filter((x) => !x.ok);
+    // Keep only the failures queued so the operator can fix them in place
+    // rather than re-scanning the whole tray.
+    const failedCodes = new Set(bad.map((x) => String(x.barcode || "").toLowerCase()));
+    const keep = mapBatch.filter((r) => failedCodes.has(r.barcode.toLowerCase()));
+    mapBatch.length = 0;
+    keep.forEach((r) => mapBatch.push(r));
+    renderMapBatch();
     await loadMapping();
     toast(
       bad.length
-        ? `${items.length - bad.length} saved, ${bad.length} failed`
-        : "Batch saved",
+        ? `${items.length - bad.length} saved, ${bad.length} left queued to fix`
+        : `${items.length} mappings saved`,
       bad.length ? "error" : "success",
     );
   } catch (e) {
     toast(e.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
   }
 };
 /* Admin */
@@ -2371,8 +2924,10 @@ function drawAdminPdfBrandLogo(
   }
 }
 
-async function downloadAdminOrderPdf() {
-  const d = st.detailOrder;
+// Accepts an explicit {firm, customer, order} payload so the Dispatch panel
+// can print a packing sheet without going through the customer detail modal.
+async function downloadAdminOrderPdf(source) {
+  const d = source || st.detailOrder;
 
   if (!d) return;
 
@@ -2872,8 +3427,8 @@ resumeAdminSession();
 
 /* Default section auto-follows the first ticked module (create + edit). */
 (function () {
-  var ORDER = ["reception", "sales", "products", "dashboard", "admin"];
-  var SECTION = { reception: "reception", sales: "sale", products: "products", dashboard: "dashboard", admin: "admin" };
+  var ORDER = ["reception", "sales", "products", "dispatch", "dashboard", "admin"];
+  var SECTION = { reception: "reception", sales: "sale", products: "products", dispatch: "dispatch", dashboard: "dashboard", admin: "admin" };
   function firstChecked(prefix) {
     for (var i = 0; i < ORDER.length; i++) {
       var el = document.getElementById(prefix + "-group-" + ORDER[i]);
