@@ -2974,7 +2974,9 @@ function drawAdminPdfBrandLogo(
 // Accepts an explicit {firm, customer, order} payload so the Dispatch panel
 // can print a packing sheet without going through the customer detail modal.
 async function downloadAdminOrderPdf(source) {
-  const d = source || st.detailOrder;
+  // This is wired both directly and via addEventListener, which passes a
+  // click Event as the first argument. Only accept a real order payload.
+  const d = (source && source.order && source.customer) ? source : st.detailOrder;
 
   if (!d) return;
 
@@ -3311,7 +3313,9 @@ async function openOrder(customerId, firm) {
     $("order-modal-actions").innerHTML =
       `${has("sale.write") ? '<button class="btn" id="detail-edit">Open in Sale Order</button>' : ""}${has("sale.pdf") ? '<button class="btn secondary" id="detail-pdf">Download PDF</button>' : ""}${has("sale.lock") ? `<button class="btn secondary" id="detail-lock">${o.status === "Locked" ? "Reopen" : "Lock"} order</button>` : ""}`;
     openModal("order-modal");
-    $("detail-pdf")?.addEventListener("click", downloadAdminOrderPdf);
+    $("detail-pdf")?.addEventListener("click", () => {
+      downloadAdminOrderPdf().catch((e) => toast(e.message, "error"));
+    });
     $("detail-edit")?.addEventListener("click", () => {
       closeModal("order-modal");
       go("sale");
