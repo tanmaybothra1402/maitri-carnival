@@ -16,10 +16,12 @@
 import { optionsResponse } from "../_shared/cors.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
-// Medium: the design stays identifiable, the artwork detail does not survive.
-// Zooming enlarges an already-destroyed image rather than revealing anything.
-const CUSTOMER_TRANSFORM = "w-150,q-28,bl-7,f-jpg";
-const PDF_TRANSFORM = "w-120,q-24,bl-6,f-jpg";
+// Soft blur. The design must stay clearly identifiable at thumbnail size —
+// the customer has to confirm they ordered the right thing — while embroidery,
+// print detail and stitching do not survive being zoomed.
+// Higher width + lower blur = recognisable; low quality still kills fine detail.
+const CUSTOMER_TRANSFORM = "w-260,q-45,bl-3,f-jpg";
+const PDF_TRANSFORM = "w-220,q-40,bl-2,f-jpg";
 
 const DESIGN_NO = /^[A-Za-z0-9][A-Za-z0-9._\-\/ ]{0,63}$/;
 const CACHE = "public, max-age=86400, immutable";

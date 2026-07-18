@@ -664,6 +664,13 @@ function go(section) {
   if (section === "reception") loadReception();
   if (section === "dashboard") loadDashboard();
   if (section === "sale") {
+    // Sale needs the design list for full-resolution thumbnails, since
+    // lookup_barcode no longer returns the master URL. Load it once, quietly.
+    if (!(st.designs || []).length && (has("products.view") || has("sale.write"))) {
+      admin("listDesigns")
+        .then((rows) => { st.designs = rows; st.cache.designsAt = Date.now(); })
+        .catch(() => {});
+    }
     if (!st.sale.customer) searchSaleCustomers();
     setTimeout(() => $("sale-search").focus(), 60);
   }
@@ -1922,10 +1929,16 @@ async function saleAdd(raw) {
     if (saleCart().some((x) => x.designNo === r.design_no))
       throw Error("Design already added");
     saleDeleted().delete(r.design_no);
+    // lookup_barcode deliberately no longer returns the master image URL —
+    // it is granted to customers. Staff get full resolution from the design
+    // list they already hold, which comes from the service-role admin API.
+    const known = (st.designs || []).find(
+      (d) => String(d.designNo || "") === String(r.design_no),
+    );
     saleCart().push({
       barcode: r.barcode,
       designNo: r.design_no,
-      imageUrl: r.image_url || "",
+      imageUrl: known?.imageUrl || r.image_url || "",
       category: r.category,
       style: r.style,
       fabric: r.fabric,
