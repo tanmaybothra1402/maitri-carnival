@@ -93,8 +93,16 @@ function requireSecret(req: Request) {
 
 function truthy(v: unknown) { return v === true || /^(true|yes|1|active)$/i.test(String(v ?? "")); }
 
+// Columns where a blank cell must NOT mean false. Silently deactivating a
+// design because someone left the column empty took an entire 450-design
+// catalogue offline and would have failed every barcode scan at the event.
+const BLANK_MEANS_TRUE = new Set(["active"]);
+
 function coerce(col: string, val: unknown) {
-  if (val === "" || val === null || val === undefined) return col === "capacity" ? null : (BOOL.has(col) ? false : (INT.has(col) ? null : ""));
+  if (val === "" || val === null || val === undefined) {
+    if (BLANK_MEANS_TRUE.has(col)) return true;
+    return col === "capacity" ? null : (BOOL.has(col) ? false : (INT.has(col) ? null : ""));
+  }
   if (BOOL.has(col)) return truthy(val);
   if (INT.has(col)) { const n = Number(val); return Number.isFinite(n) ? Math.round(n) : null; }
   return typeof val === "string" ? val : val;

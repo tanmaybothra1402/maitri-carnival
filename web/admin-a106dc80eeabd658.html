@@ -89,6 +89,7 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .map-suggest-item b{font-size:12px;color:var(--teal-deep)}
 .map-suggest-item span{font-size:9.5px;color:var(--muted);font-weight:600}
 .map-suggest-empty{padding:11px 12px;font-size:11px;color:var(--muted);font-weight:700}
+.map-inactive{display:block;margin-top:2px;font-size:9px;font-weight:800;font-style:normal;color:#B91C1C}
 .map-build-actions{margin-top:12px}
 .map-batch-head{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap}
 .map-batch-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;margin-left:7px;border-radius:999px;background:var(--teal-deep);color:#fff;font-size:11px;font-weight:850}
@@ -2469,7 +2470,10 @@ let mapSuggestIndex = -1;
 
 function mapMatches(term) {
   const q = String(term || "").trim().toLowerCase();
-  const pool = (st.designs || []).filter((d) => d.active !== false);
+  // Inactive designs are shown and labelled rather than hidden. Hiding them
+  // produced an empty dropdown with no explanation when a bulk import had
+  // silently deactivated the catalogue.
+  const pool = (st.designs || []).slice().sort((a, b) => (a.active === false) - (b.active === false));
   if (!q) return pool.slice(0, 12);
   return pool
     .filter((d) => {
@@ -2488,24 +2492,29 @@ function mapMatches(term) {
 }
 
 let mapDesignsLoading = false;
+let mapDesignsTried = false;
 function renderMapSuggest() {
   const host = $("map-suggest");
-  const pool = (st.designs || []).filter((d) => d.active !== false);
 
-  // Fail loudly, not silently. An empty catalogue used to render nothing at
-  // all, which is indistinguishable from a broken dropdown.
-  if (!pool.length) {
+  // Retry at most once, then report. Re-fetching in a loop when the fetch
+  // legitimately returns nothing usable just hangs on "Loading…" forever.
+  if (!(st.designs || []).length) {
+    if (mapDesignsLoading) return;
+    if (mapDesignsTried) {
+      host.innerHTML = '<div class="map-suggest-empty">No designs found. Check Product Master.</div>';
+      host.classList.remove("hidden");
+      return;
+    }
     host.innerHTML = '<div class="map-suggest-empty">Loading designs…</div>';
     host.classList.remove("hidden");
-    if (!mapDesignsLoading) {
-      mapDesignsLoading = true;
-      loadMapping(true)
-        .then(() => { mapDesignsLoading = false; renderMapSuggest(); })
-        .catch((e) => {
-          mapDesignsLoading = false;
-          host.innerHTML = `<div class="map-suggest-empty">Could not load designs: ${esc(e.message)}</div>`;
-        });
-    }
+    mapDesignsLoading = true;
+    loadMapping(true)
+      .catch((e) => toast("Could not load designs: " + e.message, "error"))
+      .finally(() => {
+        mapDesignsLoading = false;
+        mapDesignsTried = true;
+        renderMapSuggest();
+      });
     return;
   }
 
@@ -2526,7 +2535,10 @@ function renderMapSuggest() {
     .map((d, i) => {
       const no = d.designNo || d.design_no || "";
       const meta = [d.firm, d.category, d.fabric].filter(Boolean).join(" · ");
-      return `<button type="button" class="map-suggest-item${i === mapSuggestIndex ? " active" : ""}" data-design="${esc(no)}"><b>${esc(no)}</b><span>${esc(meta)}</span></button>`;
+      const off = d.active === false
+        ? '<em class="map-inactive">Inactive — barcodes will not scan</em>'
+        : "";
+      return `<button type="button" class="map-suggest-item${i === mapSuggestIndex ? " active" : ""}" data-design="${esc(no)}"><b>${esc(no)}</b><span>${esc(meta)}</span>${off}</button>`;
     })
     .join("");
   host.classList.remove("hidden");
@@ -2599,14 +2611,17 @@ function mapAddToBatch() {
     $("map-design").focus();
     return;
   }
-  const known = (st.designs || []).some(
+  const match = (st.designs || []).find(
     (d) =>
-      d.active !== false &&
       String(d.designNo || d.design_no || "").toLowerCase() ===
-        designNo.toLowerCase(),
+      designNo.toLowerCase(),
   );
-  if (!known) {
-    toast(`${designNo} is not an active design`, "error");
+  if (!match) {
+    toast(`${designNo} is not a known design`, "error");
+    return;
+  }
+  if (match.active === false) {
+    toast(`${designNo} is inactive — activate it or barcodes will not scan`, "error");
     return;
   }
   if (mapBatch.some((r) => r.barcode.toLowerCase() === barcode.toLowerCase())) {
