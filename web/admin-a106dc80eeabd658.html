@@ -88,6 +88,7 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .map-suggest-item:hover,.map-suggest-item.active{background:var(--foam)}
 .map-suggest-item b{font-size:12px;color:var(--teal-deep)}
 .map-suggest-item span{font-size:9.5px;color:var(--muted);font-weight:600}
+.map-suggest-empty{padding:11px 12px;font-size:11px;color:var(--muted);font-weight:700}
 .map-build-actions{margin-top:12px}
 .map-batch-head{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap}
 .map-batch-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;margin-left:7px;border-radius:999px;background:var(--teal-deep);color:#fff;font-size:11px;font-weight:850}
@@ -2486,12 +2487,38 @@ function mapMatches(term) {
     .slice(0, 12);
 }
 
+let mapDesignsLoading = false;
 function renderMapSuggest() {
   const host = $("map-suggest");
+  const pool = (st.designs || []).filter((d) => d.active !== false);
+
+  // Fail loudly, not silently. An empty catalogue used to render nothing at
+  // all, which is indistinguishable from a broken dropdown.
+  if (!pool.length) {
+    host.innerHTML = '<div class="map-suggest-empty">Loading designs…</div>';
+    host.classList.remove("hidden");
+    if (!mapDesignsLoading) {
+      mapDesignsLoading = true;
+      loadMapping(true)
+        .then(() => { mapDesignsLoading = false; renderMapSuggest(); })
+        .catch((e) => {
+          mapDesignsLoading = false;
+          host.innerHTML = `<div class="map-suggest-empty">Could not load designs: ${esc(e.message)}</div>`;
+        });
+    }
+    return;
+  }
+
   const rows = mapMatches($("map-design").value);
   if (!rows.length) {
-    host.classList.add("hidden");
-    host.innerHTML = "";
+    const q = $("map-design").value.trim();
+    if (q) {
+      host.innerHTML = `<div class="map-suggest-empty">No design matches “${esc(q)}”</div>`;
+      host.classList.remove("hidden");
+    } else {
+      host.classList.add("hidden");
+      host.innerHTML = "";
+    }
     mapSuggestIndex = -1;
     return;
   }
