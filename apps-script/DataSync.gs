@@ -51,6 +51,18 @@ const DS_EDITABLE = {
   staff_profiles: []
 };
 
+// Tables where removing a row from the sheet and pushing will DELETE it in
+// Supabase. Guarded server-side by a freshness token, a delete ceiling, and a
+// protected-row list; guarded here by a named confirmation dialog.
+const DS_DIFF_DELETABLE = [
+  'designs',
+  'barcode_mappings',
+  'slots',
+  'customers',
+  'orders',
+  'order_items'
+];
+
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Supabase Sync')
     .addItem('① Configure & test', 'dsConfigure')
@@ -107,10 +119,24 @@ function dsRemoveObsoleteTabs_() {
   });
 }
 
+// Freshness tokens. A push is only allowed to delete rows if the tab was
+// pulled from the current state of the table. This is what stops the classic
+// "pulled at 10am, pushed at 2pm, wiped everyone who registered in between".
+function dsTokenKey_(tabName) { return 'DS_TOKEN_' + tabName; }
+
+function dsSetToken_(tabName, token) {
+  PropertiesService.getDocumentProperties().setProperty(dsTokenKey_(tabName), String(token || ''));
+}
+
+function dsGetToken_(tabName) {
+  return PropertiesService.getDocumentProperties().getProperty(dsTokenKey_(tabName)) || '';
+}
+
 function dsWrite_(tabName, res) {
   const ss = SpreadsheetApp.getActive();
   let sh = ss.getSheetByName(tabName);
   if (!sh) sh = ss.insertSheet(tabName);
+  dsSetToken_(tabName, res.token);
   sh.clear();
   const cols = res.columns || [];
   const editable = DS_EDITABLE[res.table] || [];
@@ -154,7 +180,13 @@ function dsPushActive() {
   const sh = SpreadsheetApp.getActiveSheet();
   const table = dsTableForTab_(sh.getName());
   if (!table) { dsAlert_('This tab is not a synced table.'); return; }
-  if ((DS_EDITABLE[table] || []).length === 0) { dsAlert_(sh.getName() + ' is read-only. Make changes in the admin console, then pull again.'); return; }
+  const editable = (DS_EDITABLE[table] || []).length > 0;
+  const canDelete = DS_DIFF_DELETABLE.indexOf(table) >= 0;
+  if (!editable && !canDelete) {
+    dsAlert_(sh.getName() + ' is read-only. Make changes in the admin console, then pull again.');
+    return;
+  }
+
   const grid = sh.getDataRange().getValues();
   if (grid.length < 2) { dsAlert_('No data rows to push.'); return; }
   const header = grid[0].map(String);
@@ -170,6 +202,73 @@ function dsPushActive() {
     });
     rows.push(obj);
   }
-  const res = dsCall_({ action: 'push', table: table, rows: rows });
-  dsAlert_('Pushed ' + sh.getName() + ':\nUpdated: ' + (res.updated || 0) + '\nCreated/Upserted: ' + (res.upserted || 0));
+
+  // No token check here: a push that only adds or edits rows must always be
+  // allowed. The server decides whether freshness matters, because only it
+  // knows whether any row would actually be deleted.
+  const token = dsGetToken_(sh.getName());
+
+  // Dry run first: find out exactly what would be deleted, and let the
+  // operator see the rows by name before anything is touched.
+  var plan;
+  try {
+    plan = dsCall_({ action: 'push', table: table, rows: rows, token: token, dryRun: true });
+  } catch (e) {
+    dsAlert_(dsExplain_(e.message));
+    return;
+  }
+
+  const willDelete = plan.willDelete || [];
+  if (willDelete.length) {
+    const shown = willDelete.slice(0, 20).join('\n  ');
+    const more = willDelete.length > 20 ? '\n  ...and ' + (willDelete.length - 20) + ' more' : '';
+    const ui = SpreadsheetApp.getUi();
+    const answer = ui.alert(
+      'Delete ' + willDelete.length + ' row' + (willDelete.length === 1 ? '' : 's') + ' from ' + sh.getName() + '?',
+      'These rows are in Supabase but not in your sheet, so they will be PERMANENTLY DELETED:\n\n  ' +
+        shown + more + '\n\nThis cannot be undone. Continue?',
+      ui.ButtonSet.YES_NO
+    );
+    if (answer !== ui.Button.YES) { dsAlert_('Cancelled. Nothing was changed.'); return; }
+  }
+
+  try {
+    const res = dsCall_({ action: 'push', table: table, rows: rows, token: token });
+    // The table has moved, so the old token is spent. Force a fresh pull
+    // before any further deletion.
+    dsSetToken_(sh.getName(), '');
+    dsAlert_(
+      'Pushed ' + sh.getName() + ':\n' +
+      'Updated: ' + (res.updated || 0) + '\n' +
+      'Created/Upserted: ' + (res.upserted || 0) + '\n' +
+      'Deleted: ' + (res.deleted || 0) +
+      (res.deleted ? '\n\nPull again before your next push.' : '')
+    );
+  } catch (e) {
+    dsAlert_(dsExplain_(e.message));
+  }
+}
+
+// Turns the Edge Function's error codes into something an operator can act on.
+function dsExplain_(msg) {
+  const m = String(msg || '');
+  if (m.indexOf('SHEET_IS_STALE') >= 0) {
+    return 'This tab is out of date.\n\nSomeone changed the data in the app since you last pulled, so deleting now could remove records you cannot see. Pull this tab again, redo your edits, then push.';
+  }
+  if (m.indexOf('TOO_MANY_DELETES') >= 0) {
+    return 'Too many rows would be deleted.\n\n' + m + '\n\nThis almost always means the sheet is incomplete, filtered, or was pulled a while ago. Pull again and check before retrying.';
+  }
+  if (m.indexOf('PROTECTED_ROWS') >= 0) {
+    return 'Some rows are protected and cannot be deleted from the sheet.\n\n' + m;
+  }
+  if (m.indexOf('DUPLICATE_') >= 0 && m.indexOf('_IN_SHEET') >= 0) {
+    return 'Duplicate keys in your sheet.\n\n' + m + '\n\nUse a helper column with =IF(COUNTIF(A:A,A2)>1,"DUP","") to find them, remove the extra rows, then push again.';
+  }
+  if (m.indexOf('cannot affect row a second time') >= 0) {
+    return 'Your sheet has two rows with the same key (for Designs, the same design_no).\n\nUse =IF(COUNTIF(A:A,A2)>1,"DUP","") in a helper column to find them. Nothing was saved.';
+  }
+  if (m.indexOf('PULL_REQUIRED') >= 0) {
+    return 'Pull this tab before pushing. Deleting rows requires a fresh pull.';
+  }
+  return m;
 }
