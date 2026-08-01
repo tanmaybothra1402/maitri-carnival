@@ -59,6 +59,37 @@ short-lived token **issued by an Edge Function**. The ImageKit private key lives
 only in Edge Function secrets and must never appear in `web/*.html` or any client
 bundle. The returned URL is stored on the `designs` row.
 
+### The upload folder must follow the existing library
+
+The ImageKit media library already holds ~11.7K catalogue images filed by design
+prefix. **App uploads must land in the matching folder, never at the root** — an
+image dumped at the root is unfindable among the existing files, which defeats the
+whole point of capturing it.
+
+Route by the leading alphabetic prefix of `design_no` (the letters before the
+number: `MU  - 0312` → `MU`, `NRK - 1123` → `NRK`, `BS - 1027 (B)` → `BS`):
+
+| Prefix | Firm | Folder |
+|---|---|---|
+| `BS` | Maitri | `BS-DESIGN` |
+| `MR` | Maitri | `MR-DESIGN` |
+| `ML` | Maitri | `ML-DESIGN` (no such designs yet; reserve it) |
+| `MU` | Maitri | `MU-DESIGN` |
+| `KT` | Maitri | `KT-DESIGN` |
+| `NRK` | Niharika | `NRK-DESIGN` (all Niharika designs; created on first upload) |
+| anything else | — | `App-Uploads` (the fallback) |
+
+`DEMO` and the lone stray `MRK` design (also Niharika) have no folder of their own
+and fall to `App-Uploads`; if `MRK` is really an `NRK` typo, fix it in the
+catalogue rather than aliasing it in code. **`Ethonique` exists in the library but is not an
+app upload target** — do not route to it by prefix.
+
+Derive the folder **in the Edge Function that signs the upload**, from the
+`design_no` being uploaded for, and return it to the client — one source of truth,
+so the browser can never hand-set a folder or omit it. ImageKit's upload signature
+does not bind the folder param, so the app is trusted here precisely because it is
+staff-gated and the folder is computed server-side, not typed in `web/*.html`.
+
 ## 5. Compress client-side before upload
 
 A 3 MB phone photo must leave the browser at roughly **250 KB**:
