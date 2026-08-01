@@ -210,6 +210,41 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 .map-import-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px 9px}
 .map-import-row .mi-status{font-weight:700;white-space:nowrap}
 .mi-ok{color:#0a7d3c}.mi-warn{color:#8a5a00}.mi-err{color:#c0392b}.mi-muted{color:var(--muted)}
+.mc-mode{margin-bottom:12px}
+.mc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.mc-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:750;color:#fff}
+.mc-chip button{border:0;background:rgba(255,255,255,.35);color:#fff;width:16px;height:16px;border-radius:50%;font-size:11px;line-height:1;cursor:pointer;padding:0}
+.mc-start-btn{width:100%;margin-top:10px}
+.customer-choice.mc-selected{border-color:var(--deep);background:var(--foam)}
+.customer-choice .mc-check{color:var(--deep);font-size:18px;font-weight:800}
+.mc-matrix-empty{padding:18px 12px;color:var(--muted);font-size:12px;text-align:center;border:1px dashed var(--border);border-radius:12px;margin:12px 0}
+.mc-matrix-wrap{overflow:auto;max-height:60vh;margin:12px 0;border:1px solid var(--border);border-radius:12px}
+.mc-matrix-wrap:empty{display:none}
+table.mc-matrix{border-collapse:separate;border-spacing:0;font-size:12px;min-width:100%}
+table.mc-matrix th,table.mc-matrix td{padding:8px 10px;white-space:nowrap;border-bottom:1px solid var(--border);text-align:center}
+table.mc-matrix thead th{position:sticky;top:0;z-index:3;background:#fff}
+table.mc-matrix .mx-design{position:sticky;left:0;z-index:2;background:#fff;text-align:left;box-shadow:1px 0 0 var(--border);max-width:150px}
+table.mc-matrix thead th.mx-corner{left:0;z-index:4;box-shadow:1px 1px 0 var(--border)}
+table.mc-matrix .mx-design b{display:block;color:var(--deep);font-size:12px;overflow:hidden;text-overflow:ellipsis}
+table.mc-matrix .mx-design span{color:var(--muted);font-size:9.5px;overflow:hidden;text-overflow:ellipsis;display:block}
+table.mc-matrix th.mx-cust{color:#fff;border-radius:8px 8px 0 0;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+table.mc-matrix td.mx-cell{cursor:pointer;font-variant-numeric:tabular-nums;font-weight:750;color:var(--deep)}
+table.mc-matrix td.mx-cell.zero{color:var(--muted);font-weight:500}
+table.mc-matrix tbody tr:hover td{background:#F8FBFA}
+.mc-popup-hint{margin-bottom:8px}
+.mc-popup-list{display:flex;flex-direction:column;gap:8px}
+.mc-popup-row{display:grid;grid-template-columns:14px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px}
+.mc-popup-dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px}
+.mc-popup-row b{font-size:12px;color:var(--deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-qty{display:flex;align-items:center;gap:6px}
+.mc-qty button{width:38px;height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--deep);font-size:18px;font-weight:800}
+.mc-qty input{width:56px;height:38px;text-align:center;font-size:15px;font-weight:800;border:1px solid var(--border);border-radius:8px}
+.mc-summary{display:flex;flex-direction:column;gap:8px}
+.mc-summary-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 10px;border:1px solid var(--border);border-radius:10px}
+.mc-summary-row b{color:var(--deep)}
+.mc-summary-row.skip{opacity:.55}
+.mc-result-ok{color:#0a7d3c;font-weight:700}
+.mc-result-err{color:#c0392b;font-weight:700}
 </style>
 </head>
 <body>
@@ -268,6 +303,7 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 </main>
 <main class="page" id="page-sale">
 <div class="toolbar"><div><h1>Sale Order</h1><p class="copy">Search a customer and start scanning.</p></div><button class="btn secondary small" id="previous-orders">Previous Orders</button></div>
+<div class="segment mc-mode" id="sale-mode"><button class="active" data-mode="one">One customer</button><button data-mode="multi">Multiple customers</button></div>
 <section class="card focus-card sale-find-card" id="sale-find-card">
   <div class="sale-find-intro"><span class="section-kicker">Create sale order</span><h2>Choose a customer</h2><p>Search by company, contact or mobile, or pick someone who entered recently.</p></div>
   <div class="sale-search-wrap"><input id="sale-search" placeholder="Search company, mobile or contact" autocomplete="off"/><span class="sale-search-icon" aria-hidden="true">⌕</span></div>
@@ -282,6 +318,26 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
   <div class="segment sale-firm-switch" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
   <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="sale-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="sale-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="sale-camera">Use camera scanner</button></div>
   <div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save">Save order</button></div>
+</section>
+<section class="card focus-card sale-find-card hidden" id="multi-find">
+  <div class="sale-find-intro"><span class="section-kicker">Multi-customer order</span><h2>Select customers</h2><p>Tap everyone you are ordering for, then start. Only customers in the current exhibition appear.</p></div>
+  <div class="sale-search-wrap"><input id="multi-search" placeholder="Search company, mobile or contact" autocomplete="off"/><span class="sale-search-icon" aria-hidden="true">⌕</span></div>
+  <div class="mc-chips" id="multi-selected"></div>
+  <div class="sale-results-heading" id="multi-results-heading">Recently entered</div>
+  <div class="list customer-results" id="multi-results"></div>
+  <button class="btn mc-start-btn" id="multi-start" disabled>Start ordering</button>
+</section>
+<section class="card hidden sale-builder-card" id="multi-builder">
+  <div class="selected-customer-card">
+    <div class="selected-customer-copy"><span class="section-kicker">Ordering for</span><h2 id="multi-party">—</h2><div class="mc-chips" id="multi-builder-chips"></div></div>
+    <button class="btn ghost small change-customer-btn" id="multi-close">Change</button>
+  </div>
+  <div class="segment sale-firm-switch" id="multi-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
+  <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="multi-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="multi-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="multi-camera">Use camera scanner</button></div>
+  <div class="reader" id="multi-reader"></div>
+  <div class="mc-matrix-empty" id="multi-empty">Scan a barcode to add a design. Each design opens a box to set every customer's sets.</div>
+  <div class="mc-matrix-wrap" id="multi-matrix"></div>
+  <div class="sale-savebar"><button class="btn" id="multi-save">Review &amp; save</button></div>
 </section>
 </main>
 <main class="page" id="page-products">
@@ -420,6 +476,8 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
+<div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
+<div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
 <div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div><label>Category</label><input id="pm-category"/></div><div><label>Style</label><input id="pm-style"/></div><div><label>Fabric</label><input id="pm-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
@@ -555,6 +613,14 @@ const st = {
     firm: "Maitri",
     carts: { Maitri: [], Niharika: [] },
     deleted: { Maitri: new Set(), Niharika: new Set() },
+  },
+  multi: {
+    active: false,           // multi-customer mode on/off
+    customers: [],           // selected [{id, companyName, ..., colorIdx}] — one colour each
+    firm: "Maitri",
+    rows: { Maitri: [], Niharika: [] }, // each: {barcode, designNo, category, style, fabric, pcsPerSet, description, imageUrl, qty:{custId:sets}}
+    popupDesign: null,       // { firm, designNo } being edited in the qty popup
+    reqIds: {},              // content-hashed request_id per (customer,firm) for idempotent batch retry
   },
   scanner: null,
   scannerTarget: null,
@@ -738,8 +804,12 @@ function go(section) {
         .then((rows) => { st.designs = rows; st.cache.designsAt = Date.now(); })
         .catch(() => {});
     }
-    if (!st.sale.customer) searchSaleCustomers();
-    setTimeout(() => $("sale-search").focus(), 60);
+    if (st.multi.active) {
+      updateSaleMode();
+    } else {
+      if (!st.sale.customer) searchSaleCustomers();
+      setTimeout(() => $("sale-search").focus(), 60);
+    }
   }
   if (section === "products") loadProductsModule();
   if (section === "dispatch") loadDispatch();
@@ -2072,6 +2142,296 @@ $("sale-save").onclick = async () => {
     saveButton.textContent = oldText;
   }
 };
+/* ---------- Multi-customer ordering (Brief 4) ----------
+   Additive mode alongside single-customer Sale Order. Select N customers, scan a
+   design, set each customer's sets in a vertical popup, review a matrix, then save
+   as a LOOP over assistedSaveOrder (-> admin_save_order_with_actor -> _write_order),
+   one call per (customer, firm). No bulk writer; qty-0 customers are never written;
+   partial failure is per-customer and does not roll back the successes. */
+let mcTimer, mcConfirmMode = "save", mcLastFailures = false;
+function mcColor(idx) { return COLORS[(idx || 0) % COLORS.length]; }
+function mcSelected(id) { return st.multi.customers.some((c) => c.id === id); }
+function updateSaleMode() {
+  const multi = st.multi.active;
+  document.querySelectorAll("#sale-mode button").forEach((x) => x.classList.toggle("active", (x.dataset.mode === "multi") === multi));
+  $("sale-find-card").classList.toggle("hidden", multi || !!st.sale.customer);
+  $("sale-builder").classList.toggle("hidden", multi || !st.sale.customer);
+  $("multi-find").classList.toggle("hidden", !multi || !!st.multi.building);
+  $("multi-builder").classList.toggle("hidden", !multi || !st.multi.building);
+}
+$("sale-mode").onclick = (e) => {
+  const b = e.target.closest("[data-mode]");
+  if (!b) return;
+  st.multi.active = b.dataset.mode === "multi";
+  updateSaleMode();
+  if (st.multi.active && !st.multi.building) {
+    mcRenderSelected();
+    mcSearch();
+    setTimeout(() => $("multi-search").focus(), 60);
+  }
+};
+$("multi-search").oninput = () => { clearTimeout(mcTimer); mcTimer = setTimeout(mcSearch, 250); };
+async function mcSearch() {
+  if (!has("sale.view")) return;
+  try {
+    const query = $("multi-search").value.trim();
+    let rows = await admin("directory", { query });
+    if (!query) {
+      rows = rows.filter((c) => c.checkedInAt).sort((a, b) => new Date(b.checkedInAt) - new Date(a.checkedInAt)).slice(0, 12);
+      $("multi-results-heading").textContent = "Recently entered";
+    } else {
+      rows = rows.sort((a, b) => Number(Boolean(b.checkedInAt)) - Number(Boolean(a.checkedInAt)) || String(a.companyName).localeCompare(String(b.companyName))).slice(0, 50);
+      $("multi-results-heading").textContent = `Search results${rows.length ? ` · ${rows.length}` : ""}`;
+    }
+    $("multi-results").innerHTML = rows.map((c) => {
+      const meta = [c.contactName, c.phone ? "+" + c.phone : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
+      const sel = mcSelected(c.id);
+      return `<button class="customer-choice ${sel ? "mc-selected" : ""}" data-mc-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div class="customer-choice-copy"><b>${esc(c.companyName)}</b><p>${esc(meta || "Customer details not added")}</p></div><span class="mc-check">${sel ? "✓" : "＋"}</span></button>`;
+    }).join("") || `<div class="empty">${query ? "No customers found" : "No customers have been checked in yet."}</div>`;
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("multi-results").onclick = (e) => {
+  const b = e.target.closest("[data-mc-customer]");
+  if (!b) return;
+  const c = JSON.parse(b.dataset.mcCustomer);
+  const i = st.multi.customers.findIndex((x) => x.id === c.id);
+  if (i >= 0) st.multi.customers.splice(i, 1);
+  else st.multi.customers.push({ ...c });
+  st.multi.customers.forEach((x, idx) => (x.colorIdx = idx));
+  const sel = mcSelected(c.id);
+  b.classList.toggle("mc-selected", sel);
+  b.querySelector(".mc-check").textContent = sel ? "✓" : "＋";
+  mcRenderSelected();
+};
+function mcRenderSelected() {
+  $("multi-selected").innerHTML = st.multi.customers.map((c) => `<span class="mc-chip" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}<button data-mc-remove="${esc(c.id)}" aria-label="Remove ${esc(c.companyName)}">✕</button></span>`).join("");
+  $("multi-start").disabled = st.multi.customers.length === 0;
+  $("multi-start").textContent = st.multi.customers.length ? `Start ordering · ${st.multi.customers.length}` : "Start ordering";
+}
+$("multi-selected").onclick = (e) => {
+  const b = e.target.closest("[data-mc-remove]");
+  if (!b) return;
+  const i = st.multi.customers.findIndex((x) => x.id === b.dataset.mcRemove);
+  if (i >= 0) st.multi.customers.splice(i, 1);
+  st.multi.customers.forEach((x, idx) => (x.colorIdx = idx));
+  mcRenderSelected();
+  mcSearch();
+};
+$("multi-start").onclick = () => {
+  if (!st.multi.customers.length) return;
+  st.multi.building = true;
+  st.multi.firm = "Maitri";
+  st.multi.rows = { Maitri: [], Niharika: [] };
+  st.multi.reqIds = {};
+  updateSaleMode();
+  document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x.dataset.firm === "Maitri"));
+  $("multi-party").textContent = `${st.multi.customers.length} customer${st.multi.customers.length === 1 ? "" : "s"}`;
+  $("multi-builder-chips").innerHTML = st.multi.customers.map((c) => `<span class="mc-chip" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</span>`).join("");
+  mcRenderMatrix();
+  setTimeout(() => $("multi-barcode").focus(), 80);
+};
+$("multi-close").onclick = () => {
+  st.multi.building = false;
+  updateSaleMode();
+  mcSearch();
+};
+$("multi-firms").onclick = (e) => {
+  const b = e.target.closest("[data-firm]");
+  if (!b) return;
+  st.multi.firm = b.dataset.firm;
+  document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x === b));
+  mcRenderMatrix();
+};
+async function mcAdd(raw) {
+  try {
+    const data = await rpc("lookup_barcode", { p_barcode: String(raw || "").trim(), p_exhibition_id: st.exhibitionId });
+    const r = Array.isArray(data) ? data[0] : data;
+    if (!r) throw Error("Barcode not mapped");
+    if (![st.multi.firm, "Both"].includes(r.firm)) throw Error(`${r.design_no} belongs to ${r.firm} — switch firm`);
+    const rows = st.multi.rows[st.multi.firm];
+    if (!rows.find((x) => x.designNo === r.design_no)) {
+      const known = (st.designs || []).find((d) => String(d.designNo || "") === String(r.design_no));
+      rows.push({ barcode: r.barcode, designNo: r.design_no, category: r.category, style: r.style, fabric: r.fabric, pcsPerSet: Number(r.pcs_per_set) || 1, description: r.description || "", imageUrl: known?.imageUrl || "", qty: {} });
+    }
+    $("multi-barcode").value = "";
+    mcOpenPopup(st.multi.firm, r.design_no);
+  } catch (e) {
+    toast(e.message, "error");
+  }
+}
+$("multi-add").onclick = () => mcAdd($("multi-barcode").value);
+$("multi-barcode").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); mcAdd(e.target.value); } };
+$("multi-camera").onclick = () => startScanner("multi").catch((e) => toast(e.message, "error"));
+function mcOpenPopup(firm, designNo) {
+  const row = (st.multi.rows[firm] || []).find((x) => x.designNo === designNo);
+  if (!row) return;
+  st.multi.popupDesign = { firm, designNo };
+  $("multi-popup-title").textContent = designNo;
+  $("multi-popup-sub").textContent = [row.category, row.style, row.fabric].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`;
+  $("multi-popup-list").innerHTML = st.multi.customers.map((c) => {
+    const q = Number(row.qty[c.id] || 0);
+    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
+  }).join("");
+  openModal("multi-popup");
+}
+$("multi-popup-list").onclick = (e) => {
+  const b = e.target.closest("[data-mc-step]");
+  if (!b) return;
+  const input = b.parentElement.querySelector("[data-mc-qtyinput]");
+  input.value = Math.max(0, Math.min(9999, (Number(input.value) || 0) + Number(b.dataset.mcStep)));
+};
+$("multi-popup-add").onclick = () => {
+  const pd = st.multi.popupDesign;
+  if (!pd) return;
+  const rows = st.multi.rows[pd.firm];
+  const row = rows.find((x) => x.designNo === pd.designNo);
+  if (row) {
+    $("multi-popup-list").querySelectorAll("[data-mc-cust]").forEach((el) => {
+      const q = Math.max(0, Math.min(9999, Number(el.querySelector("[data-mc-qtyinput]").value) || 0));
+      if (q > 0) row.qty[el.dataset.mcCust] = q;
+      else delete row.qty[el.dataset.mcCust];
+    });
+    if (!Object.keys(row.qty).length) rows.splice(rows.indexOf(row), 1); // nobody wants it
+  }
+  st.multi.popupDesign = null;
+  closeModal("multi-popup");
+  mcRenderMatrix();
+};
+$("multi-popup-remove").onclick = () => {
+  const pd = st.multi.popupDesign;
+  if (!pd) return;
+  const rows = st.multi.rows[pd.firm];
+  const i = rows.findIndex((x) => x.designNo === pd.designNo);
+  if (i >= 0) rows.splice(i, 1);
+  st.multi.popupDesign = null;
+  closeModal("multi-popup");
+  mcRenderMatrix();
+};
+function mcRenderMatrix() {
+  const rows = st.multi.rows[st.multi.firm] || [];
+  $("multi-empty").classList.toggle("hidden", rows.length > 0);
+  const wrap = $("multi-matrix");
+  if (!rows.length) { wrap.innerHTML = ""; mcUpdateSaveBtn(); return; }
+  const head = `<tr><th class="mx-corner">Design</th>${st.multi.customers.map((c) => `<th class="mx-cust" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</th>`).join("")}</tr>`;
+  const body = rows.map((row) => {
+    const cells = st.multi.customers.map((c) => {
+      const q = Number(row.qty[c.id] || 0);
+      return `<td class="mx-cell ${q ? "" : "zero"}" data-mc-open="${esc(row.designNo)}">${q || "–"}</td>`;
+    }).join("");
+    return `<tr><th class="mx-design" data-mc-open="${esc(row.designNo)}"><b>${esc(row.designNo)}</b><span>${esc([row.category, row.style].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`)}</span></th>${cells}</tr>`;
+  }).join("");
+  wrap.innerHTML = `<table class="mc-matrix"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  mcUpdateSaveBtn();
+}
+$("multi-matrix").onclick = (e) => {
+  const cell = e.target.closest("[data-mc-open]");
+  if (!cell) return;
+  mcOpenPopup(st.multi.firm, cell.dataset.mcOpen); // editing a cell REOPENS the popup
+};
+function mcTotals() {
+  const totals = {};
+  st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0 }));
+  ["Maitri", "Niharika"].forEach((firm) =>
+    (st.multi.rows[firm] || []).forEach((row) =>
+      st.multi.customers.forEach((c) => {
+        const q = Number(row.qty[c.id] || 0);
+        if (q > 0) { totals[c.id].designs++; totals[c.id].sets += q; }
+      })));
+  return totals;
+}
+function mcUpdateSaveBtn() {
+  $("multi-save").disabled = !Object.values(mcTotals()).some((t) => t.sets > 0);
+}
+$("multi-save").onclick = () => {
+  const totals = mcTotals();
+  const active = st.multi.customers.filter((c) => totals[c.id].sets > 0);
+  if (!active.length) { toast("Enter at least one quantity", "error"); return; }
+  const skipped = st.multi.customers.length - active.length;
+  mcConfirmMode = "save";
+  $("multi-confirm-title").textContent = "Confirm order";
+  $("multi-confirm-sub").textContent = `${active.length} customer${active.length === 1 ? "" : "s"} will be saved${skipped ? ` · ${skipped} skipped (no quantity)` : ""}.`;
+  $("multi-confirm-list").innerHTML = st.multi.customers.map((c) => {
+    const t = totals[c.id], skip = t.sets === 0;
+    return `<div class="mc-summary-row ${skip ? "skip" : ""}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>${skip ? "skipped" : `${t.designs} design${t.designs === 1 ? "" : "s"} / ${t.sets} set${t.sets === 1 ? "" : "s"}`}</span></div>`;
+  }).join("");
+  const save = $("multi-confirm-save");
+  save.disabled = false;
+  save.textContent = "Save all orders";
+  openModal("multi-confirm");
+};
+function mcJobRequestId(custId, firm, items) {
+  const key = custId + "|" + firm + "|" + items.map((i) => i.designNo + ":" + i.qty).sort().join(",");
+  return (st.multi.reqIds[key] ||= crypto.randomUUID());
+}
+$("multi-confirm-save").onclick = async () => {
+  if (mcConfirmMode === "done") { closeModal("multi-confirm"); mcAfterSave(); return; }
+  // One job per (customer, firm) carrying only qty>0 designs. A customer with no
+  // quantity produces no job — a qty-0 order is never written (would start their
+  // 24h edit window for nothing).
+  const jobs = [];
+  st.multi.customers.forEach((c) =>
+    ["Maitri", "Niharika"].forEach((firm) => {
+      const items = (st.multi.rows[firm] || [])
+        .filter((row) => Number(row.qty[c.id] || 0) > 0)
+        .map((row) => ({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: Number(row.qty[c.id]) }));
+      if (items.length) jobs.push({ customer: c, firm, items });
+    }));
+  if (!jobs.length) { toast("Nothing to save", "error"); return; }
+  const btn = $("multi-confirm-save"), old = btn.textContent;
+  const perCustomer = {};
+  st.multi.customers.forEach((c) => (perCustomer[c.id] = { company: c.companyName, colorIdx: c.colorIdx, ok: 0, fail: 0, errors: [] }));
+  try {
+    btn.disabled = true;
+    let done = 0;
+    for (const job of jobs) {
+      btn.textContent = `Saving… ${done}/${jobs.length}`;
+      try {
+        await admin("assistedSaveOrder", { customerId: job.customer.id, firm: job.firm, items: job.items, requestId: mcJobRequestId(job.customer.id, job.firm, job.items) });
+        perCustomer[job.customer.id].ok++;
+      } catch (err) {
+        // Partial failure is expected. Record it, keep going, never roll back.
+        perCustomer[job.customer.id].fail++;
+        perCustomer[job.customer.id].errors.push(`${job.firm}: ${err.message}`);
+      }
+      done++;
+    }
+    const failed = Object.values(perCustomer).filter((p) => p.fail > 0).length;
+    const saved = Object.values(perCustomer).filter((p) => p.ok > 0 && p.fail === 0).length;
+    mcLastFailures = failed > 0;
+    mcRenderResults(perCustomer);
+    if (failed) toast(`${saved} saved · ${failed} had errors`, "error");
+    else toast(`Saved ${saved} customer order${saved === 1 ? "" : "s"}`, "success");
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
+};
+function mcRenderResults(perCustomer) {
+  mcConfirmMode = "done";
+  $("multi-confirm-title").textContent = "Results";
+  $("multi-confirm-sub").textContent = "Per-customer outcome. Anything that failed stays in the matrix — fix it and save again.";
+  $("multi-confirm-list").innerHTML = st.multi.customers.map((c) => {
+    const p = perCustomer[c.id];
+    if (!p.ok && !p.fail) return `<div class="mc-summary-row skip"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>skipped</span></div>`;
+    const status = p.fail ? `<span class="mc-result-err">${esc(p.errors.join(" · "))}</span>` : `<span class="mc-result-ok">saved</span>`;
+    return `<div class="mc-summary-row"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b>${status}</div>`;
+  }).join("");
+  const save = $("multi-confirm-save");
+  save.textContent = "Done";
+  save.disabled = false;
+}
+function mcAfterSave() {
+  // A clean run empties the matrix (order placed). Failures stay so they can be
+  // fixed and re-saved; unchanged retries reuse the same request_id and no-op.
+  if (!mcLastFailures) {
+    st.multi.rows = { Maitri: [], Niharika: [] };
+    st.multi.reqIds = {};
+  }
+  mcRenderMatrix();
+}
 $("previous-orders").onclick = async () => {
   openModal("previous-modal");
   await loadPrevious();
@@ -2151,7 +2511,7 @@ async function startScanner(target) {
   await stopScanner();
   await ensureScanner();
   st.scannerTarget = target;
-  const id = target === "sale" ? "sale-reader" : "map-reader";
+  const id = target === "sale" ? "sale-reader" : target === "multi" ? "multi-reader" : "map-reader";
   $(id).classList.add("open");
   st.scanner = new Html5Qrcode(id);
   await st.scanner.start(
@@ -2160,6 +2520,7 @@ async function startScanner(target) {
     (code) => {
       navigator.vibrate?.(70);
       if (target === "sale") saleAdd(code);
+      else if (target === "multi") mcAdd(code);
       else {
         $("map-barcode").value = code;
         renderBarcodeStatus();
@@ -2179,7 +2540,7 @@ async function stopScanner() {
     } catch {}
   }
   st.scanner = null;
-  ["sale-reader", "map-reader"].forEach((id) =>
+  ["sale-reader", "map-reader", "multi-reader"].forEach((id) =>
     $(id)?.classList.remove("open"),
   );
 }
@@ -3056,6 +3417,11 @@ function selectExhibition(id) {
   st.sale.customer = null;
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
+  // Multi-customer selection must never span exhibitions — clear it too.
+  st.multi.customers = [];
+  st.multi.building = false;
+  st.multi.rows = { Maitri: [], Niharika: [] };
+  st.multi.reqIds = {};
   renderExhibitionSwitch();
   if (st.section) go(st.section);
 }

@@ -915,7 +915,10 @@ Deno.serve(async (request: Request) => {
         p_customer_id: clean(body.customerId),
         p_firm: clean(body.firm),
         p_items: items,
-        p_request_id: crypto.randomUUID(),
+        // Multi-customer batch passes a stable per-(customer,firm) id so a retry
+        // of the batch is idempotent; single-customer save omits it and gets a
+        // fresh one. _write_order dedupes on this.
+        p_request_id: clean(body.requestId) || crypto.randomUUID(),
         p_admin_user_id: admin.id,
       });
       if (error) throw error;
