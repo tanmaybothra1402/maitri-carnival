@@ -21,7 +21,15 @@ function normalizePhone(value: unknown): string {
   return digits;
 }
 
-function hiddenEmail(phone: string): string {
+// Hidden email is scoped by the exhibition slug so the same phone can hold a
+// separate account per exhibition: c<phone>.<slug>@domain.
+function hiddenEmail(phone: string, slug: string): string {
+  return `c${phone}.${slug}@${CUSTOMER_DOMAIN}`;
+}
+
+// Pre-slug accounts (the original Carnival customers) used c<phone>@domain. Used
+// only as a login fallback on the current exhibition — see LOGIN below.
+function legacyEmail(phone: string): string {
   return `c${phone}@${CUSTOMER_DOMAIN}`;
 }
 
@@ -45,6 +53,37 @@ function sessionPayload(session: any): AuthSessionPayload {
   };
 }
 
+type ExhibitionRow = {
+  id: string;
+  slug: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  registration_enabled: boolean;
+  is_current: boolean;
+};
+
+// Resolve the exhibition from the URL slug. An unknown or empty slug falls back
+// to is_current (the bare-URL rule from blueprint §5).
+async function resolveExhibition(slugRaw: unknown): Promise<ExhibitionRow> {
+  const slug = clean(slugRaw).toLowerCase();
+  const admin = serviceClient();
+  const cols = "id,slug,name,start_date,end_date,registration_enabled,is_current";
+
+  if (slug) {
+    const { data } = await admin.from("exhibitions").select(cols).eq("slug", slug).maybeSingle();
+    if (data) return data as ExhibitionRow;
+  }
+  const { data: current } = await admin.from("exhibitions").select(cols).eq("is_current", true).maybeSingle();
+  if (current) return current as ExhibitionRow;
+  throw new Error("NO_EXHIBITION");
+}
+
+function isEnded(ex: ExhibitionRow): boolean {
+  const today = new Date().toISOString().slice(0, 10);
+  return !ex.registration_enabled && String(ex.end_date) < today;
+}
+
 function publicError(error: unknown): { message: string; status: number } {
   const raw = errorMessage(error);
   const lower = raw.toLowerCase();
@@ -56,10 +95,13 @@ function publicError(error: unknown): { message: string; status: number } {
     return { message: "Incorrect mobile number or password.", status: 401 };
   }
   if (raw.includes("REGISTRATION_CLOSED")) {
-    return { message: "Customer registration is currently closed.", status: 403 };
+    return { message: "Registration for this exhibition is closed.", status: 403 };
   }
   if (raw.includes("INVALID_EXHIBITION_ACCESS_CODE")) {
     return { message: "The exhibition access code is incorrect.", status: 403 };
+  }
+  if (raw.includes("EXHIBITION_SLUG_REQUIRED") || raw.includes("UNKNOWN_EXHIBITION_SLUG") || raw.includes("NO_EXHIBITION")) {
+    return { message: "This exhibition link is not valid. Please use the link for your event.", status: 400 };
   }
   if (raw.includes("COMPANY_NAME_REQUIRED")) {
     return { message: "Company name is required.", status: 400 };
@@ -96,16 +138,50 @@ Deno.serve(async (request: Request) => {
   try {
     const body = await request.json().catch(() => ({}));
     const action = clean(body.action).toLowerCase();
+
+    // Pre-login: resolve the exhibition named by ?e= so the app can show its
+    // name/dates and the "has ended" state. No phone/password required.
+    if (action === "getexhibition") {
+      const ex = await resolveExhibition(body.slug);
+      return jsonResponse(request, {
+        ok: true,
+        data: {
+          slug: ex.slug,
+          name: ex.name,
+          startDate: ex.start_date,
+          endDate: ex.end_date,
+          registrationEnabled: ex.registration_enabled,
+          ended: isEnded(ex),
+        },
+      });
+    }
+
     const phone = normalizePhone(body.phone);
     const password = validatePassword(body.password);
-    const email = hiddenEmail(phone);
+    const exhibition = await resolveExhibition(body.slug);
+    const email = hiddenEmail(phone, exhibition.slug);
 
     if (action === "login") {
-      const session = await signIn(email, password);
-      return jsonResponse(request, { ok: true, data: { session } });
+      try {
+        const session = await signIn(email, password);
+        return jsonResponse(request, { ok: true, data: { session } });
+      } catch (loginError) {
+        // Pre-slug accounts (original Carnival customers) are c<phone>@domain.
+        // Fall back ONLY on the current exhibition, so a slug link never
+        // resolves a legacy account from a different event.
+        const lower = errorMessage(loginError).toLowerCase();
+        const badCreds = lower.includes("invalid login credentials") || lower.includes("invalid_credentials");
+        if (badCreds && exhibition.is_current) {
+          const session = await signIn(legacyEmail(phone), password);
+          return jsonResponse(request, { ok: true, data: { session } });
+        }
+        throw loginError;
+      }
     }
 
     if (action === "register") {
+      if (!exhibition.registration_enabled) throw new Error("REGISTRATION_CLOSED");
+
       const companyName = clean(body.companyName);
       const contactName = clean(body.contactName);
       const city = clean(body.city);
@@ -131,6 +207,7 @@ Deno.serve(async (request: Request) => {
           gstin,
           agent,
           access_code: accessCode,
+          exhibition_slug: exhibition.slug,
           login_method: "phone_password_hidden_email",
         },
       });

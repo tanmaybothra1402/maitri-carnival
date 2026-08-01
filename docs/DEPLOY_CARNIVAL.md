@@ -4,6 +4,26 @@ Production project: `ezmtiiftolcaslqfvozu`
 
 The current build consists of two static pages, cumulative database migrations, four Edge Functions, and the Google Sheets mirror.
 
+> ## ⛔ BLOCKING PREREQUISITE — before you create a SECOND exhibition
+>
+> The customer app now resolves its exhibition from the URL (`?e=<slug>`), with
+> `is_current` as the bare-URL fallback (migration `202608010003`). While only
+> one exhibition exists everything works unchanged. **The moment a second
+> `exhibitions` row exists, two things break silently unless already handled:**
+>
+> 1. **`customer-auth` must pass the slug.** With two or more exhibitions, a
+>    registration that does not carry `exhibition_slug` raises
+>    `EXHIBITION_SLUG_REQUIRED`. The current `customer-auth` build passes it —
+>    do **not** run an older build alongside a second exhibition, or all
+>    registration fails.
+> 2. **`admin_map_barcode` / `admin_deactivate_barcode` must be scoped to a
+>    passed exhibition id.** They still call `current_exhibition_id()`, so until
+>    they take an explicit id, admin barcode mapping/deactivation **silently
+>    targets whichever exhibition is `is_current`**, regardless of any admin
+>    selector — stickers get mapped into the wrong event.
+>
+> Create the second exhibition only after both are deployed.
+
 ## Active files
 
 - Customer app: `web/user.html`

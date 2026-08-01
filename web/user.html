@@ -155,8 +155,8 @@ input,select,textarea{border:1px solid #D8E1DE;border-radius:var(--r-xs);backgro
 <div class="brandbar">
 <div class="wordmark"><i class="logo-dot"></i>EKUM</div>
 <img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
-<div class="hero"><h1>Welcome to Maitri Carnival 2026</h1><p>We are delighted to host you. Your visit, entry and orders are organised here so you can move through the Carnival comfortably.</p><span class="dates">19 – 21 July 2026</span></div>
-<div class="card">
+<div class="hero"><h1 id="hero-title">Welcome to Maitri Carnival 2026</h1><p id="hero-sub">We are delighted to host you. Your visit, entry and orders are organised here so you can move through the Carnival comfortably.</p><span class="dates" id="hero-dates">19 – 21 July 2026</span></div>
+<div class="card" id="auth-card">
 <div class="switch"><button class="active" id="login-mode">Login</button><button id="register-mode">Register</button></div>
 <form id="login-form" style="margin-top:12px">
 <label>Mobile number</label><div class="phone"><div class="prefix">+91</div><input id="login-phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" required=""/></div>
@@ -260,6 +260,8 @@ const CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_QTijSp1pHxiCGga3l722zg_Vjqxj2qG",
   REQUIRE_ACCESS_CODE: false,
 };
+// Exhibition comes from the URL (?e=<slug>); empty falls back to is_current.
+CONFIG.exhibitionSlug = (new URLSearchParams(location.search).get("e") || "").trim().toLowerCase();
 const FIRMS = {
   Maitri: { name: "Maitri Texfab Private Limited", gstin: "24AAGCM4427L2ZB" },
   Niharika: { name: "Niharika Texfab LLP", gstin: "24AAWFN4840R1ZC" },
@@ -462,6 +464,37 @@ async function customerAuth(action, payload) {
     throw new Error(out.error || `Authentication failed (${res.status})`);
   return out.data;
 }
+function fmtDateRange(start, end) {
+  try {
+    const s = new Date(start + "T00:00:00"), e = new Date(end + "T00:00:00");
+    const dmy = { day: "numeric", month: "long", year: "numeric" };
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear())
+      return `${s.toLocaleDateString("en-IN", { day: "numeric" })} – ${e.toLocaleDateString("en-IN", dmy)}`;
+    return `${s.toLocaleDateString("en-IN", dmy)} – ${e.toLocaleDateString("en-IN", dmy)}`;
+  } catch (_) {
+    return "";
+  }
+}
+// Resolve the exhibition named by ?e= and reflect it in the hero. Unknown or
+// missing slug falls back to is_current server-side.
+async function initExhibition() {
+  try {
+    const ex = await customerAuth("getExhibition", { slug: CONFIG.exhibitionSlug });
+    CONFIG.exhibitionName = ex.name;
+    const title = $("hero-title"), dates = $("hero-dates"), sub = $("hero-sub");
+    if (dates) dates.textContent = fmtDateRange(ex.startDate, ex.endDate);
+    if (ex.ended) {
+      if (title) title.textContent = `${ex.name} has ended`;
+      if (sub) sub.textContent = "This exhibition is over. Please contact our team about any existing orders.";
+      const card = $("auth-card"); if (card) card.classList.add("hidden");
+    } else if (title) {
+      title.textContent = `Welcome to ${ex.name}`;
+    }
+  } catch (_) {
+    /* leave the default hero text if the lookup fails */
+  }
+}
+initExhibition();
 async function applySession(session) {
   if (!session?.access_token || !session?.refresh_token)
     throw new Error("No session returned");
@@ -481,6 +514,7 @@ $("login-form").addEventListener("submit", async (e) => {
     const data = await customerAuth("login", {
       phone,
       password: $("login-password").value,
+      slug: CONFIG.exhibitionSlug,
     });
     await applySession(data.session);
   } catch (err) {
@@ -504,6 +538,7 @@ $("register-form").addEventListener("submit", async (e) => {
     const data = await customerAuth("register", {
       phone,
       password,
+      slug: CONFIG.exhibitionSlug,
       companyName: $("reg-company").value.trim(),
       contactName: $("reg-contact").value.trim(),
       city: $("reg-city").value.trim(),
