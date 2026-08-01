@@ -41,7 +41,7 @@ const DS_TABS = {
 // Columns that are editable and pushed back (everything else is reference-only).
 const DS_EDITABLE = {
   designs: ['firm','image_url','category','style','fabric','pcs_per_set','description','active'],
-  barcode_mappings: ['design_no','active'],
+  barcode_mappings: [],  // read-only: Sheet pushes bypass admin_map_barcode's guard (see SHEETS_MIRROR.md)
   customers: ['company_name','contact_name','city','state','gstin','agent','active'],
   orders: ['status','admin_unlocked'],
   order_items: [],

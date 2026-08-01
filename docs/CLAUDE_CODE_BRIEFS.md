@@ -147,6 +147,114 @@ Then run the maitri-frontend verification suite and show me the results.
 
 ---
 
+## Brief 3.6 — Admin exhibition management (Phases 2 + 3)
+
+**Status of the multi-exhibition work when this brief starts:** the database and
+the customer app understand exhibitions, but there is no way to create or manage
+one except direct SQL, and the admin console still shows every exhibition's data
+mixed together. This brief closes that gap.
+
+```
+Read maitri-architecture (especially the five-point module checklist),
+maitri-migration and maitri-frontend. Then docs/MULTI_EXHIBITION_BLUEPRINT.md
+§5 for the admin-side scope.
+
+Three pieces, all shipping together.
+
+--- 1. Migration: scope the two remaining admin functions ---
+
+admin_map_barcode and admin_deactivate_barcode still call
+current_exhibition_id(). Add p_exhibition_id and resolve it explicitly. Until
+this lands, barcode mapping silently targets whatever is current regardless of
+which exhibition the admin selected — this is the last known cross-exhibition
+footgun.
+
+Check whether anything else still calls current_exhibition_id() on an admin
+path and report it rather than assuming this is the complete list.
+
+--- 2. admin-api: exhibition actions and scoping ---
+
+New actions:
+  listExhibitions   — all exhibitions with counts (customers, orders, mappings)
+  createExhibition  — name, slug, dates, edit window
+  updateExhibition  — dates, registration_enabled, edit window (NOT slug —
+                      the slug-lock trigger blocks it once customers exist)
+  setCurrentExhibition — with the guard below
+
+Every existing list/dashboard/directory action takes an exhibitionId,
+defaulting to current. Barcode mapping actions pass the selected exhibition
+through to the RPCs from piece 1.
+
+createExhibition must REFUSE to create a second exhibition unless:
+  - the deployed customer-auth passes slugs (it does as of commit 065c3d0 —
+    decide how to detect this robustly rather than hardcoding a hash; a
+    version constant the function reports is fine), and
+  - admin_map_barcode / admin_deactivate_barcode are scoped (piece 1)
+
+This converts two documented warnings into an actual guard. Explain the check
+you chose and why it can't produce a false pass.
+
+New permission admin.exhibitions. That triggers the five-point module
+checklist in maitri-architecture §5 — including BOTH staff_profiles CHECK
+constraints. Do not skip any of the five.
+
+--- 3. Admin console ---
+
+Exhibition selector in the app bar. Changing it re-filters Reception,
+Dashboard, Sale Order, Dispatch and Products.
+
+Admin -> Exhibitions screen: list, create, edit dates/window, set current.
+Setting current requires typing the exhibition name to confirm — it changes
+where bare-URL registrations land.
+
+The selector must make the current exhibition visually distinct from a merely
+selected one, so staff never confuse "I am viewing Surat" with "Surat is
+live".
+
+--- Verification ---
+
+- begin…rollback compile check before applying the migration
+- After apply: create a second exhibition through the UI, confirm the guard
+  fires or passes correctly, map a barcode against it, confirm the mapping
+  landed on the SELECTED exhibition and not the current one. Then delete both.
+- Full maitri-frontend suite on the admin console.
+- Confirm a staff member with only admin.exhibitions sees the Exhibitions
+  screen and nothing else.
+
+Show me the plan and the five-point checklist mapping before writing code.
+```
+
+---
+
+## Brief 3.7 — Bulk barcode import (before a second exhibition)
+
+Replaces the Sheet-based bulk mapping removed in Brief 3.6. `barcode_mappings`
+is read-only in the mirror because a Sheet push runs with the service role and
+bypasses `admin_map_barcode` — including the one-way `BARCODE_ALREADY_MAPPED`
+guard. But bulk mapping is a real workflow (`templates/BarcodeMappings_Import.csv`
+exists, and 377 of 594 designs are still unmapped), so it needs a safe
+replacement **before Surat Dreams**.
+
+```
+Read maitri-orders and maitri-architecture first.
+
+Add an admin-api `importMappings` action that LOOPS admin_map_barcode — one
+call per row, passing the SELECTED exhibition id. The guard and exhibition
+scoping are preserved and the service-role bypass is avoided.
+
+- Accept a pasted CSV or array of {barcode, designNo}. Report per-row results
+  like mapBatch (partial failure is normal; never roll back the successes).
+- NEVER write a bulk writer that inserts into barcode_mappings directly — that
+  is exactly the service-role bypass that made the Sheet path unsafe.
+- Reuse the products.mapping permission.
+- Validate against the current catalogue; an unknown/inactive design_no is a
+  per-row failure, not an abort.
+
+Then a UI on the Products → Barcode Mapping tab to paste/upload and review.
+```
+
+---
+
 ## Brief 3.5 — URL-scoped exhibitions (Phase 4)
 
 **Do this before Brief 4.** It rewrites customer-facing functions that Phase 1

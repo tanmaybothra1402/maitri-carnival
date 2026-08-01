@@ -70,6 +70,7 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "admin.bookings": true,
   "admin.staff": true,
   "admin.settings": true,
+  "admin.exhibitions": true,
 };
 
 const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
@@ -77,7 +78,7 @@ const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
   products: { "products.view": true, "products.edit": true, "products.mapping": true },
   dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
-  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings"].includes(key))),
+  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
 };
@@ -104,7 +105,7 @@ const GROUPS: Record<string, string[]> = {
   // without being granted any Sales rights.
   dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
   dashboard: ["dashboard.view", "dashboard.export"],
-  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings"],
+  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions"],
 };
 
 function expandGroups(value: unknown): Record<string, boolean> {
@@ -131,7 +132,8 @@ function collapseGroups(permissions: Record<string, boolean>): Record<string, bo
     admin: Boolean(
       permissions["admin.staff"] ||
       permissions["admin.settings"] ||
-      permissions["admin.slots"]
+      permissions["admin.slots"] ||
+      permissions["admin.exhibitions"]
     ),
   };
 }
@@ -242,6 +244,10 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   deleteStaff: ["admin.staff"],
   getSettings: ["admin.settings"],
   updateSettings: ["admin.settings"],
+  listExhibitions: ["admin.exhibitions"],
+  createExhibition: ["admin.exhibitions"],
+  updateExhibition: ["admin.exhibitions"],
+  setCurrentExhibition: ["admin.exhibitions"],
 };
 
 function requireActionPermission(context: StaffContext, action: string) {
@@ -426,10 +432,11 @@ async function listDesigns(db: SupabaseClient) {
   }));
 }
 
-async function listMappings(db: SupabaseClient) {
+async function listMappings(db: SupabaseClient, exhibitionId: string) {
   const { data, error } = await db
     .from("barcode_mappings")
     .select("barcode,design_no,active,mapped_at,updated_at,designs(firm,category,style,fabric,pcs_per_set,color)")
+    .eq("exhibition_id", exhibitionId)
     .order("updated_at", { ascending: false })
     .limit(1000);
   if (error) throw error;
@@ -446,6 +453,25 @@ async function listMappings(db: SupabaseClient) {
     pcsPerSet: Number(row.designs?.pcs_per_set) || 1,
     color: row.designs?.color ?? "",
   }));
+}
+
+// Resolve the exhibition a request targets: body.exhibitionId if given (must
+// exist), else the current exhibition. Scoped actions call this and pass the id
+// (or slug) into their query/RPC — that pass-through is what makes them
+// exhibition-aware. An action that resolves but never uses the result looks
+// identical to a scoped one until two exhibitions exist.
+async function resolveExhibition(db: SupabaseClient, body: any): Promise<{ id: string; slug: string }> {
+  const requested = clean(body?.exhibitionId);
+  if (requested) {
+    const { data, error } = await db.from("exhibitions").select("id,slug").eq("id", requested).maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error("UNKNOWN_EXHIBITION");
+    return { id: data.id, slug: data.slug };
+  }
+  const { data, error } = await db.from("exhibitions").select("id,slug").eq("is_current", true).maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("NO_EXHIBITION");
+  return { id: data.id, slug: data.slug };
 }
 
 Deno.serve(async (request: Request) => {
@@ -492,7 +518,7 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "listMappings") {
-      return jsonResponse(request, { ok: true, data: await listMappings(db) });
+      return jsonResponse(request, { ok: true, data: await listMappings(db, (await resolveExhibition(db, body)).id) });
     }
 
     if (action === "mapBarcode") {
@@ -500,6 +526,7 @@ Deno.serve(async (request: Request) => {
         p_barcode: clean(body.barcode),
         p_design_no: clean(body.designNo),
         p_admin_user_id: admin.id,
+        p_exhibition_id: (await resolveExhibition(db, body)).id,
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
@@ -509,6 +536,7 @@ Deno.serve(async (request: Request) => {
       if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 300) {
         throw new Error("Provide 1 to 300 mapping rows");
       }
+      const mapExhibitionId = (await resolveExhibition(db, body)).id;
       const results = [];
       for (const raw of body.items) {
         const item = raw as Record<string, unknown>;
@@ -517,6 +545,7 @@ Deno.serve(async (request: Request) => {
             p_barcode: clean(item.barcode),
             p_design_no: clean(item.designNo),
             p_admin_user_id: admin.id,
+            p_exhibition_id: mapExhibitionId,
           });
           if (error) throw error;
           results.push({ ok: true, data });
@@ -531,6 +560,7 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("admin_deactivate_barcode", {
         p_barcode: clean(body.barcode),
         p_admin_user_id: admin.id,
+        p_exhibition_id: (await resolveExhibition(db, body)).id,
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
@@ -587,6 +617,7 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("admin_directory", {
         p_query: clean(body.query),
         p_limit: 400,
+        p_exhibition_id: (await resolveExhibition(db, body)).id,
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data: data ?? [] });
@@ -665,8 +696,9 @@ Deno.serve(async (request: Request) => {
 
     // ---- Slots & bookings ---------------------------------------------
     if (action === "listSlots") {
+      const ex = await resolveExhibition(db, body);
       const [{ data: slots, error: sErr }, { data: booked, error: bErr }] = await Promise.all([
-        db.from("slots").select("id,starts_at,ends_at,label,capacity,active").order("starts_at", { ascending: true }),
+        db.from("slots").select("id,starts_at,ends_at,label,capacity,active").eq("exhibition_id", ex.id).order("starts_at", { ascending: true }),
         db.from("bookings").select("slot_id").eq("status", "Booked"),
       ]);
       if (sErr) throw sErr;
@@ -699,7 +731,7 @@ Deno.serve(async (request: Request) => {
       const id = clean(body.id);
       const { data, error } = id
         ? await db.from("slots").update(row).eq("id", id).select("id").single()
-        : await db.from("slots").insert(row).select("id").single();
+        : await db.from("slots").insert({ ...row, exhibition_id: (await resolveExhibition(db, body)).id }).select("id").single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
     }
@@ -729,10 +761,12 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "listBookings") {
+      const ex = await resolveExhibition(db, body);
       const { data, error } = await db
         .from("bookings")
-        .select("id,party_size,note,status,created_at,slots(starts_at,ends_at,label),customers(company_name,contact_name,phone_e164,checked_in_at)")
+        .select("id,party_size,note,status,created_at,slots!inner(starts_at,ends_at,label,exhibition_id),customers(company_name,contact_name,phone_e164,checked_in_at)")
         .eq("status", "Booked")
+        .eq("slots.exhibition_id", ex.id)
         .limit(1000);
       if (error) throw error;
       return jsonResponse(request, {
@@ -834,6 +868,91 @@ Deno.serve(async (request: Request) => {
     }
 
 
+    // ---- Exhibitions --------------------------------------------------
+    if (action === "listExhibitions") {
+      const { data, error } = await db.rpc("admin_list_exhibitions");
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: data ?? [] });
+    }
+
+    if (action === "createExhibition") {
+      const name = clean(body.name);
+      const slug = clean(body.slug).toLowerCase();
+      const startDate = clean(body.startDate);
+      const endDate = clean(body.endDate);
+      const editWindowHours = Math.max(1, Math.min(240, Math.round(Number(body.editWindowHours) || 24)));
+      if (name.length < 2) throw new Error("Exhibition name is required");
+      if (!/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/.test(slug)) throw new Error("Slug must be lowercase letters, numbers and dashes (used in the login link)");
+      if (!startDate || !endDate) throw new Error("Start and end dates are required");
+
+      // Guard: refuse a SECOND exhibition unless the prerequisites are actually
+      // deployed. Both checks fail closed, and the two failures are distinct.
+      const { count: existing, error: cErr } = await db.from("exhibitions").select("id", { count: "exact", head: true });
+      if (cErr) throw cErr;
+      if ((existing ?? 0) >= 1) {
+        // (a) Is the deployed customer-auth slug-aware? Ask the live function.
+        let authContract = 0;
+        try {
+          const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/customer-auth`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", apikey: Deno.env.get("SUPABASE_ANON_KEY") ?? "" },
+            body: JSON.stringify({ action: "getExhibition", slug: "" }),
+          });
+          const out = await res.json().catch(() => ({}));
+          authContract = Number(out?.data?.authContract ?? 0);
+        } catch (_e) {
+          throw new Error("Could not reach customer-auth to verify it passes exhibition slugs. Try again — do not create a second exhibition until this check succeeds.");
+        }
+        if (authContract < 2) {
+          throw new Error("The deployed customer-auth is out of date and does not pass exhibition slugs. Deploy the current customer-auth before creating a second exhibition.");
+        }
+        // (b) Are the barcode functions exhibition-scoped? Check by parameter name.
+        const { data: scoped, error: sErr } = await db.rpc("barcode_functions_exhibition_scoped");
+        if (sErr) throw sErr;
+        if (scoped !== true) {
+          throw new Error("Barcode mapping is not exhibition-scoped yet. Apply migration 202608010004 before creating a second exhibition.");
+        }
+      }
+
+      const { data, error } = await db.from("exhibitions").insert({
+        name,
+        slug,
+        start_date: startDate,
+        end_date: endDate,
+        edit_window_hours: editWindowHours,
+        customer_email_domain: "accounts.maitricarnival.app",
+        registration_enabled: body.registrationEnabled === undefined ? true : Boolean(body.registrationEnabled),
+        is_current: false,
+      }).select("id,slug,name,start_date,end_date,edit_window_hours,registration_enabled,is_current").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data }, 201);
+    }
+
+    if (action === "updateExhibition") {
+      const id = clean(body.id);
+      if (!id) throw new Error("Exhibition id is required");
+      const patch: Record<string, unknown> = {};
+      if (body.startDate !== undefined) patch.start_date = clean(body.startDate);
+      if (body.endDate !== undefined) patch.end_date = clean(body.endDate);
+      if (body.registrationEnabled !== undefined) patch.registration_enabled = Boolean(body.registrationEnabled);
+      if (body.editWindowHours !== undefined) patch.edit_window_hours = Math.max(1, Math.min(240, Math.round(Number(body.editWindowHours) || 24)));
+      // slug is deliberately not updatable — it is baked into login emails and
+      // the slug-lock trigger blocks changing it once customers exist.
+      const { data, error } = await db.from("exhibitions").update(patch).eq("id", id)
+        .select("id,slug,name,start_date,end_date,edit_window_hours,registration_enabled,is_current").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "setCurrentExhibition") {
+      const id = clean(body.id);
+      if (!id) throw new Error("Exhibition id is required");
+      const { data, error } = await db.rpc("admin_set_current_exhibition", { p_exhibition_id: id });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+
     // ---- Assisted registration & ordering -----------------------------
     if (action === "assistedRegister") {
       const phone = normalizePhone(body.phone);
@@ -843,8 +962,11 @@ Deno.serve(async (request: Request) => {
       if (contactName.length < 2) throw new Error("Contact person is required");
       const password = clean(body.password) || generatePassword();
       if (password.length < 8) throw new Error("Password must be at least 8 characters");
+      const ex = await resolveExhibition(db, body);
       const { data: created, error } = await db.auth.admin.createUser({
-        email: hiddenEmail(phone),
+        // Slug email so the same phone can register across exhibitions; the
+        // trigger stamps the SELECTED exhibition from exhibition_slug metadata.
+        email: `c${phone}.${ex.slug}@${CUSTOMER_DOMAIN}`,
         password,
         email_confirm: true,
         user_metadata: {
@@ -855,6 +977,7 @@ Deno.serve(async (request: Request) => {
           state: clean(body.state),
           gstin: clean(body.gstin).toUpperCase(),
           agent: clean(body.agent),
+          exhibition_slug: ex.slug,
           login_method: "phone_password_hidden_email",
           created_by: "admin_assisted",
         },
@@ -980,8 +1103,10 @@ Deno.serve(async (request: Request) => {
 
     if (action === "recentOrders") {
       const q = clean(body.query);
+      const ex = await resolveExhibition(db, body);
       let query = db.from("orders")
         .select("id,customer_id,firm,status,total_designs,total_sets,total_pieces,updated_at,customers(company_name,contact_name,phone_e164,city,state,agent)")
+        .eq("exhibition_id", ex.id)
         .order("updated_at", { ascending: false }).limit(200);
       if (q) {
         const { data: customers, error: cErr } = await db.from("customers")
@@ -1008,12 +1133,14 @@ Deno.serve(async (request: Request) => {
       const q = clean(body.query);
       const firm = clean(body.firm);
       const statusFilter = clean(body.dispatchStatus);
+      const ex = await resolveExhibition(db, body);
 
       let query = db.from("orders")
         .select(
           "id,customer_id,firm,status,dispatch_status,total_designs,total_sets,total_pieces,updated_at," +
           "customers(company_name,contact_name,phone_e164,city,state,agent)",
         )
+        .eq("exhibition_id", ex.id)
         .gt("total_designs", 0)
         .order("updated_at", { ascending: false })
         .limit(300);
@@ -1145,10 +1272,16 @@ Deno.serve(async (request: Request) => {
     return jsonResponse(request, { ok: false, error: `UNKNOWN_ACTION_${action}` }, 400);
   } catch (error) {
     console.error(error);
-    const message = errorMessage(error);
-    const status = /PERMISSION_DENIED|STAFF_ACCESS_REQUIRED|TEAM_ACCOUNT_DISABLED|TEAM_PROFILE_NOT_FOUND|ADMIN_REQUIRED/.test(message)
+    const raw = errorMessage(error);
+    let message = raw;
+    let status = /PERMISSION_DENIED|STAFF_ACCESS_REQUIRED|TEAM_ACCOUNT_DISABLED|TEAM_PROFILE_NOT_FOUND|ADMIN_REQUIRED/.test(raw)
       ? 403
-      : message.includes("SESSION") || message === "AUTH_REQUIRED" ? 401 : 500;
+      : raw.includes("SESSION") || raw === "AUTH_REQUIRED" ? 401 : 500;
+    // Friendly text for the exhibition-scoping codes (BARCODE_ALREADY_MAPPED is
+    // left raw — the mapping UI parses its pipe-delimited payload).
+    if (raw.includes("EXHIBITION_ID_REQUIRED")) { message = "Select an exhibition before mapping or deactivating a barcode."; status = 400; }
+    else if (raw.includes("UNKNOWN_EXHIBITION")) { message = "That exhibition no longer exists — reload and try again."; status = 400; }
+    else if (raw.includes("EXHIBITION_SLUG_LOCKED")) { message = "This exhibition's link is locked because it already has customers."; status = 400; }
     return jsonResponse(request, { ok: false, error: message }, status);
   }
 });

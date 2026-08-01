@@ -21,7 +21,7 @@ Each tab shows all columns for reference; **only the tinted columns are written 
 | Tab | Editable columns | New rows? |
 |---|---|---|
 | Designs | firm, image_url, category, style, fabric, pcs_per_set, description, active | Yes (give a new DesignNo) |
-| BarcodeMappings | design_no, active | Yes (give a new barcode) |
+| BarcodeMappings | Read-only | No |
 | Customers | company_name, contact_name, city, state, gstin, agent, active | No (created by registration) |
 | Orders | status, admin_unlocked | No |
 | OrderItems | Read-only | No |
@@ -60,6 +60,7 @@ For these, use `active` or `status` instead. Deactivating is almost always what 
 - **Add a design:** new row with a unique `design_no` + firm + category + style + fabric + pcs_per_set (+ image_url). Push.
 - **Product images:** put the ImageKit link in `image_url` on the Designs tab and push — that's how images get attached.
 - **OrderItems is read-only.** A Sheet push runs with the service role and would bypass `_write_order`, defeating the 24-hour edit window, the order lock and the dispatch lock — you could have edited a line that had already shipped. Change order lines in the admin console instead.
+- **BarcodeMappings is read-only** for the same reason: a Sheet push runs with the service role and bypasses `admin_map_barcode` entirely — including the one-way `BARCODE_ALREADY_MAPPED` guard that stops a live sticker being silently repointed at a different design. Map barcodes by scanning in the admin console. (Exhibition scoping also broke the mechanics — the key is now `(barcode, exhibition_id)` — but the guard bypass is the durable reason it must never become writable again.) Bulk mapping is being replaced by an admin-api import action that loops the guarded function.
 - Dates/times must be full timestamps (e.g. `2026-07-19T10:00:00+05:30`) for slots/settings.
 
 ## Safety notes

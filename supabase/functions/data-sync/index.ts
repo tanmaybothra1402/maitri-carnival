@@ -30,8 +30,17 @@ const TABLES: Record<string, TableCfg> = {
   barcode_mappings: {
     pk: "barcode",
     cols: ["barcode","design_no","active","mapped_at","updated_at"],
-    write: ["design_no","active"],
-    insert: true,
+    // Read-only in the Sheet. The durable reason: a Sheet push runs with the
+    // service role and bypasses admin_map_barcode entirely — including the
+    // one-way BARCODE_ALREADY_MAPPED guard — exactly like order_items bypasses
+    // _write_order. Mapping must go through the guarded function. (Exhibition
+    // scoping also broke the mechanics: the PK is now (barcode, exhibition_id),
+    // so the barcode-only onConflict fails and exhibition_id must never come
+    // from the Sheet — but the guard-bypass is why this stays read-only.)
+    // Bulk mapping is served instead by an admin-api action that LOOPS
+    // admin_map_barcode (guard preserved). See CLAUDE_CODE_BRIEFS.md.
+    write: [],
+    insert: false,
   },
   customers: {
     pk: "id",
@@ -380,8 +389,23 @@ async function push(db: SupabaseClient, table: string, rows: any[], token = "", 
     }
 
     if (cfg.insert) {
-      if (hasPk) { const rec = { ...patch }; pkArr.forEach((k) => rec[k] = coerce(k, r[k])); upserts.push(rec); }
-      else inserts.push(patch);
+      if (hasPk) {
+        if (table === "slots") {
+          // Exhibition-scoped insert table: existing rows UPDATE (write columns
+          // only) so exhibition_id is never re-homed, and the upsert's INSERT
+          // tuple never trips the NOT NULL. New rows (no pk) insert+stamp below.
+          if (Object.keys(patch).length) {
+            const m: any = {}; pkArr.forEach((k) => m[k] = coerce(k, r[k]));
+            const { error } = await db.from(table).update(patch).match(m);
+            if (error) throw error;
+            updated++;
+          }
+        } else {
+          const rec = { ...patch }; pkArr.forEach((k) => rec[k] = coerce(k, r[k])); upserts.push(rec);
+        }
+      } else {
+        inserts.push(patch);
+      }
     } else {
       if (!hasPk) continue;
       // A read-only table (order_items) produces an empty patch. Updating with
@@ -417,7 +441,18 @@ async function push(db: SupabaseClient, table: string, rows: any[], token = "", 
   }
 
   if (upserts.length) { const { error } = await db.from(table).upsert(upserts, { onConflict: pkArr.join(",") }); if (error) throw error; upserted += upserts.length; }
-  if (inserts.length) { const { error } = await db.from(table).insert(inserts); if (error) throw error; upserted += inserts.length; }
+  if (inserts.length) {
+    // Exhibition-scoped tables carry a NOT NULL exhibition_id that must be
+    // stamped server-side, never taken from the Sheet (a typo there would
+    // assign the row to the wrong event). New Sheet rows land on the CURRENT
+    // exhibition; other events are managed from the admin console selector.
+    if (table === "slots") {
+      const { data: cur, error: curErr } = await db.from("exhibitions").select("id").eq("is_current", true).single();
+      if (curErr || !cur) throw new Error("NO_CURRENT_EXHIBITION: cannot create slots without a current exhibition");
+      for (const rec of inserts) rec.exhibition_id = cur.id;
+    }
+    const { error } = await db.from(table).insert(inserts); if (error) throw error; upserted += inserts.length;
+  }
 
   // Diff-based removal runs last, so a failure mid-update never leaves the
   // table half-written and half-deleted.

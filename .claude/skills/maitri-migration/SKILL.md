@@ -133,6 +133,21 @@ Think about cascades explicitly. `auth.users` → `customers` → `orders` →
 auth user removes an entire customer history. That is intended for cleanup and
 dangerous during an event.
 
+## Adding a NOT NULL column to an existing table
+
+Backfill, then `set not null` **in the same migration** so it fails loudly if the
+backfill missed a row. But the migration is only half the job: **enumerate every
+WRITER of the table and stamp the new column at each** — Edge Functions, RPCs,
+triggers, and `data-sync`. Tracing callers of *changed functions* (the usual
+habit) misses inserts that no changed function touches. Phase 1's
+`NOT NULL exhibition_id` on four tables missed `upsertSlot` and both `data-sync`
+inserts for three migrations for exactly this reason.
+
+Find them: `insert into <table>` across the repo, `pg_get_functiondef` for DB
+functions, and the `data-sync` `insert:true` config. Stamp the value
+server-side — never take it from an untrusted source (a Sheet cell would assign
+the row to the wrong event).
+
 ## Idempotency
 
 Migrations should survive being re-run: `if not exists`, `drop … if exists`,

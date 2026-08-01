@@ -4,6 +4,13 @@ import { authClient, serviceClient } from "../_shared/supabase.ts";
 
 const CUSTOMER_DOMAIN = "accounts.maitricarnival.app";
 
+// Capability version reported by getExhibition. Bumped to 2 when this function
+// began passing the exhibition slug on register/login (commit 065c3d0). The
+// admin-api createExhibition guard requires >= 2 before a second exhibition may
+// be created — an older deploy that does not scope registrations must not be
+// paired with a second exhibition.
+const AUTH_CONTRACT = 2;
+
 type AuthSessionPayload = {
   access_token: string;
   refresh_token: string;
@@ -162,6 +169,7 @@ Deno.serve(async (request: Request) => {
           endDate: ex.end_date,
           registrationEnabled: ex.registration_enabled,
           ended: isEnded(ex),
+          authContract: AUTH_CONTRACT,
         },
       });
     }

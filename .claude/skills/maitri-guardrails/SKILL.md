@@ -120,6 +120,23 @@ and confirm every occurrence was updated.
 
 ---
 
+### C4. A new NOT NULL column breaks every WRITER, not just changed functions
+When a migration adds a `NOT NULL` column to an existing table, caller-tracing
+(§C, above) is the wrong lens. Enumerate every **writer** of that table instead —
+Edge Functions, RPCs, triggers, **and `data-sync`** — and stamp or default the new
+column at each. Phase 1 added `NOT NULL exhibition_id` to four tables; only the
+registration trigger was checked, so `upsertSlot` and both `data-sync` inserts
+(`slots`, `barcode_mappings`) went unnoticed for three migrations — a missed
+writer only fails when someone finally inserts, long after the migration looked
+fine.
+
+**Check:** grep `insert into <table>` across the repo, `pg_get_functiondef` every
+DB function, and read the `data-sync` `insert:true`/`write` config. Each writer
+must supply the new column, stamped server-side — never from an untrusted source
+like a Sheet cell.
+
+---
+
 ## D. UI that fails invisibly
 
 ### D1. Filtering to an empty list renders nothing
