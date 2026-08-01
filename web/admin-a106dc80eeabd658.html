@@ -230,12 +230,17 @@ table.mc-matrix .mx-design span{color:var(--muted);font-size:9.5px;overflow:hidd
 table.mc-matrix th.mx-cust{color:#fff;border-radius:8px 8px 0 0;max-width:120px;overflow:hidden;text-overflow:ellipsis}
 table.mc-matrix td.mx-cell{cursor:pointer;font-variant-numeric:tabular-nums;font-weight:750;color:var(--deep)}
 table.mc-matrix td.mx-cell.zero{color:var(--muted);font-weight:500}
+table.mc-matrix td.mx-cell.same{color:var(--muted);font-weight:500}
+table.mc-matrix td.mx-cell.mx-changed{color:var(--deep);font-weight:800}
 table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-popup-hint{margin-bottom:8px}
 .mc-popup-list{display:flex;flex-direction:column;gap:8px}
 .mc-popup-row{display:grid;grid-template-columns:14px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px}
 .mc-popup-dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px}
-.mc-popup-row b{font-size:12px;color:var(--deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-popup-row b{font-size:12px;color:var(--deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.mc-popup-who{min-width:0}
+.mc-has{display:block;font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3}
+.mc-has.has-order{color:#8a5a00;font-weight:700}
 .mc-qty{display:flex;align-items:center;gap:6px}
 .mc-qty button{width:38px;height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--deep);font-size:18px;font-weight:800}
 .mc-qty input{width:56px;height:38px;text-align:center;font-size:15px;font-weight:800;border:1px solid var(--border);border-radius:8px}
@@ -619,6 +624,7 @@ const st = {
     customers: [],           // selected [{id, companyName, ..., colorIdx}] — one colour each
     firm: "Maitri",
     rows: { Maitri: [], Niharika: [] }, // each: {barcode, designNo, category, style, fabric, pcsPerSet, description, imageUrl, qty:{custId:sets}}
+    existing: {},            // { custId: { designNo: sets } } — each customer's CURRENT order, loaded at Start
     popupDesign: null,       // { firm, designNo } being edited in the qty popup
     reqIds: {},              // content-hashed request_id per (customer,firm) for idempotent batch retry
   },
@@ -2219,19 +2225,37 @@ $("multi-selected").onclick = (e) => {
   mcRenderSelected();
   mcSearch();
 };
-$("multi-start").onclick = () => {
+$("multi-start").onclick = async () => {
   if (!st.multi.customers.length) return;
   st.multi.building = true;
   st.multi.firm = "Maitri";
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
+  st.multi.existing = {};
   updateSaleMode();
   document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x.dataset.firm === "Maitri"));
   $("multi-party").textContent = `${st.multi.customers.length} customer${st.multi.customers.length === 1 ? "" : "s"}`;
   $("multi-builder-chips").innerHTML = st.multi.customers.map((c) => `<span class="mc-chip" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</span>`).join("");
   mcRenderMatrix();
+  // Preload each customer's current order so the popup shows what they already
+  // have — a salesperson must see an existing 10 before typing a new total.
+  try {
+    loading(true, "Loading current orders…");
+    const loaded = await Promise.all(st.multi.customers.map((c) =>
+      admin("getCustomerOrders", { customerId: c.id }).then((d) => ({ id: c.id, d })).catch(() => ({ id: c.id, d: null }))));
+    loaded.forEach(({ id, d }) => {
+      const map = {};
+      (d?.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; }));
+      st.multi.existing[id] = map;
+    });
+  } finally {
+    loading(false);
+  }
   setTimeout(() => $("multi-barcode").focus(), 80);
 };
+function mcExisting(custId, designNo) {
+  return Number((st.multi.existing[custId] || {})[designNo] || 0);
+}
 $("multi-close").onclick = () => {
   st.multi.building = false;
   updateSaleMode();
@@ -2271,8 +2295,12 @@ function mcOpenPopup(firm, designNo) {
   $("multi-popup-title").textContent = designNo;
   $("multi-popup-sub").textContent = [row.category, row.style, row.fabric].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`;
   $("multi-popup-list").innerHTML = st.multi.customers.map((c) => {
-    const q = Number(row.qty[c.id] || 0);
-    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
+    const cur = mcExisting(c.id, designNo);
+    // Prefill with the current total so it is never hidden; a fresh design shows
+    // their existing qty (or 0), and the box is the NEW total, not an addition.
+    const q = row.qty[c.id] !== undefined ? Number(row.qty[c.id]) : cur;
+    const hint = cur > 0 ? `Currently ${cur} set${cur === 1 ? "" : "s"} — enter the new total` : "Not yet ordered";
+    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${cur > 0 ? "has-order" : ""}">${hint}</span></div><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
   }).join("");
   openModal("multi-popup");
 }
@@ -2318,7 +2346,11 @@ function mcRenderMatrix() {
   const body = rows.map((row) => {
     const cells = st.multi.customers.map((c) => {
       const q = Number(row.qty[c.id] || 0);
-      return `<td class="mx-cell ${q ? "" : "zero"}" data-mc-open="${esc(row.designNo)}">${q || "–"}</td>`;
+      const cur = mcExisting(c.id, row.designNo);
+      // zero = nothing; same = already had this qty (won't be re-written);
+      // mx-changed = a real edit that will be saved.
+      const cls = q === 0 ? "zero" : q === cur ? "same" : "mx-changed";
+      return `<td class="mx-cell ${cls}" data-mc-open="${esc(row.designNo)}" title="${cur ? "was " + cur : "new"}">${q || "–"}</td>`;
     }).join("");
     return `<tr><th class="mx-design" data-mc-open="${esc(row.designNo)}"><b>${esc(row.designNo)}</b><span>${esc([row.category, row.style].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`)}</span></th>${cells}</tr>`;
   }).join("");
@@ -2331,13 +2363,15 @@ $("multi-matrix").onclick = (e) => {
   mcOpenPopup(st.multi.firm, cell.dataset.mcOpen); // editing a cell REOPENS the popup
 };
 function mcTotals() {
+  // Counts only CHANGES (qty>0 and different from the loaded current order), so
+  // the summary and Save button reflect what will actually be written.
   const totals = {};
   st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0 }));
   ["Maitri", "Niharika"].forEach((firm) =>
     (st.multi.rows[firm] || []).forEach((row) =>
       st.multi.customers.forEach((c) => {
         const q = Number(row.qty[c.id] || 0);
-        if (q > 0) { totals[c.id].designs++; totals[c.id].sets += q; }
+        if (q > 0 && q !== mcExisting(c.id, row.designNo)) { totals[c.id].designs++; totals[c.id].sets += q; }
       })));
   return totals;
 }
@@ -2347,11 +2381,11 @@ function mcUpdateSaveBtn() {
 $("multi-save").onclick = () => {
   const totals = mcTotals();
   const active = st.multi.customers.filter((c) => totals[c.id].sets > 0);
-  if (!active.length) { toast("Enter at least one quantity", "error"); return; }
+  if (!active.length) { toast("No changes to save", "error"); return; }
   const skipped = st.multi.customers.length - active.length;
   mcConfirmMode = "save";
   $("multi-confirm-title").textContent = "Confirm order";
-  $("multi-confirm-sub").textContent = `${active.length} customer${active.length === 1 ? "" : "s"} will be saved${skipped ? ` · ${skipped} skipped (no quantity)` : ""}.`;
+  $("multi-confirm-sub").textContent = `${active.length} customer${active.length === 1 ? "" : "s"} will be saved${skipped ? ` · ${skipped} unchanged, skipped` : ""}.`;
   $("multi-confirm-list").innerHTML = st.multi.customers.map((c) => {
     const t = totals[c.id], skip = t.sets === 0;
     return `<div class="mc-summary-row ${skip ? "skip" : ""}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>${skip ? "skipped" : `${t.designs} design${t.designs === 1 ? "" : "s"} / ${t.sets} set${t.sets === 1 ? "" : "s"}`}</span></div>`;
@@ -2374,7 +2408,7 @@ $("multi-confirm-save").onclick = async () => {
   st.multi.customers.forEach((c) =>
     ["Maitri", "Niharika"].forEach((firm) => {
       const items = (st.multi.rows[firm] || [])
-        .filter((row) => Number(row.qty[c.id] || 0) > 0)
+        .filter((row) => { const q = Number(row.qty[c.id] || 0); return q > 0 && q !== mcExisting(c.id, row.designNo); })
         .map((row) => ({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: Number(row.qty[c.id]) }));
       if (items.length) jobs.push({ customer: c, firm, items });
     }));
@@ -2390,6 +2424,9 @@ $("multi-confirm-save").onclick = async () => {
       try {
         await admin("assistedSaveOrder", { customerId: job.customer.id, firm: job.firm, items: job.items, requestId: mcJobRequestId(job.customer.id, job.firm, job.items) });
         perCustomer[job.customer.id].ok++;
+        // Reflect the newly-saved quantities so a re-scan shows the right total.
+        (st.multi.existing[job.customer.id] ||= {});
+        job.items.forEach((it) => { st.multi.existing[job.customer.id][it.designNo] = it.qty; });
       } catch (err) {
         // Partial failure is expected. Record it, keep going, never roll back.
         perCustomer[job.customer.id].fail++;
@@ -3422,6 +3459,7 @@ function selectExhibition(id) {
   st.multi.building = false;
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
+  st.multi.existing = {};
   renderExhibitionSwitch();
   if (st.section) go(st.section);
 }
