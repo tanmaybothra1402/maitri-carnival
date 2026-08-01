@@ -202,6 +202,14 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 .exhibition-row .ex-head b{font-size:14px;color:var(--deep)}
 .exhibition-row .ex-meta{color:var(--muted);font-size:11px;margin-top:4px}
 .exhibition-row .ex-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.map-import-card textarea{width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;border:1px solid var(--border);border-radius:10px;padding:10px;resize:vertical}
+.map-import-actions{gap:8px;margin-top:10px;flex-wrap:wrap}
+.map-import-report{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.map-import-summary{font-size:12px;font-weight:700;color:var(--deep)}
+.map-import-rows{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.map-import-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;border:1px solid var(--border);border-radius:8px;padding:6px 9px}
+.map-import-row .mi-status{font-weight:700;white-space:nowrap}
+.mi-ok{color:#0a7d3c}.mi-warn{color:#8a5a00}.mi-err{color:#c0392b}.mi-muted{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -295,6 +303,13 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="card map-batch-card">
   <div class="map-batch-head"><h2>Batch <span class="map-batch-count" id="map-batch-count">0</span></h2><div class="row"><button class="btn secondary small" id="map-batch-clear">Clear</button><button class="btn" id="map-batch-save">Save batch</button></div></div>
   <div class="map-batch-list" id="map-batch-list"></div>
+</div>
+<div class="card map-import-card">
+  <div class="map-batch-head"><h2>Bulk import</h2></div>
+  <p class="copy">Paste rows as <b>barcode,design</b> (one per line) or choose a CSV — a header row is ignored. Rows import into the exhibition named above. Each row runs through the same guard as a scan, so a duplicate or unknown design fails on its own line, never the whole file.</p>
+  <textarea id="map-import-text" rows="6" placeholder="8900000000001,MT-1032&#10;8900000000002,NH-204"></textarea>
+  <div class="row map-import-actions"><input type="file" id="map-import-file" accept=".csv,text/csv" class="hidden"/><button class="btn secondary small" id="map-import-pick">Choose CSV…</button><button class="btn secondary small" id="map-import-check">Check rows</button><button class="btn" id="map-import-run" disabled>Import</button></div>
+  <div class="map-import-report" id="map-import-report"></div>
 </div>
 <div class="card"><input id="map-search" placeholder="Search mappings"/><div class="list" id="mapping-list"></div></div></section>
 </main>
@@ -2848,6 +2863,114 @@ $("map-batch-save").onclick = async () => {
     button.textContent = oldText;
   }
 };
+
+/* Bulk barcode import.
+   No dedicated backend: this reuses mapBatch, which already loops the guarded
+   admin_map_barcode one row at a time, scoped to the selected exhibition. That
+   keeps the BARCODE_ALREADY_MAPPED guard and avoids the service-role Sheet bypass
+   that made direct barcode_mappings writes unsafe. We only chunk and review here. */
+let importRows = [];
+function parseImportRows(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((raw, i) => ({ raw, n: i + 1 }))
+    .filter((r) => r.raw.trim())
+    .map((r) => {
+      const cols = r.raw.split(/[,\t;]/).map((c) => c.trim());
+      return { barcode: cols[0] || "", designNo: cols[1] || "", n: r.n };
+    })
+    .filter((r) => r.barcode.toLowerCase() !== "barcode"); // drop a header row
+}
+async function checkImport() {
+  if (!(st.designs || []).length) {
+    try {
+      st.designs = await admin("listDesigns");
+      st.cache.designsAt = Date.now();
+    } catch (e) {}
+  }
+  const known = new Set(), active = new Set();
+  (st.designs || []).forEach((d) => {
+    known.add(d.designNo);
+    if (d.active) active.add(d.designNo);
+  });
+  const rows = parseImportRows($("map-import-text").value);
+  const seen = new Set();
+  importRows = [];
+  const problems = [];
+  rows.forEach((r) => {
+    const key = r.barcode.toLowerCase();
+    let issue = "";
+    if (!r.barcode || !r.designNo) issue = "missing barcode or design";
+    else if (seen.has(key)) issue = "duplicate barcode in file";
+    else if (!known.has(r.designNo)) issue = `unknown design "${r.designNo}"`;
+    else if (!active.has(r.designNo)) issue = `design "${r.designNo}" is inactive`;
+    seen.add(key);
+    if (issue) problems.push({ ...r, issue });
+    else importRows.push({ barcode: r.barcode, designNo: r.designNo });
+  });
+  const rep = $("map-import-report");
+  rep.innerHTML =
+    `<div class="map-import-summary">${importRows.length} ready · ${problems.length} to fix · ${rows.length} rows read</div>` +
+    (problems.length
+      ? `<div class="map-import-rows">${problems.map((p) => `<div class="map-import-row"><span>Line ${p.n}: ${esc(p.barcode || "—")} → ${esc(p.designNo || "—")}</span><span class="mi-status mi-warn">${esc(p.issue)}</span></div>`).join("")}</div>`
+      : "") +
+    (importRows.length ? `<p class="copy mi-muted">Press Import to map the ${importRows.length} ready row${importRows.length === 1 ? "" : "s"}. Rows to fix are skipped.</p>` : "");
+  $("map-import-run").disabled = importRows.length === 0;
+}
+async function runImport() {
+  if (!importRows.length) return;
+  const btn = $("map-import-run"), old = btn.textContent;
+  const all = importRows.slice(), chunks = [];
+  for (let i = 0; i < all.length; i += 250) chunks.push(all.slice(i, i + 250));
+  const outcomes = [];
+  try {
+    btn.disabled = true;
+    let done = 0;
+    for (const chunk of chunks) {
+      btn.textContent = `Importing… ${done}/${all.length}`;
+      const d = await admin("mapBatch", { items: chunk.map((r) => ({ barcode: r.barcode, designNo: r.designNo })) });
+      const results = d?.results ?? [];
+      chunk.forEach((r, i) => {
+        const res = results[i];
+        outcomes.push(res && res.ok
+          ? { barcode: r.barcode, designNo: r.designNo, ok: true, action: res.data?.action || "Mapped" }
+          : { barcode: r.barcode, designNo: r.designNo, ok: false, error: res ? res.error : "no response" });
+      });
+      done += chunk.length;
+    }
+    const failed = outcomes.filter((o) => !o.ok);
+    const rep = $("map-import-report");
+    rep.innerHTML =
+      `<div class="map-import-summary">${outcomes.length - failed.length} mapped · ${failed.length} failed</div>` +
+      (failed.length ? `<div class="map-import-rows">${failed.map((o) => `<div class="map-import-row"><span>${esc(o.barcode)} → ${esc(o.designNo)}</span><span class="mi-status mi-err">${esc(mapError(o.error))}</span></div>`).join("")}</div>` : "") +
+      (outcomes.length - failed.length ? `<p class="copy mi-muted">${outcomes.length - failed.length} succeeded${failed.length ? " — failures shown above to fix and re-import" : ""}.</p>` : "");
+    await loadMapping();
+    if (failed.length) toast(`${outcomes.length - failed.length} mapped · ${failed.length} failed`, "error");
+    else toast(`${outcomes.length} barcodes mapped`, "success");
+    importRows = [];
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    // Consumed on success (importRows cleared) -> stay disabled until re-checked.
+    // Left intact on error -> stay enabled so the operator can retry.
+    btn.disabled = importRows.length === 0;
+    btn.textContent = old;
+  }
+}
+$("map-import-pick").onclick = () => $("map-import-file").click();
+$("map-import-file").onchange = (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    $("map-import-text").value = String(reader.result || "");
+    checkImport();
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+};
+$("map-import-check").onclick = () => checkImport();
+$("map-import-run").onclick = () => runImport();
 /* Admin */
 async function loadAdminModule() {
   const sub = st.sub.admin;
