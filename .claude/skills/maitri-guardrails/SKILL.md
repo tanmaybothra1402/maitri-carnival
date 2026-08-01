@@ -225,6 +225,15 @@ several bugs that looked correct on inspection.
 - Never display, copy into reports, log, or commit the service-role key or
   `SHEET_SYNC_SECRET`.
 - Only delete records created by your own test.
+- **Creating a test `auth.users` row directly via SQL?** Set the token columns
+  (`confirmation_token`, `recovery_token`, `email_change`,
+  `email_change_token_new`, `email_change_token_current`, `phone_change`,
+  `phone_change_token`, `reauthentication_token`) to **empty strings, not NULL**.
+  A NULL token column makes GoTrue sign-in fail with `AuthRetryableFetchError`
+  and a generic 500 — the row looks correct in SQL but GoTrue cannot scan it.
+  Also set `aud`/`role` to `'authenticated'`, an `email_confirmed_at`, and a
+  bcrypt `encrypted_password` via
+  `extensions.crypt(pw, extensions.gen_salt('bf'))`. (Lost real time to this.)
 - Runtime verification against the real database is the operator's to run — say so
   plainly rather than implying something was tested when it was not.
 
