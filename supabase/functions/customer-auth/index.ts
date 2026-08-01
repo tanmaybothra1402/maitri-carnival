@@ -129,6 +129,16 @@ async function signIn(email: string, password: string) {
   return sessionPayload(data.session);
 }
 
+async function signInWithUser(
+  email: string,
+  password: string,
+): Promise<{ session: AuthSessionPayload; userId: string }> {
+  const client = authClient();
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return { session: sessionPayload(data.session), userId: String(data.user?.id ?? "") };
+}
+
 Deno.serve(async (request: Request) => {
   if (request.method === "OPTIONS") return optionsResponse(request);
   if (request.method !== "POST") {
@@ -166,16 +176,29 @@ Deno.serve(async (request: Request) => {
         const session = await signIn(email, password);
         return jsonResponse(request, { ok: true, data: { session } });
       } catch (loginError) {
-        // Pre-slug accounts (original Carnival customers) are c<phone>@domain.
-        // Fall back ONLY on the current exhibition, so a slug link never
-        // resolves a legacy account from a different event.
+        // Pre-slug accounts (original Carnival customers) use c<phone>@domain.
+        // Fall back to that email, but honour it ONLY if the account actually
+        // belongs to the resolved exhibition. Gating on the account (not
+        // is_current) keeps existing Carnival accounts working on the Carnival
+        // link while making the fallback inert on every other exhibition's link
+        // — otherwise a Carnival account would resolve on the Surat link and the
+        // customer would see Carnival data (and write orders into Carnival).
         const lower = errorMessage(loginError).toLowerCase();
         const badCreds = lower.includes("invalid login credentials") || lower.includes("invalid_credentials");
-        if (badCreds && exhibition.is_current) {
-          const session = await signIn(legacyEmail(phone), password);
-          return jsonResponse(request, { ok: true, data: { session } });
+        if (!badCreds) throw loginError;
+
+        const legacy = await signInWithUser(legacyEmail(phone), password);
+        const admin = serviceClient();
+        const { data: cust } = await admin
+          .from("customers")
+          .select("exhibition_id")
+          .eq("id", legacy.userId)
+          .maybeSingle();
+        if (!cust || cust.exhibition_id !== exhibition.id) {
+          // Right password, wrong exhibition — reject as if no account existed.
+          throw new Error("Invalid login credentials");
         }
-        throw loginError;
+        return jsonResponse(request, { ok: true, data: { session: legacy.session } });
       }
     }
 
