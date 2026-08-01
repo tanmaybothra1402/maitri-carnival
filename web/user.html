@@ -12,8 +12,7 @@
 <meta content="0" http-equiv="Expires"/>
 <title>Maitri Carnival 2026 · Orders</title>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
-<!-- Images are served through the design-image proxy, never from ImageKit
-     directly, so the customer page must not hint at the origin CDN. -->
+<!-- Customers see no product images. Design number and attributes are the identifiers. -->
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
@@ -83,12 +82,10 @@
     .reader{display:none;margin-top:12px;overflow:hidden;border-radius:13px}.reader.open{display:block}
     .notice{margin-top:10px;padding:10px 12px;border-radius:10px;background:#FFF5DF;color:#8A5A09;font-size:11px;line-height:1.45}.notice.error{background:#FEE2E2;color:#991B1B}.notice.success{background:#DCFCE7;color:#166534}
     .items{display:grid;gap:10px;margin-top:12px}
-    .item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:11px;padding:11px;border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(34,94,99,.045)}
-    .thumb{width:84px;height:112px;border-radius:10px;background:#EEF2F0 center/cover no-repeat;object-fit:cover;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+    .item{display:grid;grid-template-columns:minmax(0,1fr);gap:11px;padding:11px;border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(34,94,99,.045)}
     .item-content{min-width:0}.item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.item h3{min-width:0;font-size:14px;color:var(--teal-deep);overflow-wrap:anywhere}.meta{margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}.line-piece-pill{flex:0 0 auto;padding:4px 7px;border-radius:999px;background:var(--foam);color:var(--teal-deep);font-size:9px;font-weight:850;white-space:nowrap}
     .qty-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}.qty{display:flex;align-items:center;gap:5px;margin:0}.qty button{width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--teal-deep);font-size:18px;font-weight:800;cursor:pointer}.qty input{width:58px;min-height:36px;height:36px;padding:0;text-align:center;font-weight:800}.remove{flex:0 0 auto;width:36px!important;height:36px!important;margin:0!important;color:var(--error)!important}
     .item-locked{background:var(--warm);border-color:#E6D9BE}
-    .item-locked .thumb{opacity:.72}
     .line-locked-note{margin-top:8px;padding:7px 9px;border-radius:9px;background:#FFF4E0;border:1px solid #F0DCB4;color:#8A5A12;font-size:10px;font-weight:700;line-height:1.4}
     .item-locked input,.item-locked textarea,.item-locked .qty button{opacity:.55;cursor:not-allowed}
     .line-total{margin-top:6px;color:var(--muted);font-size:10px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}.line-note-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px}.line-note-help{color:var(--muted);font-weight:600;letter-spacing:0;text-transform:none}.line-note{width:100%;min-height:62px;margin-top:6px;padding:9px 10px;font-size:16px!important;line-height:1.4;overflow-wrap:anywhere}
@@ -103,7 +100,7 @@
     .config-warning{padding:12px;background:#FEE2E2;color:#991B1B;font-size:12px;text-align:center}
     .account-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:520px){.firmlogos,.bdiv{display:none}}
-    @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:101px}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
+    @media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:minmax(0,1fr)}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}}
   
 .welcome-card{padding:18px;background:linear-gradient(145deg,#FFFFFF,#FAFDFC);border-color:rgba(43,115,121,.18)}.welcome-kicker{display:block;margin-bottom:4px;color:var(--orange);font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.welcome-copy{margin-top:5px;color:var(--muted);font-size:11.5px;line-height:1.55}.step{display:grid!important;grid-template-columns:24px minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important}.step-copy{min-width:0}.step-actions{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:5px;max-width:150px}.step-action{min-height:34px!important;margin:0!important;padding:0 11px!important;white-space:nowrap}.booked-summary{background:linear-gradient(135deg,#F1F8F7,#E8F2F1)}
 @media(max-width:430px){.step{grid-template-columns:22px minmax(0,1fr) minmax(88px,auto)!important;gap:8px!important;padding:9px 10px!important}.step-actions{max-width:112px}.step-action{min-height:32px!important;padding:0 8px!important;font-size:9.5px!important}.step b{font-size:11.5px}.step p{font-size:10px}.welcome-card{padding:14px}}
@@ -130,12 +127,12 @@ input,select,textarea{border:1px solid #D8E1DE;border-radius:var(--r-xs);backgro
 .slot-grid{gap:8px}.slot-colhead{border-radius:var(--r-xs);background:var(--foam)}.slot-cell{min-height:48px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff}.slot-cell.picked{border-color:var(--teal);background:var(--foam);box-shadow:0 0 0 2px rgba(43,115,121,.18)}.slot-cell.picked::after{content:"✓";display:block;margin-top:3px;color:var(--success);font-size:10px;font-weight:800}
 .countdown{top:60px;border-radius:var(--r-pill);background:var(--teal-deep);box-shadow:var(--sh-1)}.countdown.warn{background:var(--warn)}.countdown.danger{background:var(--error)}.firm-tabs{top:60px}.summary{gap:8px}.metric{padding:10px;border-radius:var(--r);background:var(--foam)}.metric b{color:var(--teal-deep);font-size:20px}.metric span{font-size:9px;font-weight:800;color:var(--muted)}
 .scan-actions{gap:8px}.reader{border-radius:var(--r)}.notice{border-radius:var(--r);background:var(--warn-bg);color:var(--warn)}.notice.error{background:var(--error-bg);color:var(--error)}.notice.success{background:var(--success-bg);color:var(--success)}
-.items{gap:12px}.item{grid-template-columns:84px minmax(0,1fr);padding:12px;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}.thumb{width:84px;height:112px;border-radius:var(--r-xs);object-fit:cover;object-position:center top}.item h3{color:var(--ink);font-size:14px}.meta{color:var(--muted);font-size:11px}.qty{justify-content:flex-start;gap:8px}.qty button{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:20px}.qty input{width:60px;height:44px;min-height:44px;font-size:16px;font-weight:800}.remove{min-width:44px}.line-note{border-radius:var(--r-xs)}
+.items{gap:12px}.item{grid-template-columns:minmax(0,1fr);padding:12px;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}.item h3{color:var(--ink);font-size:18px;font-weight:800}.meta{color:var(--muted);font-size:13px}.qty{justify-content:flex-start;gap:8px}.qty button{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:20px}.qty input{width:60px;height:44px;min-height:44px;font-size:16px;font-weight:800}.remove{min-width:44px}.line-note{border-radius:var(--r-xs)}
 .savebar{bottom:8px;gap:8px;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.96);box-shadow:var(--sh-pop);padding-bottom:max(8px,env(safe-area-inset-bottom))}.savebar .btn{min-height:48px}.empty{border-radius:var(--r-lg);background:#F8FBFA}
 .toast{top:72px;border-radius:var(--r-pill);background:var(--ink);box-shadow:var(--sh-pop);animation:toast-in 200ms var(--ease) both}.toast.success{background:var(--success)}.toast.error{background:var(--error)}.loading{background:rgba(20,30,28,.5)}.loader-card{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}.spinner{width:20px;height:20px}
 .modal{background:rgba(20,30,28,.5);backdrop-filter:blur(2px)}.modal-card{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}.cred{border-color:var(--teal);border-radius:var(--r);background:var(--foam)}
 @keyframes toast-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-@media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.step{grid-template-columns:28px minmax(0,1fr)}.step-actions{grid-column:2;justify-content:flex-start}.step-action{width:auto}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:76px minmax(0,1fr)}.thumb{width:76px;height:102px}}
+@media(max-width:480px){.grid2,.account-grid{grid-template-columns:1fr}.step{grid-template-columns:28px minmax(0,1fr)}.step-actions{grid-column:2;justify-content:flex-start}.step-action{width:auto}.scan-actions{grid-template-columns:1fr}.scan-actions .btn{width:100%}.summary{grid-template-columns:repeat(2,1fr)}.item{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:399px){.firmlogos,.bdiv{display:none}.brandbar{gap:8px}.top-actions{gap:4px}.icon-btn{padding:0 9px;font-size:10px}main{padding-left:8px;padding-right:8px}}
 @media(min-width:720px){.modal{align-items:center;padding:20px}.modal-card{max-width:460px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}}
@@ -366,16 +363,8 @@ function normalizePhone(v) {
     throw new Error("Enter a valid 10-digit Indian mobile number");
   return "91" + d;
 }
-// Customers never receive the master ImageKit URL. The server returns a design
-// key and the design-image function streams back a medium-blur JPEG, so there
-// is no sharper source reachable from this page — zooming only enlarges an
-// already-degraded image.
-function designImg(key, variant) {
-  if (!key) return "";
-  const q = new URLSearchParams({ d: String(key) });
-  if (variant) q.set("v", variant);
-  return `${CONFIG.SUPABASE_URL}/functions/v1/design-image?${q.toString()}`;
-}
+// Customers see no product images anywhere. The design-image proxy was removed;
+// design number and the category/style/fabric line are the only identifiers.
 function fmtTime(iso) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -1027,20 +1016,11 @@ function render() {
       .map((it, i) => {
         const linePieces = (Number(it.qty) || 1) * (Number(it.pcsPerSet) || 1);
         const lk = it.locked === true;
-        return `<article class="item${lk ? " item-locked" : ""}">${it.imageKey ? `<img class="thumb" id="thumb-${i}" src="${esc(designImg(it.imageKey))}" alt="${esc(it.designNo)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="thumb"></div>'}<div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div>${lk ? '<div class="line-locked-note">Dispatched — this design can no longer be changed. Ask our team if you need it altered.</div>' : ""}<div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}"${lk ? " disabled" : ""}>−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"${lk ? " disabled" : ""}><button aria-label="Increase sets" data-act="plus" data-i="${i}"${lk ? " disabled" : ""}>+</button></div>${lk ? "" : `<button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button>`}</div><div class="line-total">${Number(it.pcsPerSet) || 1} pcs/set</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team"${lk ? " disabled" : ""}>${esc(it.note || "")}</textarea></div></article>`;
+        return `<article class="item${lk ? " item-locked" : ""}"><div class="item-content"><div class="item-head"><h3>${esc(it.designNo)}</h3><span class="line-piece-pill">${linePieces} pcs</span></div><div class="meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · "))}${it.description ? "<br>" + esc(it.description) : ""}</div>${lk ? '<div class="line-locked-note">Dispatched — this design can no longer be changed. Ask our team if you need it altered.</div>' : ""}<div class="qty-row"><div class="qty"><button aria-label="Decrease sets" data-act="minus" data-i="${i}"${lk ? " disabled" : ""}>−</button><input aria-label="Sets for ${esc(it.designNo)}" data-act="qty" data-i="${i}" type="number" min="1" max="9999" value="${Number(it.qty) || 1}"${lk ? " disabled" : ""}><button aria-label="Increase sets" data-act="plus" data-i="${i}"${lk ? " disabled" : ""}>+</button></div>${lk ? "" : `<button aria-label="Remove ${esc(it.designNo)}" class="remove" data-act="remove" data-i="${i}">✕</button>`}</div><div class="line-total">${Number(it.pcsPerSet) || 1} pcs/set</div><label class="line-note-label" for="line-note-${i}"><span>Notes for this design</span><span class="line-note-help">Optional</span></label><textarea id="line-note-${i}" class="line-note" data-act="note" data-i="${i}" maxlength="500" placeholder="Colour, size mix or any instruction for the team"${lk ? " disabled" : ""}>${esc(it.note || "")}</textarea></div></article>`;
       })
       .join("");
-    cart.forEach((it, i) => {
-      const el = $("thumb-" + i);
-      if (el) protect(el);
-    });
   }
   renderCountdown();
-}
-function protect(el) {
-  el.draggable = false;
-  el.addEventListener("contextmenu", (e) => e.preventDefault());
-  el.addEventListener("dragstart", (e) => e.preventDefault());
 }
 function renderCountdown() {
   const s = state.status;
@@ -1163,7 +1143,6 @@ async function addBarcode(raw) {
     cart.push({
       barcode: row.barcode,
       designNo: row.design_no,
-      imageKey: row.image_key || row.design_no || "",
       qty: 1,
       category: row.category,
       style: row.style,
@@ -1279,54 +1258,7 @@ function friendlySave(m) {
 }
 
 /* ---------- PDF (sale order) ---------- */
-async function blobToDataUrl(b) {
-  return await new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = rej;
-    r.readAsDataURL(b);
-  });
-}
-async function fetchThumb(key) {
-  if (!key) throw new Error("no-image");
-  const c = new AbortController();
-  const t = setTimeout(() => c.abort(), 6000);
-  try {
-    const r = await fetch(designImg(key, "pdf"), {
-      mode: "cors",
-      credentials: "omit",
-      signal: c.signal,
-    });
-    if (!r.ok) throw new Error("image-http-" + r.status);
-    return await blobToDataUrl(await r.blob());
-  } finally {
-    clearTimeout(t);
-  }
-}
-async function fetchThumbsLimited(items, limit = 6) {
-  const out = new Array(items.length);
-  let next = 0;
-  async function worker() {
-    while (true) {
-      const i = next++;
-      if (i >= items.length) return;
-      try {
-        out[i] = {
-          status: "fulfilled",
-          value: await fetchThumb(items[i].imageKey),
-        };
-      } catch (reason) {
-        out[i] = { status: "rejected", reason };
-      }
-    }
-  }
-  const workers = Array.from(
-    { length: Math.min(limit, Math.max(1, items.length)) },
-    worker,
-  );
-  await Promise.all(workers);
-  return out;
-}
+// Product image thumbnails removed — customers and the PDF show no images.
 function pdfText(v, fallback = "-") {
   const t = String(v ?? "")
     .replace(/[\r\n\t]+/g, " ")
@@ -1583,9 +1515,8 @@ async function buildSaleOrderPdf() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.2);
     doc.text("#", M + 2, y + 5.3);
-    doc.text("PHOTO", M + 10, y + 5.3);
-    doc.text("DESIGN", M + 29, y + 5.3);
-    doc.text("DETAILS", M + 54, y + 5.3);
+    doc.text("DESIGN", M + 10, y + 5.3);
+    doc.text("DETAILS", M + 44, y + 5.3);
     doc.text("NOTE", M + 108, y + 5.3);
     doc.text("SETS", M + 148, y + 5.3);
     doc.text("PCS/SET", M + 162, y + 5.3);
@@ -1594,7 +1525,6 @@ async function buildSaleOrderPdf() {
     y += 8;
   }
   pageHeader(true);
-  const thumbs = await fetchThumbsLimited(cart, 6);
   for (let i = 0; i < cart.length; i++) {
     const it = cart[i],
       sets = Number(it.qty) || 1,
@@ -1607,7 +1537,7 @@ async function buildSaleOrderPdf() {
     );
     const detailLines = doc.splitTextToSize(
       detail + (it.description ? " - " + pdfText(it.description) : ""),
-      50,
+      62,
     );
     const noteLines = doc.splitTextToSize(pdfText(it.note), 36);
     const rowH = Math.max(
@@ -1618,25 +1548,15 @@ async function buildSaleOrderPdf() {
       doc.addPage();
       pageHeader(false);
     }
-    const tv = thumbs[i];
-    doc.setDrawColor(230);
-    doc.rect(M + 9, y + 2, 15, 18);
-    if (tv.status === "fulfilled") {
-      try {
-        doc.addImage(tv.value, "JPEG", M + 9, y + 2, 15, 18, undefined, "FAST");
-      } catch {
-        /* keep placeholder */
-      }
-    }
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.text(String(i + 1), M + 2, y + 8);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.2);
-    doc.text(pdfText(it.designNo), M + 29, y + 8, { maxWidth: 23 });
+    doc.setFontSize(9.6);
+    doc.text(pdfText(it.designNo), M + 10, y + 8, { maxWidth: 32 });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.4);
-    doc.text(detailLines, M + 54, y + 6);
+    doc.text(detailLines, M + 44, y + 6);
     doc.text(noteLines, M + 108, y + 6);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
