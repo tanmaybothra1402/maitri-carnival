@@ -147,6 +147,63 @@ Then run the maitri-frontend verification suite and show me the results.
 
 ---
 
+## Brief 3.5 — URL-scoped exhibitions (Phase 4)
+
+**Do this before Brief 4.** It rewrites customer-facing functions that Phase 1
+shipped, and it gets more expensive the moment a second exhibition goes live
+alongside Carnival.
+
+```
+Read the revised §5 of docs/MULTI_EXHIBITION_BLUEPRINT.md ("URL-scoped
+exhibitions"), plus maitri-architecture and maitri-migration.
+
+The customer app must resolve its exhibition from the URL, not from
+is_current:
+
+  …/user.html?e=carnival-2026       → Maitri Carnival 2026
+  …/user.html?e=surat-dreams-2026   → Surat Dreams 2026
+  …/user.html                       → falls back to is_current
+
+ONE user.html. Do not create a second HTML file — these are 3,000-line
+single-file apps and two copies will drift.
+
+Scope:
+
+1. user.html reads ?e= into CONFIG, shows the resolved exhibition's name and
+   dates prominently, and passes the slug to customer-auth on both register
+   and login.
+
+2. customer-auth resolves the slug, refuses registration when that exhibition
+   has registration_enabled = false, and builds the hidden email as
+   c<phone>.<slug>@<domain>.
+
+3. Migration: the customer-facing functions Phase 1 scoped to
+   current_exhibition_id() must instead scope to the exhibition the caller
+   resolved — lookup_barcode, list_slots, book_slot, and anything else that
+   calls current_exhibition_id() on a customer path. Decide and tell me
+   whether you're passing the exhibition id as a parameter or deriving it
+   from the authenticated customer's own row. Derive-from-customer is
+   probably right for logged-in calls; registration is the case that
+   genuinely needs the slug.
+
+4. An ended exhibition (registration_enabled = false and end_date passed)
+   shows "<Name> has ended" rather than a failing login.
+
+5. scripts/make-customer-qr.js takes a slug and generates the per-exhibition
+   link and QR.
+
+Constraints:
+- handle_new_auth_user currently stamps current_exhibition_id(). It must use
+  the exhibition the registration was made against. This is the highest-risk
+  change in the brief — a mistake here breaks all registration.
+- Do NOT change is_current semantics; it stays as the bare-URL fallback.
+
+Show me the plan and the function-by-function change list before writing SQL.
+Run the begin…rollback compile check before applying, as with Brief 2.
+```
+
+---
+
 ## Brief 4 — Multi-customer ordering
 
 The big admin feature.

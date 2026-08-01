@@ -13,6 +13,7 @@ from one Supabase project and one codebase.
 | Barcode stickers | **Reprinted and remapped per exhibition** |
 | Old account login | **Fails.** Only current-exhibition accounts can log in. Reception must brief returning buyers to register fresh. |
 | `orders.exhibition_id` | **Denormalised column**, set from the customer at insert. Dashboards filter on it constantly. |
+| **Which exhibition a customer is in** | **From the URL** (`?e=<slug>`), falling back to `is_current` for a bare link. One `user.html`, one link and QR per exhibition. Revised 1 Aug — supersedes the flag-only design in §5. |
 
 ---
 
@@ -130,13 +131,52 @@ Good news: scoping customers means RLS needs almost no change.
 
 ## 5. Application changes
 
+### URL-scoped exhibitions (revised 1 Aug — supersedes the flag-only design)
+
+The customer app resolves its exhibition **from the URL**, not from
+`is_current`:
+
+```
+…/user.html?e=carnival-2026        → Maitri Carnival 2026
+…/user.html?e=surat-dreams-2026    → Surat Dreams 2026
+…/user.html                        → falls back to is_current
+```
+
+**One `user.html`.** Separate HTML files per exhibition were considered and
+rejected: these are 3,000-line single-file apps and two copies will drift, with
+a fix landing in one and not the other. Distinct link and QR per exhibition,
+one codebase.
+
+Why URL beats the flag:
+
+- **Removes the single-flag failure mode.** Flipping `is_current` at the wrong
+  moment sent registrations into the wrong event. The URL is unambiguous.
+- **Allows concurrent exhibitions**, which §8 previously listed as unsolved.
+  Two events in the same week now work.
+- **The slug is already load-bearing.** It is baked into the auth email
+  (`c<phone>.<slug>@…`), so a customer must be on the right link to log in at
+  all, not merely to register. Making that explicit is more honest than
+  inferring it from a flag.
+
+Rules:
+
+- An unknown or missing `?e=` falls back to `is_current`.
+- Registration is refused when that exhibition has
+  `registration_enabled = false`.
+- An ended exhibition shows *"<Name> has ended"* rather than a failing login.
+- Every customer-facing RPC scopes to the **resolved** exhibition, not
+  `current_exhibition_id()`. This is a change to functions Phase 1 shipped —
+  cheap now, tedious once two events are live.
+
 ### `customer-auth`
-- Registration looks up the current exhibition, refuses if
-  `registration_enabled = false`, and builds the email with the slug.
-- Login must resolve which exhibition's account a phone belongs to. Simplest
-  rule: **log in against the current exhibition only.** An old Carnival account
-  cannot log in during the next exhibition — which is the intended behaviour, but
-  reception must be briefed.
+- Takes the exhibition slug from the caller, resolves it, and refuses if
+  `registration_enabled = false`.
+- Builds the hidden email as `c<phone>.<slug>@<domain>`.
+- Login resolves against the slug supplied by the link, so a Carnival account
+  works on the Carnival link and not on the Surat Dreams one.
+- **Optional, now cheap:** because the URL names the exhibition unambiguously,
+  an ended exhibition could keep login working for read-only order history
+  instead of failing. Not built by default — see the decision table.
 
 ### `admin-api`
 - New actions: `listExhibitions`, `createExhibition`, `setCurrentExhibition`.
@@ -153,7 +193,11 @@ Good news: scoping customers means RLS needs almost no change.
   the floor. Require a typed confirmation.
 
 ### Customer HTML
-- No selector. Always the current exhibition. Shows its name and dates.
+- No selector — the exhibition comes from `?e=<slug>` in the URL.
+- Shows the resolved exhibition's name and dates prominently, so a customer can
+  see at a glance which event they are registering for.
+- Each exhibition gets its own link and its own printed QR
+  (`scripts/make-customer-qr.js` takes the slug).
 
 ### `data-sync`
 - `exhibitions` becomes a mirrored table.
@@ -186,19 +230,21 @@ irreversible migration with no fallback is not worth the tidiness.
 | Risk | Mitigation |
 |---|---|
 | Backfill misses rows → orphaned data invisible in every view | Verify counts per table before setting `not null`; the migration should fail loudly, not silently |
-| Wrong `is_current` mid-event → registrations land in the wrong exhibition | Partial unique index guarantees exactly one; typed confirmation in the UI |
-| Old sticker scans into new exhibition | `lookup_barcode` scoped to current exhibition — this is the single most important functional change |
-| Returning buyer confusion at reception | Brief staff: old logins do not work; register fresh. Reception can search last event by phone for their details |
+| Wrong `is_current` mid-event → registrations land in the wrong exhibition | **Largely removed** by URL scoping: the link names the exhibition. The flag only serves bare URLs. Partial unique index still guarantees exactly one; typed confirmation in the UI |
+| A stale link circulating → someone registers into a finished event | Registration refused when `registration_enabled = false`; the page shows "<Name> has ended" |
+| Old sticker scans into new exhibition | `lookup_barcode` scoped to the **resolved** exhibition — this is the single most important functional change |
+| Returning buyer confusion at reception | Brief staff: old logins do not work on the new link; register fresh. Reception can search last event by phone for their details |
 | Dashboard silently mixes exhibitions | Every aggregate takes `p_exhibition_id`; no default-to-all |
 | Cross-exhibition reporting lost | Not lost — join on `customers.phone_e164` across exhibitions |
 
 ## 8. What this does not solve
 
-- **Two exhibitions running simultaneously.** `is_current` is a single flag. If
-  you ever need concurrent events, the customer app must carry an exhibition id
-  in its config rather than reading the flag. Worth knowing; not worth building
-  now.
-- **Shared logins.** Deliberately out of scope per the decision above.
+- ~~**Two exhibitions running simultaneously.**~~ **Solved** by URL scoping
+  (§5). Each event has its own link, so two can run concurrently. `is_current`
+  now only resolves a bare URL.
+- **Shared logins.** Deliberately out of scope per the decision above. Note the
+  URL design makes read-only access to past orders cheap to add later, since
+  the link names the exhibition unambiguously.
 - **Per-exhibition catalogue.** All active designs are orderable everywhere. If
   you later want a subset, add an `exhibition_designs` join table; nothing here
   blocks it.
@@ -210,9 +256,16 @@ irreversible migration with no fallback is not worth the tidiness.
 | 1 | Migration + backfill + function updates |
 | 2 | `admin-api` actions and permission wiring |
 | 3 | Admin console: selector + Exhibitions screen |
-| 4 | Customer app + `customer-auth` |
+| 4 | Customer app + `customer-auth` — **URL scoping**, per-exhibition links and QRs |
 | 5 | `data-sync` + docs |
 | 6 | Verification pass against `maitri-guardrails` |
 
-Phases 1–2 are the risky ones; 3–5 are mechanical. Do not deploy 1 without 2 —
-`admin-api` will call functions whose signatures changed.
+Phase 1 shipped 1 Aug 2026 and proved **non-breaking**: the three
+signature-changed functions took `p_exhibition_id` as a defaulted last argument,
+and every existing caller passes named parameters without it, so PostgREST
+resolves them to the new functions at the current exhibition. Phase 2 is
+required to *use* the parameter, not to avoid breakage.
+
+Phase 4 carries the URL-scoping change (§5) and must revisit the customer-facing
+functions Phase 1 shipped, replacing `current_exhibition_id()` with the
+resolved exhibition.
