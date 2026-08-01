@@ -189,13 +189,28 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 @media(max-width:600px){.grid2,.grid3,.grid4,.slot-form-grid{grid-template-columns:1fr}.sale-scan-row{grid-template-columns:1fr}.entry-card{grid-template-columns:1fr}.entry-actions{display:grid;grid-template-columns:1fr 1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:399px){.appbar .firm-logo,.appbar .divider{display:none}.catalogue-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nav-item{font-size:9px}.page{padding-left:8px;padding-right:8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}}
+.exhibition-switch{display:flex;align-items:center;gap:6px;min-width:0}
+.exhibition-switch select{font-size:11px;font-weight:700;color:var(--deep);border:1px solid var(--border);border-radius:8px;padding:5px 8px;background:#fff;max-width:150px;cursor:pointer}
+.exhibition-live{font-size:8px;font-weight:800;letter-spacing:.08em;color:#0a7d3c;background:rgba(16,163,74,.13);border-radius:999px;padding:3px 7px;white-space:nowrap}
+.exhibition-live.off{display:none}
+.exhibition-banner{position:sticky;top:60px;z-index:55;background:#fff7e6;color:#8a5a00;border-bottom:1px solid #f2d488;font-size:11px;font-weight:600;padding:7px 14px;text-align:center;line-height:1.35}
+.scope-note{font-size:11px;font-weight:600;color:var(--muted)}
+.exhibition-list{display:flex;flex-direction:column;gap:10px}
+.exhibition-row{border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.exhibition-row.current{border-color:#10a34a;box-shadow:0 0 0 1px rgba(16,163,74,.25)}
+.exhibition-row .ex-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.exhibition-row .ex-head b{font-size:14px;color:var(--deep)}
+.exhibition-row .ex-meta{color:var(--muted);font-size:11px;margin-top:4px}
+.exhibition-row .ex-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
 <header class="appbar hidden" id="top">
 <div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
+<div class="exhibition-switch hidden" id="exhibition-switch"><select id="exhibition-select" aria-label="Exhibition"></select><span class="exhibition-live off" id="exhibition-live">LIVE</span></div>
 <div class="staff-meta"><b id="staff-name">Team Member</b><button id="logout">Logout</button></div>
 </header>
+<div class="exhibition-banner hidden" id="exhibition-banner"></div>
 <main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Team login</h1><p class="copy">Use your Team ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Team ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
 <main class="page" id="page-reception">
 <div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">New Visitor</button><button data-sub="password">Password</button></div>
@@ -264,12 +279,12 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <main class="page" id="page-products">
 <div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button></div>
 <section class="subpanel" id="products-master"><div class="card product-master-card">
-  <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Products</h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
+  <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Product Master <span class="scope-note">· all events</span></h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
   <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
 </div></section>
 <section class="subpanel hidden" id="products-mapping">
 <div class="card map-build-card">
-  <div><span class="section-kicker">Barcode mapping</span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
+  <div><span class="section-kicker">Barcode mapping <span class="scope-note" id="mapping-scope"></span></span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
   <div class="map-build-grid">
     <div><label for="map-barcode">Barcode</label><input id="map-barcode" autocomplete="off" placeholder="Scan or type"/><div class="map-barcode-status hidden" id="map-barcode-status"></div></div>
     <div class="map-design-field"><label for="map-design">Design</label><input id="map-design" autocomplete="off" placeholder="Type any part, e.g. 1234"/><div class="map-suggest hidden" id="map-suggest"></div></div>
@@ -324,7 +339,7 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="lightbox" id="dispatch-lightbox"><button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button><img alt="" id="lightbox-img"/><span class="lightbox-caption" id="lightbox-caption"></span></div>
 
 <main class="page" id="page-admin">
-<div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button></div>
+<div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button><button data-sub="exhibitions">Exhibitions</button></div>
 <section class="subpanel" id="admin-slots"><div class="card slot-manager-card">
   <div class="slot-manager-head"><div><span class="section-kicker">Schedule</span><h1>Visit Slots</h1><p class="copy">Capacity counts parties. Existing bookings are shown on each slot.</p></div></div>
   <div class="slot-form-grid"><div><label>Starts</label><input id="slot-start" type="datetime-local"/></div><div><label>Ends</label><input id="slot-end" type="datetime-local"/></div><div class="slot-label-field"><label>Display label <span class="optional">optional</span></label><input id="slot-label" placeholder="Morning slot"/></div><div class="slot-cap-field"><label>Party capacity</label><input id="slot-cap" min="1" type="number" placeholder="20"/></div></div>
@@ -356,6 +371,28 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 <div class="card"><h2>Team Members</h2><p class="copy">Tap a member to update access, reset their password or remove the account.</p><div class="list" id="staff-list"></div></div>
 </section>
 <section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
+<section class="subpanel hidden" id="admin-exhibitions">
+<div class="card">
+  <span class="section-kicker">Events</span>
+  <h1>Exhibitions</h1>
+  <p class="copy">Each exhibition is a separate event with its own customers, orders and barcodes. The <b>LIVE</b> one is where new registrations and scans go by default.</p>
+  <div class="exhibition-list" id="exhibition-admin-list"></div>
+</div>
+<div class="card">
+  <h2>Create a new exhibition</h2>
+  <p class="copy">The slug is baked into the customer login link and cannot be changed later. Creating a second exhibition is blocked until the deploy prerequisites are met.</p>
+  <div class="grid2">
+    <div><label>Name</label><input id="ex-name" placeholder="Surat Dreams 2026"/></div>
+    <div><label>Slug <span class="optional">login link</span></label><input id="ex-slug" placeholder="surat-dreams-2026"/></div>
+    <div><label>Start date</label><input id="ex-start" type="date"/></div>
+    <div><label>End date</label><input id="ex-end" type="date"/></div>
+    <div><label>Edit window hours</label><input id="ex-hours" type="number" min="1" max="240" value="24"/></div>
+    <div><label>Registration</label><select id="ex-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div>
+  </div>
+  <button class="btn" id="ex-create" style="margin-top:12px">Create exhibition</button>
+  <div id="ex-create-result"></div>
+</div>
+</section>
 </main>
 <nav class="bottom-nav hidden" id="bottom-nav">
 <button class="nav-item" data-section="reception" id="nav-reception" style="grid-column:1"><svg viewbox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg>Reception</button>
@@ -490,6 +527,9 @@ const st = {
   me: null,
   section: null,
   sub: { reception: "entry", products: "master", admin: "slots" },
+  exhibitions: [],
+  exhibitionId: null,        // the one the console is currently scoped to
+  currentExhibitionId: null, // the LIVE one — where new registrations/scans land by default
   designs: [],
   mappings: [],
   slots: [],
@@ -582,6 +622,11 @@ async function token() {
   return session.access_token;
 }
 async function admin(action, payload = {}) {
+  const body = { action, ...payload };
+  // Scope every exhibition-aware action to whatever the console is viewing.
+  // Global actions (listDesigns, staff, settings, exhibition management) simply
+  // ignore this field server-side, so injecting it unconditionally is safe.
+  if (st.exhibitionId && body.exhibitionId === undefined) body.exhibitionId = st.exhibitionId;
   const r = await fetch(API, {
     method: "POST",
     headers: {
@@ -589,7 +634,7 @@ async function admin(action, payload = {}) {
       Authorization: "Bearer " + (await token()),
       apikey: CONFIG.SUPABASE_ANON_KEY,
     },
-    body: JSON.stringify({ action, ...payload }),
+    body: JSON.stringify(body),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.ok) throw Error(j.error || "Request failed");
@@ -635,6 +680,7 @@ function setupNavigation() {
       slots: "admin.slots",
       staff: "admin.staff",
       settings: "admin.settings",
+      exhibitions: "admin.exhibitions",
     },
   };
   Object.entries(subPerm).forEach(([mod, map]) =>
@@ -737,6 +783,7 @@ async function boot() {
   st.me = data.me;
   setLogged(true);
   fillStates();
+  await loadExhibitionSwitch();
   setupNavigation();
 }
 function fillStates() {
@@ -1149,6 +1196,7 @@ async function loadDashboard(force = false) {
         p_search: $("dash-search").value.trim(),
         p_limit: 100,
         p_offset: 0,
+        p_exhibition_id: st.exhibitionId,
       });
       st.cache.dashboardAt = Date.now();
     }
@@ -1396,6 +1444,7 @@ $("dash-export").onclick = async () => {
         p_search: $("dash-search").value.trim(),
         p_limit: 200,
         p_offset: offset,
+        p_exhibition_id: st.exhibitionId,
       });
       all.push(...(d.orders || []));
       total = Number(d.totalOrders) || 0;
@@ -1927,6 +1976,7 @@ async function saleAdd(raw) {
   try {
     const data = await rpc("lookup_barcode", {
         p_barcode: String(raw || "").trim(),
+        p_exhibition_id: st.exhibitionId,
       }),
       r = Array.isArray(data) ? data[0] : data;
     if (!r) throw Error("Barcode not mapped");
@@ -2816,7 +2866,187 @@ async function loadAdminModule() {
       return denySub("admin", has("admin.slots") ? "slots" : "staff");
     await loadSettings();
   }
+  if (sub === "exhibitions") {
+    if (!has("admin.exhibitions"))
+      return denySub("admin", has("admin.slots") ? "slots" : has("admin.staff") ? "staff" : "settings");
+    await loadExhibitionsAdmin();
+  }
 }
+
+/* Exhibitions — app-bar switcher and the admin management tab.
+   The switch is admin-only: the list comes from listExhibitions, which requires
+   admin.exhibitions. Everyone else leaves st.exhibitionId null, so the server
+   resolves the CURRENT exhibition for every scoped call — correct for live staff. */
+function exName(id) {
+  return st.exhibitions.find((e) => e.id === id)?.name || "this exhibition";
+}
+async function loadExhibitionSwitch() {
+  if (!has("admin.exhibitions")) return; // stays hidden; scoped calls default to current server-side
+  try {
+    st.exhibitions = (await admin("listExhibitions")) || [];
+  } catch (e) {
+    st.exhibitions = [];
+    return;
+  }
+  const current = st.exhibitions.find((e) => e.isCurrent) || st.exhibitions[0];
+  st.currentExhibitionId = current ? current.id : null;
+  // Only reset the selection to current on first load, not on every refresh.
+  if (!st.exhibitionId || !st.exhibitions.some((e) => e.id === st.exhibitionId))
+    st.exhibitionId = st.currentExhibitionId;
+  renderExhibitionSwitch();
+}
+function renderExhibitionSwitch() {
+  const wrap = $("exhibition-switch"), sel = $("exhibition-select"),
+    badge = $("exhibition-live"), banner = $("exhibition-banner");
+  if (!st.exhibitions.length) {
+    wrap.classList.add("hidden");
+    return;
+  }
+  wrap.classList.remove("hidden");
+  sel.innerHTML = st.exhibitions
+    .map((e) => `<option value="${e.id}"${e.id === st.exhibitionId ? " selected" : ""}>${esc(e.name)}${e.isCurrent ? " · LIVE" : ""}</option>`)
+    .join("");
+  const onLive = st.exhibitionId === st.currentExhibitionId;
+  badge.classList.toggle("off", !onLive);
+  if (onLive) {
+    banner.classList.add("hidden");
+    banner.textContent = "";
+  } else {
+    banner.classList.remove("hidden");
+    banner.textContent = `Viewing ${exName(st.exhibitionId)} — not the live event. New registrations and scans here do NOT affect the running exhibition.`;
+  }
+  const scope = $("mapping-scope");
+  if (scope) scope.textContent = onLive ? "· current event" : `· ${exName(st.exhibitionId)}`;
+}
+function selectExhibition(id) {
+  if (!id || id === st.exhibitionId) return;
+  st.exhibitionId = id;
+  // Drop everything scoped to the previous exhibition so nothing bleeds across.
+  st.cache.mappingsAt = 0;
+  st.cache.dashboardAt = 0;
+  st.mappings = [];
+  st.dashboard = null;
+  st.entryRows = [];
+  st.bookings = [];
+  st.slots = [];
+  st.dispatch = { rows: [], detail: null, firm: "", status: "" };
+  st.sale.customer = null;
+  st.sale.carts = { Maitri: [], Niharika: [] };
+  st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
+  renderExhibitionSwitch();
+  if (st.section) go(st.section);
+}
+$("exhibition-select").onchange = (e) => selectExhibition(e.target.value);
+
+async function loadExhibitionsAdmin() {
+  st.exhibitions = (await admin("listExhibitions")) || [];
+  const current = st.exhibitions.find((e) => e.isCurrent) || st.exhibitions[0];
+  st.currentExhibitionId = current ? current.id : null;
+  if (!st.exhibitions.some((e) => e.id === st.exhibitionId))
+    st.exhibitionId = st.currentExhibitionId;
+  renderExhibitionSwitch();
+  $("exhibition-admin-list").innerHTML = st.exhibitions
+    .map((e) => {
+      const dates = `${esc(e.startDate || "?")} → ${esc(e.endDate || "?")}`;
+      return `<div class="exhibition-row ${e.isCurrent ? "current" : ""}" data-ex-id="${e.id}">
+        <div class="ex-head"><b>${esc(e.name)}</b>${e.isCurrent ? '<span class="exhibition-live">LIVE</span>' : ""}<span class="scope-note">/${esc(e.slug)}</span></div>
+        <div class="ex-meta">${dates} · edit window ${Number(e.editWindowHours)}h · registration ${e.registrationEnabled ? "on" : "off"}<br>${Number(e.customers)} customers · ${Number(e.orders)} orders · ${Number(e.mappings)} barcodes</div>
+        <div class="ex-actions">
+          ${e.isCurrent ? '<span class="scope-note">This is the live event</span>' : `<button class="btn secondary small" data-ex-setcurrent="${e.id}">Set live</button>`}
+          <button class="btn ghost small" data-ex-edit="${e.id}">Edit</button>
+        </div>
+        <div class="ex-edit hidden" data-ex-editor="${e.id}" style="margin-top:10px">
+          <div class="grid2">
+            <div><label>Start date</label><input type="date" data-ex-field="start" value="${esc(e.startDate || "")}"/></div>
+            <div><label>End date</label><input type="date" data-ex-field="end" value="${esc(e.endDate || "")}"/></div>
+            <div><label>Edit window hours</label><input type="number" min="1" max="240" data-ex-field="hours" value="${Number(e.editWindowHours)}"/></div>
+            <div><label>Registration</label><select data-ex-field="registration"><option value="true"${e.registrationEnabled ? " selected" : ""}>Enabled</option><option value="false"${e.registrationEnabled ? "" : " selected"}>Disabled</option></select></div>
+          </div>
+          <div class="row" style="margin-top:10px"><button class="btn small" data-ex-save="${e.id}">Save</button><button class="btn ghost small" data-ex-cancel="${e.id}">Cancel</button></div>
+        </div>
+      </div>`;
+    })
+    .join("") || '<div class="empty">No exhibitions yet.</div>';
+}
+$("exhibition-admin-list").onclick = async (e) => {
+  const setBtn = e.target.closest("[data-ex-setcurrent]"),
+    editBtn = e.target.closest("[data-ex-edit]"),
+    saveBtn = e.target.closest("[data-ex-save]"),
+    cancelBtn = e.target.closest("[data-ex-cancel]");
+  if (editBtn) {
+    document.querySelector(`[data-ex-editor="${editBtn.dataset.exEdit}"]`)?.classList.toggle("hidden");
+    return;
+  }
+  if (cancelBtn) {
+    document.querySelector(`[data-ex-editor="${cancelBtn.dataset.exCancel}"]`)?.classList.add("hidden");
+    return;
+  }
+  if (setBtn) {
+    const id = setBtn.dataset.exSetcurrent, name = exName(id);
+    const typed = prompt(`Make "${name}" the LIVE exhibition?\n\nNew registrations and barcode scans will go here instead of the current live event. Type the exhibition name to confirm:`);
+    if (typed == null) return;
+    if (typed.trim() !== name) {
+      toast("Name did not match — nothing changed", "error");
+      return;
+    }
+    try {
+      loading(true, "Switching live exhibition…");
+      await admin("setCurrentExhibition", { id });
+      st.exhibitionId = id; // follow the newly-live event
+      await loadExhibitionsAdmin();
+      toast(`${name} is now live`, "success");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      loading(false);
+    }
+    return;
+  }
+  if (saveBtn) {
+    const id = saveBtn.dataset.exSave,
+      row = saveBtn.closest(".exhibition-row"),
+      f = (name) => row.querySelector(`[data-ex-field="${name}"]`);
+    try {
+      loading(true, "Saving…");
+      await admin("updateExhibition", {
+        id,
+        startDate: f("start").value,
+        endDate: f("end").value,
+        editWindowHours: Number(f("hours").value),
+        registrationEnabled: f("registration").value === "true",
+      });
+      await loadExhibitionsAdmin();
+      toast("Exhibition updated", "success");
+    } catch (err) {
+      toast(err.message, "error");
+    } finally {
+      loading(false);
+    }
+  }
+};
+$("ex-create").onclick = async () => {
+  const out = $("ex-create-result");
+  try {
+    loading(true, "Creating exhibition…");
+    await admin("createExhibition", {
+      name: $("ex-name").value.trim(),
+      slug: $("ex-slug").value.trim().toLowerCase(),
+      startDate: $("ex-start").value,
+      endDate: $("ex-end").value,
+      editWindowHours: Number($("ex-hours").value) || 24,
+      registrationEnabled: $("ex-registration").value === "true",
+    });
+    ["ex-name", "ex-slug", "ex-start", "ex-end"].forEach((id) => ($(id).value = ""));
+    $("ex-hours").value = "24";
+    out.innerHTML = "";
+    await loadExhibitionsAdmin();
+    toast("Exhibition created", "success");
+  } catch (err) {
+    out.innerHTML = `<p class="copy" style="color:var(--danger,#c0392b);margin-top:10px">${esc(err.message)}</p>`;
+  } finally {
+    loading(false);
+  }
+};
 function slotDateLabel(value) {
   return new Date(value).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 }

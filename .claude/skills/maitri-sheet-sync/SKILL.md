@@ -78,6 +78,30 @@ Other traps:
   and write **nothing**. De-duplicate first and name the duplicate keys, because
   the raw error identifies no row.
 
+## A NOT NULL column breaks upsert — for existing rows, not just inserts
+
+`push` upserts with `onConflict` (INSERT … ON CONFLICT DO UPDATE). When a migration
+adds a `NOT NULL` column to a mirrored table, the instinct is "stamp it on new
+rows." That is not enough: PostgREST sends the **whole** record on every upsert, so
+an update of an *existing* row also omits the new column and fails the NOT NULL
+check — the mirror stops writing that table entirely, not just refusing inserts.
+
+The wrong fix is to add the column to the upsert record. On `ON CONFLICT DO UPDATE`
+that **overwrites** the existing value, silently re-homing a row to whatever the
+Sheet-side default said — exactly the untrusted-source assignment the column was
+added to prevent. Instead **split the two paths**:
+
+- existing row (pk already present) → `UPDATE`, writing only the whitelisted `write`
+  columns, never the scope column;
+- new row (no pk) → `INSERT`, with the scope column stamped **server-side** from the
+  database (e.g. `select id from exhibitions where is_current`), never from a cell.
+
+**The `slots` case:** Phase 1's `NOT NULL exhibition_id` did exactly this. The first
+fix compiled clean and looked right — and was still wrong, because it added
+`exhibition_id` to the upsert and would have re-homed every edited slot to the
+current exhibition. Only running the full pull → append → push cycle surfaced it.
+Compile-clean is not correct here; exercise the round trip.
+
 ## Deletion — the four rails
 
 Deleting a row from the Sheet and pushing **permanently deletes it in Supabase**,
