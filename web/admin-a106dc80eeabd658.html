@@ -81,6 +81,7 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 /* ── Barcode mapping: typeahead + batch queue ─────────────────────────── */
 .map-build-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:13px}
 .map-design-field{position:relative;min-width:0}
+.ta-field{position:relative;min-width:0}
 .map-suggest{position:absolute;z-index:60;top:100%;left:0;right:0;margin-top:5px;max-height:266px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 12px 30px rgba(34,94,99,.16)}
 .map-suggest.hidden{display:none}
 .map-suggest-item{display:flex;flex-direction:column;gap:2px;width:100%;padding:9px 11px;border:0;border-bottom:1px solid var(--border);background:#fff;text-align:left;cursor:pointer}
@@ -497,9 +498,9 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 <div class="grid2">
   <div><label>Design number</label><input id="pc-design" autocomplete="off"/><div class="pc-dup hidden" id="pc-dup"></div></div>
   <div><label>Firm</label><select id="pc-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div>
-  <div><label>Category</label><input id="pc-category" list="dl-category" autocomplete="off" placeholder="Pick or type new"/></div>
-  <div><label>Style</label><input id="pc-style" list="dl-style" autocomplete="off" placeholder="Pick or type new"/></div>
-  <div><label>Fabric</label><input id="pc-fabric" list="dl-fabric" autocomplete="off" placeholder="Pick or type new"/></div>
+  <div class="ta-field"><label>Category</label><input id="pc-category" autocomplete="off" placeholder="Pick or type new"/><div class="map-suggest hidden" id="pc-category-sug"></div></div>
+  <div class="ta-field"><label>Style</label><input id="pc-style" autocomplete="off" placeholder="Pick or type new"/><div class="map-suggest hidden" id="pc-style-sug"></div></div>
+  <div class="ta-field"><label>Fabric</label><input id="pc-fabric" autocomplete="off" placeholder="Pick or type new"/><div class="map-suggest hidden" id="pc-fabric-sug"></div></div>
   <div><label>Pcs per set</label><input id="pc-pcs" type="number" min="1" max="9999" value="4"/></div>
 </div>
 <label>Description</label><textarea id="pc-description"></textarea>
@@ -513,7 +514,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 <button class="btn" id="pc-save" style="width:100%;margin-top:14px">Save product</button>
 <div id="pc-result"></div>
 </div></div>
-<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div><label>Category</label><input id="pm-category" list="dl-category" autocomplete="off"/></div><div><label>Style</label><input id="pm-style" list="dl-style" autocomplete="off"/></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric" autocomplete="off"/></div><datalist id="dl-category"></datalist><datalist id="dl-style"></datalist><datalist id="dl-fabric"></datalist><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
+<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div class="ta-field"><label>Category</label><input id="pm-category" autocomplete="off"/><div class="map-suggest hidden" id="pm-category-sug"></div></div><div class="ta-field"><label>Style</label><input id="pm-style" autocomplete="off"/><div class="map-suggest hidden" id="pm-style-sug"></div></div><div class="ta-field"><label>Fabric</label><input id="pm-fabric" autocomplete="off"/><div class="map-suggest hidden" id="pm-fabric-sug"></div></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
 <div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
@@ -2651,18 +2652,61 @@ async function loadProducts(force = false) {
     st.cache.designsAt = Date.now();
   }
   $("dl-design").innerHTML = st.designs.filter((d) => d.active).map((d) => `<option value="${esc(d.designNo)}">`).join("");
-  fillTaxonomyLists();
   renderProducts();
 }
-// Populate the category/style/fabric dropdowns from the (now clean) catalogue.
-// A datalist is searchable and still allows a brand-new value typed inline.
-function fillTaxonomyLists() {
-  const opts = (key) => [...new Set((st.designs || []).map((d) => String(d[key] || "").trim()).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b)).map((v) => `<option value="${esc(v)}"></option>`).join("");
-  $("dl-category").innerHTML = opts("category");
-  $("dl-style").innerHTML = opts("style");
-  $("dl-fabric").innerHTML = opts("fabric");
+// Category/style/fabric reuse the Mapping search's substring typeahead
+// (taSubstringMatches + the .map-suggest dropdown) rather than <datalist>, whose
+// Safari matching is prefix-only. The pool is read live from the cleaned catalogue,
+// so no refresh step is needed; a value not in the list is kept as typed — the one
+// controlled door for genuinely new taxonomy.
+function distinctTaxa(key) {
+  return [...new Set((st.designs || []).map((d) => String(d[key] || "").trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
 }
+function attachTaxaTypeahead(input, host, getPool) {
+  let index = -1;
+  const render = () => {
+    const rows = taSubstringMatches(getPool(), input.value, (v) => v, 12);
+    if (!rows.length) {
+      const q = input.value.trim();
+      host.innerHTML = q ? `<div class="map-suggest-empty">No match — “${esc(q)}” will be added as new</div>` : "";
+      host.classList.toggle("hidden", !q);
+      index = -1;
+      return;
+    }
+    host.innerHTML = rows.map((v, i) => `<button type="button" class="map-suggest-item${i === index ? " active" : ""}" data-ta="${esc(v)}"><b>${esc(v)}</b></button>`).join("");
+    host.classList.remove("hidden");
+  };
+  const hide = () => { host.classList.add("hidden"); index = -1; };
+  input.oninput = () => { index = -1; render(); };
+  input.onfocus = render;
+  input.onblur = () => setTimeout(hide, 140);
+  input.onkeydown = (e) => {
+    const items = [...host.querySelectorAll("[data-ta]")];
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (!items.length) return;
+      e.preventDefault();
+      index = e.key === "ArrowDown" ? Math.min(items.length - 1, index + 1) : Math.max(0, index - 1);
+      render();
+    } else if (e.key === "Escape") {
+      hide();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (index >= 0 && items[index]) { input.value = items[index].dataset.ta; hide(); }
+    }
+  };
+  host.onmousedown = (e) => {
+    const b = e.target.closest("[data-ta]");
+    if (!b) return;
+    e.preventDefault();
+    input.value = b.dataset.ta;
+    hide();
+  };
+}
+["pc", "pm"].forEach((p) => ["category", "style", "fabric"].forEach((f) => {
+  const input = $(p + "-" + f), host = $(p + "-" + f + "-sug");
+  if (input && host) attachTaxaTypeahead(input, host, () => distinctTaxa(f));
+}));
 function renderProducts() {
   const q = $("product-search").value.trim().toLowerCase(),
     g = $("product-group").value || "category";
@@ -3142,27 +3186,27 @@ function mapError(msg) {
 const mapBatch = [];
 let mapSuggestIndex = -1;
 
-function mapMatches(term) {
+// Substring matcher shared by the Mapping design search and the product-form
+// category/style/fabric typeaheads. Substring, NOT prefix-only like <datalist> on
+// Safari: "1234" finds MR-1234, "co-ord" finds "Work Co-ord Set". Ranks prefix
+// hits first, then shortest, then alphabetical.
+function taSubstringMatches(pool, term, keyFn, limit) {
   const q = String(term || "").trim().toLowerCase();
+  if (!q) return pool.slice(0, limit);
+  return pool
+    .filter((x) => keyFn(x).toLowerCase().includes(q))
+    .sort((a, b) => {
+      const an = keyFn(a).toLowerCase(), bn = keyFn(b).toLowerCase();
+      return (an.startsWith(q) ? 0 : 1) - (bn.startsWith(q) ? 0 : 1) || an.length - bn.length || an.localeCompare(bn);
+    })
+    .slice(0, limit);
+}
+function mapMatches(term) {
   // Inactive designs are shown and labelled rather than hidden. Hiding them
   // produced an empty dropdown with no explanation when a bulk import had
   // silently deactivated the catalogue.
   const pool = (st.designs || []).slice().sort((a, b) => (a.active === false) - (b.active === false));
-  if (!q) return pool.slice(0, 12);
-  return pool
-    .filter((d) => {
-      const no = String(d.designNo || d.design_no || "").toLowerCase();
-      return no.includes(q);
-    })
-    .sort((a, b) => {
-      // Prefix matches first, then shortest, then alphabetical.
-      const an = String(a.designNo || a.design_no || "").toLowerCase();
-      const bn = String(b.designNo || b.design_no || "").toLowerCase();
-      const ap = an.startsWith(q) ? 0 : 1;
-      const bp = bn.startsWith(q) ? 0 : 1;
-      return ap - bp || an.length - bn.length || an.localeCompare(bn);
-    })
-    .slice(0, 12);
+  return taSubstringMatches(pool, term, (d) => String(d.designNo || d.design_no || ""), 12);
 }
 
 let mapDesignsLoading = false;

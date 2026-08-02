@@ -77,8 +77,9 @@ function onOpen() {
 // Apply dropdown validation to the Designs tab's category/style/fabric columns
 // from the values already in the sheet (run right after a clean Pull). This is
 // the guard that stops a hand-typed variant reintroducing the mess. Off-list
-// values are warned, not hard-blocked, so a genuine new fabric can still be added
-// (do that in the app so it stays canonical, then Pull + re-run this).
+// values are REJECTED — a warning would still let the value into the cell and
+// through to the database, which is the whole thing we're preventing. One door
+// for new taxonomy: add it via the app, Pull, then re-run this to refresh the list.
 function dsDesignValidation() {
   var sh = SpreadsheetApp.getActive().getSheetByName('Designs');
   if (!sh) { dsAlert_('No "Designs" tab found. Pull ALL tables first.'); return; }
@@ -98,8 +99,8 @@ function dsDesignValidation() {
     if (!distinct.length) return;
     var rule = SpreadsheetApp.newDataValidation()
       .requireValueInList(distinct, true)
-      .setAllowInvalid(true)
-      .setHelpText('Pick an existing ' + field + ', or add a genuinely new one via the app (Products → New product) so it stays canonical, then Pull and re-run this.')
+      .setAllowInvalid(false)
+      .setHelpText('Pick an existing ' + field + '. A genuinely new one is added via the app (Products → New product), then Pull + re-run "Set Designs dropdowns".')
       .build();
     sh.getRange(2, col, Math.max(n, 2000), 1).setDataValidation(rule);
     applied.push(field + ' (' + distinct.length + ')');
