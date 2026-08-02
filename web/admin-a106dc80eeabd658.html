@@ -190,8 +190,9 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 @media(max-width:600px){.grid2,.grid3,.grid4,.slot-form-grid{grid-template-columns:1fr}.sale-scan-row{grid-template-columns:1fr}.entry-card{grid-template-columns:1fr}.entry-actions{display:grid;grid-template-columns:1fr 1fr}.toolbar{flex-wrap:wrap}.toolbar .compact{width:100%}}
 @media(max-width:399px){.appbar .firm-logo,.appbar .divider{display:none}.catalogue-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nav-item{font-size:9px}.page{padding-left:8px;padding-right:8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transform:none!important}}
-.exhibition-switch{display:flex;align-items:center;gap:6px;min-width:0}
-.exhibition-switch select{font-size:11px;font-weight:700;color:var(--deep);border:1px solid var(--border);border-radius:8px;padding:5px 8px;background:#fff;max-width:150px;cursor:pointer}
+.exhibition-strip{display:flex;align-items:center;gap:9px;padding:7px 14px;background:var(--foam);border-bottom:1px solid var(--line)}
+.exhibition-strip .ex-strip-label{flex:0 0 auto;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.exhibition-strip select{flex:1 1 auto;min-width:0;font-size:12px;font-weight:800;color:var(--deep);border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:#fff;cursor:pointer}
 .exhibition-live{font-size:8px;font-weight:800;letter-spacing:.08em;color:#0a7d3c;background:rgba(16,163,74,.13);border-radius:999px;padding:3px 7px;white-space:nowrap}
 .exhibition-live.off{display:none}
 .exhibition-banner{position:sticky;top:60px;z-index:55;background:#fff7e6;color:#8a5a00;border-bottom:1px solid #f2d488;font-size:11px;font-weight:600;padding:7px 14px;text-align:center;line-height:1.35}
@@ -264,9 +265,9 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 <body>
 <header class="appbar hidden" id="top">
 <div class="brand"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="firm-logo niharika-logo" src="assets/niharika-logo.png"/></div>
-<div class="exhibition-switch hidden" id="exhibition-switch"><select id="exhibition-select" aria-label="Exhibition"></select><span class="exhibition-live off" id="exhibition-live">LIVE</span></div>
 <div class="staff-meta"><b id="staff-name">Team Member</b><button id="logout">Logout</button></div>
 </header>
+<div class="exhibition-strip hidden" id="exhibition-switch"><span class="ex-strip-label">Exhibition</span><select id="exhibition-select" aria-label="Switch exhibition"></select><span class="exhibition-live off" id="exhibition-live">LIVE</span></div>
 <div class="exhibition-banner hidden" id="exhibition-banner"></div>
 <main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Team login</h1><p class="copy">Use your Team ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Team ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
 <main class="page" id="page-reception">
