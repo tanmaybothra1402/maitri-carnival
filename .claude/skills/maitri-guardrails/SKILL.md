@@ -111,7 +111,10 @@ matches). The rule above is about admin partial-delta saves; do not apply this
 reasoning to `user.html`.
 
 **Check:** every admin order write goes through `sendAdminSave`; every item it
-sends carries `_op`; nothing else calls `assistedSaveOrder`.
+sends carries `_op`; nothing else calls `assistedSaveOrder`. Run
+`node tests/admin-save-markers.js` before pushing any `web/admin-*.html` change —
+it is the `maitri-deploy` pre-push gate (pre-push discipline, not CI, until after
+14 Aug).
 
 ---
 

@@ -33,9 +33,30 @@ npx supabase functions deploy data-sync    --no-verify-jwt
 npx supabase functions deploy design-image --no-verify-jwt
 npx supabase functions list
 
-# 3. Pages
+# 3. Pages — for a web/admin-*.html change, run the pre-push gate FIRST:
+node tests/admin-save-markers.js   # must be all-green (see "Pre-push gate" below)
 git add -A && git commit -m "…" && git push
 ```
+
+## Pre-push gate: admin order-save markers
+
+Before pushing any change to `web/admin-*.html`, run:
+
+```bash
+node tests/admin-save-markers.js
+```
+
+It must print all-green. This guards the marker-less-payload data-loss path
+(`maitri-guardrails` §B5): a marker-less admin order payload is a full-cart
+*replace* and deletes every line not in it. The test asserts there is exactly one
+`assistedSaveOrder` call and that it lives inside the `sendAdminSave` choke point,
+and that every payload the helper emits carries `_op`.
+
+This is **pre-push discipline, not CI.** Do **not** wire it into the GitHub Pages
+workflow — between now and 14 Aug a failing or flaky test that blocks an emergency
+fix from reaching the floor is worse than the bug it guards. Revisit CI
+enforcement (and server-side `_op` enforcement) after the event. Needs the `jsdom`
+devDependency (`npm install`).
 
 All functions are `--no-verify-jwt` because each performs its own auth: admin-api
 checks `app_metadata.role`, data-sync checks a shared secret, design-image is
