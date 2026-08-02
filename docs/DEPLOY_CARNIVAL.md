@@ -46,15 +46,29 @@ npx supabase db push
 The latest migration is:
 
 ```text
-supabase/migrations/202607170011_dispatch_and_image_privacy.sql
+supabase/migrations/202608010009_lock_down_exhibitions_grants.sql
 ```
 
-It adds the Dispatch module (`dispatch_lines`, `dispatch_events`, `orders.dispatch_status`), locks dispatched lines inside `_write_order`, adds a sixth `dispatch` module toggle, and removes the master image URL from every customer-facing reader.
+Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
-**Two behaviour changes worth knowing before you run it:**
+| Migration | What it does |
+|---|---|
+| `…0001` | `exhibitions` table; `exhibition_id` (NOT NULL) on customers/orders/slots/barcode_mappings; scoped `lookup_barcode`, `admin_dashboard_v2`, registration trigger. |
+| `…0002` | Removes the image field from `order_state_json` and `lookup_barcode` (customers see no product images). |
+| `…0003` | URL-scoped exhibitions: `handle_new_auth_user` resolves the exhibition from the login-email slug, with the 1-exhibition silent fallback and the ≥2 `EXHIBITION_SLUG_REQUIRED` rule. |
+| `…0004` | Scopes `admin_map_barcode` / `admin_deactivate_barcode` to a passed `exhibition_id` (composite PK `(barcode, exhibition_id)`). |
+| `…0005` | Exhibition management RPCs (`admin_list_exhibitions`, atomic `admin_set_current_exhibition`, `barcode_functions_exhibition_scoped`). |
+| `…0006` | Backfills `admin.exhibitions` onto existing admin-settings staff. |
+| `…0007` | Adds `products.create`; backfills it onto product-editors. |
+| `…0008` | Narrows `products.create` to admin-settings holders only. |
+| `…0009` | Revokes `authenticated`/`anon` grants on `exhibitions` (service-role only). |
 
-1. **Dispatch outranks `admin_unlocked`.** Reopening an order no longer makes a dispatched line editable. Staff must reduce the line's dispatched sets to 0 first. Tell the floor team — "reopen the order" is no longer the universal fix.
-2. **`select on public.designs` is revoked from `authenticated`.** That grant let any logged-in customer read every master ImageKit URL straight from PostgREST, which would have defeated the blur entirely. `lookup_barcode` becomes `SECURITY DEFINER` to compensate. If you later add a client that reads `designs` directly, it will now fail — route it through an RPC or the service role instead.
+**Behaviour changes worth knowing before you run them:**
+
+1. **Dispatch outranks `admin_unlocked`.** Reopening an order does not make a dispatched line editable — reduce its dispatched sets to 0 first. "Reopen the order" is not the universal fix.
+2. **`select on public.designs` is revoked from `authenticated`** (verified still revoked — live grants are SELECT-only on customers/orders/order_items, all RLS-gated). Any client reading `designs` directly fails; route through an RPC or the service role.
+3. **A second exhibition is gated** — see the BLOCKING PREREQUISITE box above. All the prerequisites it names are now deployed (`customer-auth` AUTH_CONTRACT 2, barcode functions scoped), so the console's Admin → Exhibitions → Create is safe to use.
+4. **Permission keys are stored per-staff and do not auto-appear.** `admin.exhibitions` and `products.create` were backfilled by `…0006`/`…0007`/`…0008`; if you ever add another permission key in `admin-api`, existing staff will not see the feature until a backfill migration grants it (bootstrap returns the stored map, it does not re-expand the preset).
 
 ## 2. Deploy Edge Functions
 
@@ -63,11 +77,10 @@ npx supabase functions deploy customer-auth --no-verify-jwt
 npx supabase functions deploy admin-api --no-verify-jwt
 npx supabase functions deploy data-sync --no-verify-jwt
 npx supabase functions deploy sheet-sync --no-verify-jwt
-npx supabase functions deploy design-image --no-verify-jwt
 npx supabase functions list
 ```
 
-`customer-auth`, `admin-api`, `data-sync`, and `sheet-sync` intentionally perform their own authentication/secret checks, so their `verify_jwt` setting is false in `supabase/config.toml`.
+`customer-auth`, `admin-api`, `data-sync`, and `sheet-sync` intentionally perform their own authentication/secret checks, so their `verify_jwt` setting is false in `supabase/config.toml`. **`design-image` is deleted** — do not redeploy it (customers get no product images).
 
 Confirm the deployed secrets include:
 
@@ -76,6 +89,7 @@ Confirm the deployed secrets include:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SHEET_SYNC_SECRET`
 - `ALLOWED_ORIGINS` containing the GitHub Pages origin
+- `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_URL_ENDPOINT` — required for in-app product photo upload (`admin-api signImageUpload`). **Set the public/private keys with matching values from the ImageKit dashboard; an expired or mismatched public key makes every upload 403 while the rest of the flow looks fine.** Set them quoted.
 
 ## 3. Retire the dead image proxy
 
@@ -135,6 +149,21 @@ Log into the admin console, open **Slots**, and create the active windows for 19
 21. A batch of mappings saves in one call; failures stay queued, successes clear.
 22. A dispatch-only staff member sees only the Dispatch tab, with no gap in the bottom bar.
 
+### Multi-exhibition, multi-customer, bulk import, product create (this build)
+
+These need real data and cannot be verified headlessly — run them against the live project.
+
+23. **Selector visibility.** Only the three `admin.settings` holders see the app-bar exhibition selector and the Admin → Exhibitions sub-tab. Other staff see neither, and their scans/registrations still work (server resolves the current exhibition).
+24. **Default to live.** The selector opens on the LIVE exhibition — green `LIVE` badge, no banner.
+25. **Viewing a non-current exhibition** shows the amber "not the live event" banner, and Reception, Dashboard, Sale Order, Dispatch and Products → Mapping all re-scope to it. **Product Master stays global** ("· all events").
+26. **Set-current** (Admin → Exhibitions) requires typing the exact exhibition name to confirm, flips the `LIVE` badge atomically, and new registrations/scans then land in the newly-live exhibition.
+27. **Multi-customer existing quantities.** Select ≥2 customers, scan a design one already holds — the popup shows that customer's *current* sets ("Currently N"); a customer left unchanged is not re-written, and only edited totals are saved.
+28. **Multi-customer partial failure.** Make one customer's save fail (e.g. a dispatched line). The others still save, failures are reported per customer, nothing rolls back. Re-saving the fixed ones does not double-apply (idempotent `request_id`).
+29. **Multi-customer qty-0.** A selected customer left with no changes is never written — no empty order row, no 24-hour window started for them.
+30. **Bulk barcode import** (Products → Mapping). Paste `templates/BarcodeMappings_Import.csv`: unknown/inactive designs and in-file duplicates are flagged per row, valid rows map, and an already-mapped barcode fails on its own line without aborting the file.
+31. **New product with a photo.** Create a design with a photo → it lands in the ImageKit folder matching its prefix (`BS-DESIGN`, `NRK-DESIGN`, … or `App-Uploads`) and shows full-res on admin screens. Creating a `design_no` that already exists is rejected.
+32. **New product without a photo** saves, and a photo can be attached afterwards. If the ImageKit key is misconfigured the create offers "save without photo" rather than losing the form.
+
 ## Event-day flow
 
 1. Customer registers and saves their phone/password.
@@ -148,12 +177,22 @@ Log into the admin console, open **Slots**, and create the active windows for 19
 
 ## Post-event
 
-```sql
-update public.system_settings
-set registration_enabled = false
-where singleton = true;
+Registration is now controlled **per exhibition** (`exhibitions.registration_enabled`,
+editable from Admin → Exhibitions). Close the one that ended, and lock only its
+orders — not every exhibition's:
 
-update public.orders
+```sql
+-- close registration for the exhibition that ended
+update public.exhibitions
+set registration_enabled = false
+where slug = 'carnival-2026';
+
+-- lock only that exhibition's still-open orders
+update public.orders o
 set status = 'Locked', admin_unlocked = false
-where status <> 'Locked';
+where status <> 'Locked'
+  and o.exhibition_id = (select id from public.exhibitions where slug = 'carnival-2026');
 ```
+
+(The legacy `system_settings.registration_enabled` still exists for the
+single-exhibition path; with multiple exhibitions the per-exhibition flag wins.)
