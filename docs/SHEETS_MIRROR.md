@@ -63,6 +63,36 @@ For these, use `active` or `status` instead. Deactivating is almost always what 
 - **BarcodeMappings is read-only** for the same reason: a Sheet push runs with the service role and bypasses `admin_map_barcode` entirely — including the one-way `BARCODE_ALREADY_MAPPED` guard that stops a live sticker being silently repointed at a different design. Map barcodes by scanning in the admin console. (Exhibition scoping also broke the mechanics — the key is now `(barcode, exhibition_id)` — but the guard bypass is the durable reason it must never become writable again.) Bulk mapping is being replaced by an admin-api import action that loops the guarded function.
 - Dates/times must be full timestamps (e.g. `2026-07-19T10:00:00+05:30`) for slots/settings.
 
+## Designs taxonomy — dropdowns & bulk import
+
+`category`, `style` and `fabric` were once free text and drifted into dozens of
+case/spelling variants of the same values (`Kurta pant duppata` / `Kurta Pant
+Duppata` / `kurta pant duppata`…), and the two columns were swapped catalogue-wide.
+After the one-time cleanup, two guards keep them canonical:
+
+- **In the app**, the three fields are a searchable typeahead over the existing
+  values — and a genuinely new value can be typed inline.
+- **In the Sheet**, **Supabase Sync → Set Designs dropdowns** applies list
+  validation to those three columns, built from the values already in the tab, and
+  **hard-rejects** anything off-list. Run it right after a clean Pull. A warning
+  would still let the bad value through to the database, so it rejects.
+
+**Adding one new value** (a single new fabric): create the product in the app
+(the typeahead accepts a new value), then **Pull** and re-run **Set Designs
+dropdowns** so the new value joins the list.
+
+**Bulk import of a new collection** (many new fabrics at once): don't fight the
+reject one product at a time — it's a temporary, reversible bypass:
+
+1. **Supabase Sync → Lift Designs dropdowns (bulk import)** — clears the validation.
+2. Paste / import your rows.
+3. **Push this tab**, then **Pull ALL**.
+4. **Supabase Sync → Set Designs dropdowns** — re-locks, now including the new values.
+
+Lift and Set are a pair on purpose: the bypass is deliberate and you put the guard
+straight back. **Leaving validation lifted is how the free-text mess creeps back** —
+never end a session with it off.
+
 ## Safety notes
 
 - The push only touches editable columns, so you can't accidentally corrupt ids or versions.

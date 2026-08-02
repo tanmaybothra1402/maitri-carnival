@@ -71,6 +71,7 @@ function onOpen() {
     .addItem('Push this tab', 'dsPushActive')
     .addSeparator()
     .addItem('Set Designs dropdowns', 'dsDesignValidation')
+    .addItem('Lift Designs dropdowns (bulk import)', 'dsLiftDesignValidation')
     .addToUi();
 }
 
@@ -107,6 +108,31 @@ function dsDesignValidation() {
   });
   dsAlert_(applied.length
     ? 'Dropdowns set on: ' + applied.join(', ') + '.'
+    : 'No category / style / fabric columns found on the Designs tab.');
+}
+
+// Temporarily clear the category/style/fabric validation so a bulk import of a new
+// collection (with new fabrics) can be pasted without hard-reject fighting every
+// new value. Deliberate + reversible: Lift -> paste -> Push -> Pull -> Set again.
+// Leaving it lifted is how the free-text mess creeps back — the alert says so.
+function dsLiftDesignValidation() {
+  var sh = SpreadsheetApp.getActive().getSheetByName('Designs');
+  if (!sh) { dsAlert_('No "Designs" tab found.'); return; }
+  var lastCol = sh.getLastColumn(), rows = Math.max(sh.getMaxRows() - 1, 1);
+  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map(function (h) { return String(h).trim().toLowerCase(); });
+  var cleared = [];
+  ['category', 'style', 'fabric'].forEach(function (field) {
+    var col = headers.indexOf(field) + 1;
+    if (!col) return;
+    sh.getRange(2, col, rows, 1).clearDataValidations();
+    cleared.push(field);
+  });
+  dsAlert_(cleared.length
+    ? 'Dropdowns lifted from: ' + cleared.join(', ') + '.\n\n'
+      + 'Now: paste/import your rows -> Push this tab -> Pull ALL -> run "Set Designs '
+      + 'dropdowns" again to re-lock. Do NOT leave validation off — that is how the '
+      + 'free-text variants creep back.'
     : 'No category / style / fabric columns found on the Designs tab.');
 }
 
