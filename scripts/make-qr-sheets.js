@@ -1,12 +1,17 @@
 /**
- * Maitri Carnival 2026 — printable A3 QR sheets.
+ * Maitri Carnival 2026 — printable A3 QR sticker sheets (Karwa Chauth theme).
  *
- * Generates one PDF per brand with 700 unique scannable codes, laid out
- * 10 x 12 = 120 labels per A3 page (6 pages per brand), plus a CSV of every
- * code for barcode mapping.
+ * One unified run of 1000 codes on 4 cm tags carrying BOTH firm logos
+ * (Maitri + Niharika), a deep-red festive ground with a gold crescent moon and
+ * hairline frame, and a maximised ~26 mm QR on a clean ivory panel so it scans
+ * first-try. A tag is brand-neutral — it is mapped to whatever design it lands on.
+ *
+ * Layout: A3 portrait, 8 x 9 = 72 tags/page -> 14 pages for 1000. Rounded cut
+ * guides for a normal sticker sheet (trim to taste).
  *
  * Run:  node scripts/make-qr-sheets.js
  * Needs: npm install qrcode pdfkit
+ * Out:   barcodes/Maitri-Carnival-QR-A3.pdf  +  barcodes/barcode-list.csv
  */
 
 const fs = require("fs");
@@ -15,123 +20,120 @@ const QRCode = require("qrcode");
 const PDFDocument = require("pdfkit");
 
 // ── Config ────────────────────────────────────────────────────────────────
-const PER_BRAND = 700;
-const BRANDS = [
-  { key: "Maitri",   prefix: "MT", logo: "maitri-logo.png",   accent: "#2E2A6B" },
-  { key: "Niharika", prefix: "NH", logo: "niharika-logo.png", accent: "#2E2A6B" },
-];
+const CODE_PREFIX = "MC";   // Maitri Carnival. MT/EK are already mapped — keep this distinct.
+const TOTAL = 1000;
+const codeFor = (n) => `${CODE_PREFIX}-${String(n).padStart(4, "0")}`;
 
-const mm = (v) => v * 2.834645669291339;      // mm -> pt
-const PAGE_W = mm(297), PAGE_H = mm(420);      // A3 portrait
-const M_SIDE = mm(6), M_TOP = mm(6), M_BOT = mm(11); // minimal waste; bottom holds footer
+// Karwa Chauth palette
+const RED = "#8E1A2E";      // festive ground
+const GOLD = "#B8922F";     // moon + hairline
+const IVORY = "#F9F3E6";    // logo + QR panels (keeps the red from shouting)
+const INK = "#2A1C1E";      // QR modules + logo legibility
+const CREAM = "#F6E6C9";    // code text on red
 
-const COLS = 10, ROWS = 12;                    // 120 labels per page
+const mm = (v) => v * 2.834645669291339;         // mm -> pt
+const PAGE_W = mm(297), PAGE_H = mm(420);         // A3 portrait
+const M_SIDE = mm(8), M_TOP = mm(8), M_BOT = mm(12);
+
+const COLS = 8, ROWS = 9;                          // 72 tags/page
 const GRID_W = PAGE_W - M_SIDE * 2;
 const GRID_H = PAGE_H - M_TOP - M_BOT;
 const CELL_W = GRID_W / COLS;
 const CELL_H = GRID_H / ROWS;
 
-const QR_SIZE = mm(21);      // 21mm — comfortably scannable by phone cameras
-const LOGO_W = mm(20), LOGO_H = mm(5);
-const CUT_GUIDE = "#E3E7E6";
+// Tag geometry (within a cell) — 31 x 40 mm, QR maximised to the vertical space.
+const TAG_W = mm(31), TAG_H = mm(40), TAG_R = mm(2.2);
+const PAD = mm(1.5);
+const CHIP_H = mm(5.4);                             // both logos
+const CODE_H = mm(4.6);                             // code band (red)
+const QR_PANEL_Y = PAD + CHIP_H + mm(0.9);
+const QR_PANEL_H = TAG_H - QR_PANEL_Y - CODE_H - mm(0.4);
+const QR_SIZE = Math.min(TAG_W - PAD * 2 - mm(1.6), QR_PANEL_H - mm(1.6)); // ~26 mm
 
 const ASSETS = path.join(__dirname, "..", "web", "assets");
+const LOGOS = [path.join(ASSETS, "maitri-logo.png"), path.join(ASSETS, "niharika-logo.png")];
 const OUT_DIR = path.join(__dirname, "..", "barcodes");
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-const codeFor = (prefix, n) => `${prefix}-${String(n).padStart(4, "0")}`;
 
 async function qrPng(text) {
   return QRCode.toBuffer(text, {
-    type: "png",
-    errorCorrectionLevel: "M",
-    margin: 2,          // quiet zone (plus generous white space in the cell)
-    width: 420,         // high-res so print stays crisp
-    color: { dark: "#000000", light: "#FFFFFF" },
+    type: "png", errorCorrectionLevel: "M", margin: 1, width: 520,
+    color: { dark: INK, light: IVORY },
   });
 }
 
-async function buildBrand(brand) {
-  const logoPath = path.join(ASSETS, brand.logo);
-  const hasLogo = fs.existsSync(logoPath);
-  const codes = Array.from({ length: PER_BRAND }, (_, i) => codeFor(brand.prefix, i + 1));
+// Draw one tag with its top-left at (ox, oy).
+function drawTag(doc, ox, oy, qrBuf, code) {
+  // red ground + gold hairline frame
+  doc.save();
+  doc.roundedRect(ox, oy, TAG_W, TAG_H, TAG_R).fill(RED);
+  doc.lineWidth(0.5).strokeColor(GOLD)
+    .roundedRect(ox + mm(0.9), oy + mm(0.9), TAG_W - mm(1.8), TAG_H - mm(1.8), TAG_R - mm(0.7)).stroke();
 
-  // Pre-render every QR once.
-  process.stdout.write(`  ${brand.key}: rendering ${codes.length} QR codes… `);
+  // logo chip (ivory) with both firm marks side by side
+  const chipX = ox + PAD, chipY = oy + PAD, chipW = TAG_W - PAD * 2;
+  doc.roundedRect(chipX, chipY, chipW, CHIP_H, mm(0.9)).fill(IVORY);
+  const half = (chipW - mm(2)) / 2;
+  LOGOS.forEach((logo, i) => {
+    if (!fs.existsSync(logo)) return;
+    try {
+      doc.image(logo, chipX + mm(1) + i * half + (i === 1 ? mm(1) : 0), chipY + mm(0.7),
+        { fit: [half - mm(1), CHIP_H - mm(1.4)], align: "center", valign: "center" });
+    } catch (_) { /* ignore */ }
+  });
+  // slim gold divider between the two logos
+  doc.lineWidth(0.4).strokeColor(GOLD).opacity(0.6)
+    .moveTo(chipX + chipW / 2, chipY + mm(1)).lineTo(chipX + chipW / 2, chipY + CHIP_H - mm(1)).stroke().opacity(1);
+
+  // QR panel (ivory) + QR, centered and maximised
+  const panelX = ox + PAD, panelW = TAG_W - PAD * 2;
+  doc.roundedRect(panelX, oy + QR_PANEL_Y, panelW, QR_PANEL_H, mm(0.9)).fill(IVORY);
+  doc.image(qrBuf, ox + (TAG_W - QR_SIZE) / 2, oy + QR_PANEL_Y + (QR_PANEL_H - QR_SIZE) / 2,
+    { width: QR_SIZE, height: QR_SIZE });
+
+  // code band (on red): gold crescent moon + human-readable code
+  const bandCy = oy + TAG_H - CODE_H / 2;
+  const mr = mm(1.15), mx = ox + TAG_W / 2 - mm(9);
+  doc.fillColor(GOLD).circle(mx, bandCy, mr).fill();
+  doc.fillColor(RED).circle(mx + mr * 0.6, bandCy - mr * 0.18, mr).fill(); // carve crescent
+  doc.fillColor(CREAM).font("Helvetica-Bold").fontSize(8.2)
+    .text(code, ox, bandCy - mm(1.5), { width: TAG_W, align: "center" });
+  doc.restore();
+}
+
+(async () => {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const codes = Array.from({ length: TOTAL }, (_, i) => codeFor(i + 1));
+  const perPage = COLS * ROWS, pages = Math.ceil(TOTAL / perPage);
+  console.log(`A3 ${COLS}x${ROWS} = ${perPage}/page · tag ${(TAG_W / 2.834645669).toFixed(0)}x${(TAG_H / 2.834645669).toFixed(0)}mm · QR ${(QR_SIZE / 2.834645669).toFixed(1)}mm · ${TOTAL} codes -> ${pages} pages`);
+
+  process.stdout.write(`Rendering ${TOTAL} QR codes… `);
   const pngs = [];
   for (const c of codes) pngs.push(await qrPng(c));
   console.log("done");
 
-  const perPage = COLS * ROWS;
-  const pages = Math.ceil(codes.length / perPage);
-  const outFile = path.join(OUT_DIR, `${brand.key}-QR-A3.pdf`);
-
+  const outFile = path.join(OUT_DIR, "Maitri-Carnival-QR-A3.pdf");
   const doc = new PDFDocument({ size: [PAGE_W, PAGE_H], margin: 0, autoFirstPage: false });
   doc.pipe(fs.createWriteStream(outFile));
 
   for (let p = 0; p < pages; p++) {
     doc.addPage();
-    const start = p * perPage;
-    const slice = codes.slice(start, start + perPage);
-
+    doc.rect(0, 0, PAGE_W, PAGE_H).fill("#FFFFFF"); // explicit white paper in every viewer
+    const slice = codes.slice(p * perPage, p * perPage + perPage);
     for (let i = 0; i < slice.length; i++) {
       const col = i % COLS, row = Math.floor(i / COLS);
-      const x = M_SIDE + col * CELL_W;
-      const y = M_TOP + row * CELL_H;
-
-      // faint cut guide
-      doc.save().lineWidth(0.3).strokeColor(CUT_GUIDE).rect(x, y, CELL_W, CELL_H).stroke().restore();
-
-      // brand logo
-      if (hasLogo) {
-        try {
-          doc.image(logoPath, x + (CELL_W - LOGO_W) / 2, y + mm(1.6), {
-            fit: [LOGO_W, LOGO_H], align: "center", valign: "center",
-          });
-        } catch (_) { /* ignore */ }
-      }
-
-      // QR
-      doc.image(pngs[start + i], x + (CELL_W - QR_SIZE) / 2, y + mm(7.4), {
-        width: QR_SIZE, height: QR_SIZE,
-      });
-
-      // code text
-      doc.save()
-        .fillColor(brand.accent)
-        .font("Helvetica-Bold")
-        .fontSize(7.6)
-        .text(slice[i], x, y + mm(29.6), { width: CELL_W, align: "center" })
-        .restore();
+      const cx = M_SIDE + col * CELL_W + (CELL_W - TAG_W) / 2;
+      const cy = M_TOP + row * CELL_H + (CELL_H - TAG_H) / 2;
+      drawTag(doc, cx, cy, pngs[p * perPage + i], slice[i]);
     }
-
-    // footer
-    doc.save()
-      .fillColor("#8A918F").font("Helvetica").fontSize(6.4)
-      .text(
-        `${brand.key.toUpperCase()}  ·  Maitri Carnival 2026  ·  Sheet ${p + 1}/${pages}  ·  ${slice[0]} – ${slice[slice.length - 1]}`,
-        M_SIDE, PAGE_H - M_BOT + mm(3.2),
-        { width: GRID_W, align: "center" }
-      )
-      .restore();
+    doc.fillColor("#8A6A55").font("Helvetica").fontSize(7)
+      .text(`Maitri Carnival 2026 · Karwa Chauth · Sheet ${p + 1}/${pages} · ${slice[0]}–${slice[slice.length - 1]}`,
+        M_SIDE, PAGE_H - M_BOT + mm(3.4), { width: GRID_W, align: "center" });
   }
-
   doc.end();
-  return { outFile, pages, codes };
-}
+  await new Promise((r) => doc.on("end", r));
 
-(async () => {
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  console.log(`A3 ${COLS}x${ROWS} = ${COLS * ROWS} labels/page · QR ${(QR_SIZE / 2.834645669).toFixed(1)}mm`);
-
-  const csv = ["barcode,brand"];
-  for (const brand of BRANDS) {
-    const { outFile, pages, codes } = await buildBrand(brand);
-    codes.forEach((c) => csv.push(`${c},${brand.key}`));
-    console.log(`  → ${path.basename(outFile)}  (${codes.length} codes, ${pages} pages)`);
-  }
-
-  const csvPath = path.join(OUT_DIR, "barcode-list.csv");
-  fs.writeFileSync(csvPath, csv.join("\n") + "\n");
-  console.log(`  → ${path.basename(csvPath)}  (${csv.length - 1} codes)`);
+  const csv = ["barcode,designNo"].concat(codes.map((c) => `${c},`));
+  fs.writeFileSync(path.join(OUT_DIR, "barcode-list.csv"), csv.join("\n") + "\n");
+  console.log(`  → ${path.basename(outFile)} (${pages} pages)`);
+  console.log(`  → barcode-list.csv (${TOTAL} codes, designNo blank — fill in to bulk-import)`);
 })();
