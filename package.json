@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "test:admin-save": "node tests/admin-save-markers.js"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "pdfkit": "^0.19.1",
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

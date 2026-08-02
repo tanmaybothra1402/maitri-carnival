@@ -2213,6 +2213,24 @@ $("sale-barcode").onkeydown = (e) => {
     saleAdd(e.target.value);
   }
 };
+// The one admin order-write choke point. _write_order treats a marker-less admin
+// payload as a full-cart REPLACE and deletes every line not in it (verified
+// empirically 2 Aug 2026 — see maitri-guardrails §B5). So no payload may leave the
+// client without _op on every item, and this is the ONLY function that calls
+// assistedSaveOrder. A caller that forgets the marker is corrected here, not on
+// the floor. Mirrors architecture rule 1 (_write_order is the one server write
+// choke point) on the client.
+async function sendAdminSave(customerId, firm, items, requestId) {
+  const marked = (items || []).map((it) => {
+    if (it && it._op) return it;
+    const isDelete = !!(it && (it._delete === true || it.delete === true));
+    console.warn("sendAdminSave: stamped a missing _op marker", it);
+    return { ...it, _op: isDelete ? "delete" : "upsert" };
+  });
+  const payload = { customerId, firm, items: marked };
+  if (requestId) payload.requestId = requestId;
+  return admin("assistedSaveOrder", payload);
+}
 $("sale-save").onclick = async () => {
   if (!st.sale.customer) return;
   const items = saleCart()
@@ -2239,7 +2257,7 @@ $("sale-save").onclick = async () => {
   try {
     saveButton.disabled = true;
     saveButton.textContent = "Saving…";
-    const d = await admin("assistedSaveOrder", { customerId: st.sale.customer.id, firm: st.sale.firm, items });
+    const d = await sendAdminSave(st.sale.customer.id, st.sale.firm, items);
     st.sale.carts[st.sale.firm] = (d.order?.items || []).map(hydrate);
     st.sale.deleted[st.sale.firm].clear();
     renderSale();
@@ -2540,7 +2558,7 @@ $("multi-confirm-save").onclick = async () => {
     for (const job of jobs) {
       btn.textContent = `Saving… ${done}/${jobs.length}`;
       try {
-        await admin("assistedSaveOrder", { customerId: job.customer.id, firm: job.firm, items: job.items, requestId: mcJobRequestId(job.customer.id, job.firm, job.items) });
+        await sendAdminSave(job.customer.id, job.firm, job.items, mcJobRequestId(job.customer.id, job.firm, job.items));
         perCustomer[job.customer.id].ok++;
         // Reflect the newly-saved quantities so a re-scan shows the right total.
         (st.multi.existing[job.customer.id] ||= {});

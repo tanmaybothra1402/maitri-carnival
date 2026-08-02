@@ -84,6 +84,35 @@ Postgres: `ON CONFLICT DO UPDATE command cannot affect row a second time` (SQLST
 **Check:** de-duplicate by primary key before upserting and name the offending
 keys in the error.
 
+### B5. A marker-less admin order payload is a full-cart replace
+`_write_order` sets `v_operation_mode` from whether **any** item carries `_op` /
+`_delete` / `delete`. If none do and the caller is admin (`p_is_admin = true`), it
+deletes every order line **not** named in the payload (dispatched lines excepted)
+— the legacy full-cart-replace path for old clients.
+
+**Rule:** Any admin order save must carry `_op` on EVERY item. A marker-less admin
+payload is a full-cart replace and will delete every line not in the payload.
+**Verified empirically 2 Aug 2026:** a 1-item marker-less admin payload against a
+3-line order left 1 row (the other two were deleted). A partial payload WITH `_op`
+on the item left all 3 rows.
+
+The client guard is `sendAdminSave()` in the admin console — the **one** function
+that may call `assistedSaveOrder`. It stamps a missing `_op` so a marker-less
+payload cannot leave the client, and a jsdom assertion fails if any other call
+site invokes `assistedSaveOrder` directly (`tests/admin-save-markers.js`, run with
+`node tests/admin-save-markers.js`). The
+**server** guard does not exist and must **not** be added before 14 Aug 2026 — the
+marker-less path is the legacy full-cart path for old clients we cannot test
+mid-event. Revisit server-side enforcement after the event.
+
+**Not the customer path.** `save_my_order` (`p_is_admin = false`) sends a full
+cart, and its delete is additionally gated on `not v_was_merged` (the base version
+matches). The rule above is about admin partial-delta saves; do not apply this
+reasoning to `user.html`.
+
+**Check:** every admin order write goes through `sendAdminSave`; every item it
+sends carries `_op`; nothing else calls `assistedSaveOrder`.
+
 ---
 
 ## C. Shared-function regressions
