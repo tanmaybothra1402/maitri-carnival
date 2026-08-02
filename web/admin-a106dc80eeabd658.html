@@ -331,7 +331,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
     <button class="btn ghost small change-customer-btn" id="sale-close">Change</button>
   </div>
   <div class="segment sale-firm-switch" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
-  <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="sale-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="sale-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="sale-camera">Use camera scanner</button></div>
+  <div class="sale-scan-block"><label>Scan barcode or type a design number</label><div class="sale-scan-row"><input id="sale-barcode" placeholder="Barcode or design no." autocomplete="off"/><button class="btn" id="sale-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="sale-camera">Use camera scanner</button></div>
   <div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save">Save order</button></div>
 </section>
 <section class="card focus-card sale-find-card hidden" id="multi-find">
@@ -349,7 +349,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
   </div>
   <div class="mc-warn hidden" id="multi-load-warn"></div>
   <div class="segment sale-firm-switch" id="multi-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
-  <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="multi-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="multi-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="multi-camera">Use camera scanner</button></div>
+  <div class="sale-scan-block"><label>Scan barcode or type a design number</label><div class="sale-scan-row"><input id="multi-barcode" placeholder="Barcode or design no." autocomplete="off"/><button class="btn" id="multi-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="multi-camera">Use camera scanner</button></div>
   <div class="reader" id="multi-reader"></div>
   <div class="mc-matrix-empty" id="multi-empty">Scan a barcode to add a design. Each design opens a box to set every customer's sets.</div>
   <div class="mc-matrix-wrap" id="multi-matrix"></div>
@@ -2097,33 +2097,71 @@ $("sale-cart").oninput = (e) => {
     it._dirty = true;
   }
 };
+// Manual design-number entry. 543 of 593 active designs have no barcode, so the
+// scan box also accepts a typed design number, resolved against the cached
+// catalogue (st.designs) with no extra fetch — shared by sale and multi. Matching
+// is forgiving of spacing/dashes/case ("mu0322" == "MU - 0322"); an ambiguous or
+// inactive match is refused with a floor-ready message. The server still
+// validates firm/active on save, so a stale cache can never place a bad line.
+function canonDesign(s) {
+  return String(s || "").toLowerCase().replace(/\s+/g, "").replace(/-/g, "");
+}
+function matchDesignEntry(q) {
+  const key = canonDesign(q);
+  if (!key) return null;
+  const all = (st.designs || []).filter((d) => canonDesign(d.designNo) === key);
+  if (!all.length) return null;
+  const active = all.filter((d) => d.active);
+  if (active.length === 1) return { design: active[0] };
+  if (active.length > 1) return { ambiguous: active.map((d) => d.designNo) };
+  return { inactive: all[0].designNo };
+}
+function firmMismatch(designNo, designFirm, currentFirm) {
+  return `${designNo} is a ${designFirm} design — you're on ${currentFirm}. Switch to ${designFirm} to add it.`;
+}
+// Resolve a scan-box entry to design fields: a typed design number (catalogue,
+// no RPC) or a barcode (lookup_barcode). Firm-agnostic — the caller enforces the
+// firm rule so it can word the message for its own screen.
+async function resolveEntry(raw) {
+  const q = String(raw || "").trim();
+  if (!q) return null;
+  const m = matchDesignEntry(q);
+  if (m?.ambiguous)
+    throw Error(`Several designs match “${q}” — type the full number (e.g. ${m.ambiguous.slice(0, 3).join(", ")})`);
+  if (m?.inactive)
+    throw Error(`${m.inactive} is not active — ask Products to activate it before ordering.`);
+  if (m?.design) {
+    const d = m.design;
+    return { barcode: "", designNo: d.designNo, firm: d.firm, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: Number(d.pcsPerSet) || 1, description: d.description || "", imageUrl: d.imageUrl || "" };
+  }
+  // Not a known design number — treat it as a barcode.
+  const data = await rpc("lookup_barcode", { p_barcode: q });
+  const r = Array.isArray(data) ? data[0] : data;
+  if (!r) throw Error(`“${q}” is not a known barcode or design number — check it and try again.`);
+  // lookup_barcode deliberately no longer returns the master image URL — it is
+  // granted to customers. Staff get full resolution from the design list they
+  // already hold, which comes from the service-role admin API.
+  const known = (st.designs || []).find((d) => String(d.designNo || "") === String(r.design_no));
+  return { barcode: r.barcode, designNo: r.design_no, firm: r.firm, category: r.category, style: r.style, fabric: r.fabric, pcsPerSet: Number(r.pcs_per_set) || 1, description: r.description || "", imageUrl: known?.imageUrl || r.image_url || "" };
+}
 async function saleAdd(raw) {
   try {
-    const data = await rpc("lookup_barcode", {
-        p_barcode: String(raw || "").trim(),
-      }),
-      r = Array.isArray(data) ? data[0] : data;
-    if (!r) throw Error("Barcode not mapped");
-    if (![st.sale.firm, "Both"].includes(r.firm))
-      throw Error(`${r.design_no} belongs to ${r.firm}`);
-    if (saleCart().some((x) => x.designNo === r.design_no))
+    const d = await resolveEntry(raw);
+    if (!d) return;
+    if (![st.sale.firm, "Both"].includes(d.firm))
+      throw Error(firmMismatch(d.designNo, d.firm, st.sale.firm));
+    if (saleCart().some((x) => x.designNo === d.designNo))
       throw Error("Design already added");
-    saleDeleted().delete(r.design_no);
-    // lookup_barcode deliberately no longer returns the master image URL —
-    // it is granted to customers. Staff get full resolution from the design
-    // list they already hold, which comes from the service-role admin API.
-    const known = (st.designs || []).find(
-      (d) => String(d.designNo || "") === String(r.design_no),
-    );
+    saleDeleted().delete(d.designNo);
     saleCart().push({
-      barcode: r.barcode,
-      designNo: r.design_no,
-      imageUrl: known?.imageUrl || r.image_url || "",
-      category: r.category,
-      style: r.style,
-      fabric: r.fabric,
-      pcsPerSet: Number(r.pcs_per_set) || 1,
-      description: r.description || "",
+      barcode: d.barcode,
+      designNo: d.designNo,
+      imageUrl: d.imageUrl,
+      category: d.category,
+      style: d.style,
+      fabric: d.fabric,
+      pcsPerSet: d.pcsPerSet,
+      description: d.description,
       note: "",
       qty: 1,
       _dirty: true,
@@ -2316,17 +2354,15 @@ $("multi-firms").onclick = (e) => {
 };
 async function mcAdd(raw) {
   try {
-    const data = await rpc("lookup_barcode", { p_barcode: String(raw || "").trim() });
-    const r = Array.isArray(data) ? data[0] : data;
-    if (!r) throw Error("Barcode not mapped");
-    if (![st.multi.firm, "Both"].includes(r.firm)) throw Error(`${r.design_no} belongs to ${r.firm} — switch firm`);
+    const d = await resolveEntry(raw);
+    if (!d) return;
+    if (![st.multi.firm, "Both"].includes(d.firm))
+      throw Error(firmMismatch(d.designNo, d.firm, st.multi.firm));
     const rows = st.multi.rows[st.multi.firm];
-    if (!rows.find((x) => x.designNo === r.design_no)) {
-      const known = (st.designs || []).find((d) => String(d.designNo || "") === String(r.design_no));
-      rows.push({ barcode: r.barcode, designNo: r.design_no, category: r.category, style: r.style, fabric: r.fabric, pcsPerSet: Number(r.pcs_per_set) || 1, description: r.description || "", imageUrl: known?.imageUrl || "", qty: {} });
-    }
+    if (!rows.find((x) => x.designNo === d.designNo))
+      rows.push({ barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, qty: {} });
     $("multi-barcode").value = "";
-    mcOpenPopup(st.multi.firm, r.design_no);
+    mcOpenPopup(st.multi.firm, d.designNo);
   } catch (e) {
     toast(e.message, "error");
   }
