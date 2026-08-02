@@ -72,9 +72,9 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
 const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   sales: { "sale.view": true, "sale.write": true, "sale.previous": true, "sale.pdf": true, "reception.view": true },
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
-  products: { "products.view": true, "products.edit": true, "products.mapping": true, "products.create": true },
+  products: { "products.view": true, "products.edit": true, "products.mapping": true },
   dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
-  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions"].includes(key))),
+  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions", "products.create"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
 };
@@ -96,12 +96,15 @@ const GROUPS: Record<string, string[]> = {
     "sale.lock",
     "reception.view",
   ],
-  products: ["products.view", "products.edit", "products.mapping", "products.create"],
+  products: ["products.view", "products.edit", "products.mapping"],
   // sale.pdf is included so a dispatch-only packer can print a packing sheet
   // without being granted any Sales rights.
   dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
   dashboard: ["dashboard.view", "dashboard.export"],
-  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions"],
+  // products.create is an admin-tier capability (creating a product can overwrite
+  // catalogue data), granted alongside admin.settings — never via the Products
+  // module. It tracks admin.settings everywhere: here, the presets, and the backfill.
+  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions", "products.create"],
 };
 
 function expandGroups(value: unknown): Record<string, boolean> {
