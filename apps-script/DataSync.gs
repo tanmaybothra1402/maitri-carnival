@@ -69,7 +69,44 @@ function onOpen() {
     .addItem('② Pull ALL tables', 'dsPullAll')
     .addSeparator()
     .addItem('Push this tab', 'dsPushActive')
+    .addSeparator()
+    .addItem('Set Designs dropdowns', 'dsDesignValidation')
     .addToUi();
+}
+
+// Apply dropdown validation to the Designs tab's category/style/fabric columns
+// from the values already in the sheet (run right after a clean Pull). This is
+// the guard that stops a hand-typed variant reintroducing the mess. Off-list
+// values are warned, not hard-blocked, so a genuine new fabric can still be added
+// (do that in the app so it stays canonical, then Pull + re-run this).
+function dsDesignValidation() {
+  var sh = SpreadsheetApp.getActive().getSheetByName('Designs');
+  if (!sh) { dsAlert_('No "Designs" tab found. Pull ALL tables first.'); return; }
+  var lastRow = sh.getLastRow(), lastCol = sh.getLastColumn();
+  if (lastRow < 2) { dsAlert_('Designs tab is empty. Pull first.'); return; }
+  var headers = sh.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map(function (h) { return String(h).trim().toLowerCase(); });
+  var applied = [];
+  ['category', 'style', 'fabric'].forEach(function (field) {
+    var col = headers.indexOf(field) + 1;
+    if (!col) return;
+    var n = lastRow - 1;
+    var vals = sh.getRange(2, col, n, 1).getValues()
+      .map(function (r) { return String(r[0]).trim(); })
+      .filter(function (v) { return v !== ''; });
+    var distinct = vals.filter(function (v, i) { return vals.indexOf(v) === i; }).sort();
+    if (!distinct.length) return;
+    var rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(distinct, true)
+      .setAllowInvalid(true)
+      .setHelpText('Pick an existing ' + field + ', or add a genuinely new one via the app (Products → New product) so it stays canonical, then Pull and re-run this.')
+      .build();
+    sh.getRange(2, col, Math.max(n, 2000), 1).setDataValidation(rule);
+    applied.push(field + ' (' + distinct.length + ')');
+  });
+  dsAlert_(applied.length
+    ? 'Dropdowns set on: ' + applied.join(', ') + '.'
+    : 'No category / style / fabric columns found on the Designs tab.');
 }
 
 // No prompts. Uses the DS_URL + DS_SECRET embedded at the top of the script,

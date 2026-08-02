@@ -497,9 +497,9 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 <div class="grid2">
   <div><label>Design number</label><input id="pc-design" autocomplete="off"/><div class="pc-dup hidden" id="pc-dup"></div></div>
   <div><label>Firm</label><select id="pc-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div>
-  <div><label>Category</label><input id="pc-category"/></div>
-  <div><label>Style</label><input id="pc-style"/></div>
-  <div><label>Fabric</label><input id="pc-fabric"/></div>
+  <div><label>Category</label><input id="pc-category" list="dl-category" autocomplete="off" placeholder="Pick or type new"/></div>
+  <div><label>Style</label><input id="pc-style" list="dl-style" autocomplete="off" placeholder="Pick or type new"/></div>
+  <div><label>Fabric</label><input id="pc-fabric" list="dl-fabric" autocomplete="off" placeholder="Pick or type new"/></div>
   <div><label>Pcs per set</label><input id="pc-pcs" type="number" min="1" max="9999" value="4"/></div>
 </div>
 <label>Description</label><textarea id="pc-description"></textarea>
@@ -513,7 +513,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 <button class="btn" id="pc-save" style="width:100%;margin-top:14px">Save product</button>
 <div id="pc-result"></div>
 </div></div>
-<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div><label>Category</label><input id="pm-category"/></div><div><label>Style</label><input id="pm-style"/></div><div><label>Fabric</label><input id="pm-fabric"/></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
+<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div><label>Category</label><input id="pm-category" list="dl-category" autocomplete="off"/></div><div><label>Style</label><input id="pm-style" list="dl-style" autocomplete="off"/></div><div><label>Fabric</label><input id="pm-fabric" list="dl-fabric" autocomplete="off"/></div><datalist id="dl-category"></datalist><datalist id="dl-style"></datalist><datalist id="dl-fabric"></datalist><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
 <div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
@@ -2651,7 +2651,17 @@ async function loadProducts(force = false) {
     st.cache.designsAt = Date.now();
   }
   $("dl-design").innerHTML = st.designs.filter((d) => d.active).map((d) => `<option value="${esc(d.designNo)}">`).join("");
+  fillTaxonomyLists();
   renderProducts();
+}
+// Populate the category/style/fabric dropdowns from the (now clean) catalogue.
+// A datalist is searchable and still allows a brand-new value typed inline.
+function fillTaxonomyLists() {
+  const opts = (key) => [...new Set((st.designs || []).map((d) => String(d[key] || "").trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b)).map((v) => `<option value="${esc(v)}"></option>`).join("");
+  $("dl-category").innerHTML = opts("category");
+  $("dl-style").innerHTML = opts("style");
+  $("dl-fabric").innerHTML = opts("fabric");
 }
 function renderProducts() {
   const q = $("product-search").value.trim().toLowerCase(),
