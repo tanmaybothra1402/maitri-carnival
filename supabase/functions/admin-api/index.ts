@@ -8,6 +8,23 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 const CUSTOMER_DOMAIN = "accounts.maitricarnival.app";
 const STAFF_DOMAIN = "staff.maitricarnival.app";
 
+// ImageKit client-upload signature (HMAC-SHA1 of token+expire with the private key).
+async function hmacSha1Hex(key: string, data: string): Promise<string> {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(key), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(data));
+  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+// App uploads follow the existing ImageKit library, filed by design prefix — see
+// the maitri-media skill. Never dump at the root (unfindable among 11.7K files).
+function imagekitFolder(designNo: string): string {
+  const prefix = (clean(designNo).match(/^[A-Za-z]+/)?.[0] ?? "").toUpperCase();
+  const map: Record<string, string> = {
+    BS: "BS-DESIGN", MR: "MR-DESIGN", ML: "ML-DESIGN", MU: "MU-DESIGN", KT: "KT-DESIGN",
+    NRK: "NRK-DESIGN", MRK: "NRK-DESIGN", // Niharika lines
+  };
+  return "/" + (map[prefix] ?? "App-Uploads");
+}
+
 function normalizePhone(value: unknown): string {
   let digits = clean(value).replace(/\D/g, "");
   if (digits.length === 10) digits = `91${digits}`;
@@ -42,6 +59,7 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "products.view": true,
   "products.edit": true,
   "products.mapping": true,
+  "products.create": true,
   "dispatch.view": true,
   "dispatch.write": true,
   "admin.slots": true,
@@ -54,7 +72,7 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
 const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   sales: { "sale.view": true, "sale.write": true, "sale.previous": true, "sale.pdf": true, "reception.view": true },
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
-  products: { "products.view": true, "products.edit": true, "products.mapping": true },
+  products: { "products.view": true, "products.edit": true, "products.mapping": true, "products.create": true },
   dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
   manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
@@ -78,7 +96,7 @@ const GROUPS: Record<string, string[]> = {
     "sale.lock",
     "reception.view",
   ],
-  products: ["products.view", "products.edit", "products.mapping"],
+  products: ["products.view", "products.edit", "products.mapping", "products.create"],
   // sale.pdf is included so a dispatch-only packer can print a packing sheet
   // without being granted any Sales rights.
   dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
@@ -198,6 +216,9 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   directory: ["reception.view", "sale.view", "sale.write"],
   getProductDetail: ["products.view"],
   updateProduct: ["products.edit"],
+  createProduct: ["products.create"],
+  setProductImage: ["products.create"],
+  signImageUpload: ["products.create"],
   checkIn: ["reception.checkin"],
   revokeEntry: ["reception.checkin"],
   listSlots: ["admin.slots", "admin.bookings", "reception.view"],
@@ -495,6 +516,59 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.from("designs").update(patch).eq("design_no", dn).select("design_no").single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "createProduct") {
+      const dn = clean(body.designNo);
+      if (!dn) throw new Error("Design number is required");
+      const firm = clean(body.firm);
+      if (!["Maitri", "Niharika", "Both"].includes(firm)) throw new Error("Firm must be Maitri, Niharika or Both");
+      const pcsPerSet = Math.round(Number(body.pcsPerSet) || 4);
+      if (!Number.isFinite(pcsPerSet) || pcsPerSet < 1 || pcsPerSet > 9999) throw new Error("Pcs per set must be between 1 and 9999");
+      // Reject an existing design_no. Creating over a sheet-imported design would
+      // silently overwrite it; editing an existing one is updateProduct's job.
+      const { data: existing, error: exErr } = await db.from("designs").select("design_no").eq("design_no", dn).maybeSingle();
+      if (exErr) throw exErr;
+      if (existing) throw new Error(`Design ${dn} already exists — open it to edit instead`);
+      const { data, error } = await db.from("designs").insert({
+        design_no: dn,
+        firm,
+        category: clean(body.category),
+        style: clean(body.style),
+        fabric: clean(body.fabric),
+        description: clean(body.description),
+        pcs_per_set: pcsPerSet,
+        image_url: clean(body.imageUrl), // may be blank — a photo can be attached later
+        active: true,
+      }).select("design_no,firm,category,style,fabric,pcs_per_set,description,image_url,active").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data }, 201);
+    }
+
+    if (action === "setProductImage") {
+      // Attach (or replace) an app-captured photo on an existing design.
+      const dn = clean(body.designNo);
+      if (!dn) throw new Error("Design number is required");
+      const { data, error } = await db.from("designs").update({ image_url: clean(body.imageUrl) })
+        .eq("design_no", dn).select("design_no,image_url").single();
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "signImageUpload") {
+      // Short-lived signature for a direct browser->ImageKit upload. The private
+      // key never leaves this function; the browser only receives the signature.
+      const priv = Deno.env.get("IMAGEKIT_PRIVATE_KEY") ?? "";
+      const pub = Deno.env.get("IMAGEKIT_PUBLIC_KEY") ?? "";
+      const endpoint = Deno.env.get("IMAGEKIT_URL_ENDPOINT") ?? "";
+      if (!priv || !pub || !endpoint) throw new Error("Image uploads are not configured on the server");
+      const token = crypto.randomUUID();
+      const expire = Math.floor(Date.now() / 1000) + 240;
+      const signature = await hmacSha1Hex(priv, token + expire);
+      return jsonResponse(request, {
+        ok: true,
+        data: { token, expire, signature, publicKey: pub, urlEndpoint: endpoint, folder: imagekitFolder(clean(body.designNo)) },
+      });
     }
 
     if (action === "checkIn") {
