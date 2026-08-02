@@ -155,6 +155,16 @@ update public.orders set status = 'Locked', admin_unlocked = false where status 
 Note that a blanket status update can clobber derived columns — `dispatch_status`
 is deliberately a separate column so this does not destroy dispatch state.
 
+## Bulk barcode mapping (ops, not a deploy)
+
+Mapping the MC-#### sticker run to designs is a **desk task, not a build** — the
+guarded Bulk import already exists (Products → Mapping → Bulk import; fill
+`barcodes/barcode-list.csv`'s `designNo` column, Check rows, Import). The
+step-by-step for a non-engineer, the failure reasons, and the "are we done?" query
+(`0` active designs unmapped) live in **`docs/BARCODE_MAPPING_RUNBOOK.md`**. Never
+map by editing the Google Sheet — `barcode_mappings` is read-only there on purpose
+(a Sheet push bypasses `admin_map_barcode`'s one-way guard).
+
 ## See also
 
 - `maitri-architecture` — the hub; the artifacts a change can span (migration, functions, HTML, Sheet).
