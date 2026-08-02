@@ -250,6 +250,8 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-summary-row.skip{opacity:.55}
 .mc-result-ok{color:#0a7d3c;font-weight:700}
 .mc-result-err{color:#c0392b;font-weight:700}
+.mc-warn{margin:0 0 12px;padding:9px 12px;border:1px solid #f2c14b;border-radius:10px;background:#fff7e6;color:#8a5a00;font-size:11.5px;font-weight:600;line-height:1.4}
+.mc-has.unknown{color:#8a5a00;font-weight:700}
 .pc-dup{margin-top:5px;font-size:10.5px;font-weight:600;color:#c0392b;line-height:1.35}
 .pc-photo{border:1px dashed var(--border);border-radius:12px;padding:12px;margin-top:6px}
 .pc-progress{margin-top:8px;font-size:11px;color:var(--muted)}
@@ -343,6 +345,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
     <div class="selected-customer-copy"><span class="section-kicker">Ordering for</span><h2 id="multi-party">—</h2><div class="mc-chips" id="multi-builder-chips"></div></div>
     <button class="btn ghost small change-customer-btn" id="multi-close">Change</button>
   </div>
+  <div class="mc-warn hidden" id="multi-load-warn"></div>
   <div class="segment sale-firm-switch" id="multi-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
   <div class="sale-scan-block"><label>Scan or enter barcode</label><div class="sale-scan-row"><input id="multi-barcode" placeholder="Barcode" autocomplete="off"/><button class="btn" id="multi-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="multi-camera">Use camera scanner</button></div>
   <div class="reader" id="multi-reader"></div>
@@ -652,6 +655,7 @@ const st = {
     firm: "Maitri",
     rows: { Maitri: [], Niharika: [] }, // each: {barcode, designNo, category, style, fabric, pcsPerSet, description, imageUrl, qty:{custId:sets}}
     existing: {},            // { custId: { designNo: sets } } — each customer's CURRENT order, loaded at Start
+    loadFailed: new Set(),   // customer ids whose current order failed to preload — quantities would overwrite blind
     popupDesign: null,       // { firm, designNo } being edited in the qty popup
     reqIds: {},              // content-hashed request_id per (customer,firm) for idempotent batch retry
   },
@@ -2260,6 +2264,7 @@ $("multi-start").onclick = async () => {
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
   st.multi.existing = {};
+  st.multi.loadFailed = new Set();
   updateSaleMode();
   document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x.dataset.firm === "Maitri"));
   $("multi-party").textContent = `${st.multi.customers.length} customer${st.multi.customers.length === 1 ? "" : "s"}`;
@@ -2272,15 +2277,27 @@ $("multi-start").onclick = async () => {
     const loaded = await Promise.all(st.multi.customers.map((c) =>
       admin("getCustomerOrders", { customerId: c.id }).then((d) => ({ id: c.id, d })).catch(() => ({ id: c.id, d: null }))));
     loaded.forEach(({ id, d }) => {
+      // A failed load must NOT be recorded as {} — that reads as "not ordered" and
+      // would let a salesperson overwrite an existing order blind. Track it instead.
+      if (!d) { st.multi.loadFailed.add(id); return; }
       const map = {};
-      (d?.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; }));
+      (d.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; }));
       st.multi.existing[id] = map;
     });
   } finally {
     loading(false);
   }
+  mcRenderLoadWarn();
   setTimeout(() => $("multi-barcode").focus(), 80);
 };
+function mcRenderLoadWarn() {
+  const el = $("multi-load-warn");
+  const failed = st.multi.customers.filter((c) => st.multi.loadFailed.has(c.id));
+  if (!failed.length) { el.classList.add("hidden"); el.textContent = ""; return; }
+  const names = failed.map((c) => c.companyName).join(", ");
+  el.classList.remove("hidden");
+  el.textContent = `⚠ Couldn't load current orders for ${failed.length} customer${failed.length === 1 ? "" : "s"} (${names}). Their box shows blank, so a quantity you enter will OVERWRITE their existing order, not add to it. Change customers and start again to retry.`;
+}
 function mcExisting(custId, designNo) {
   return Number((st.multi.existing[custId] || {})[designNo] || 0);
 }
@@ -2323,12 +2340,16 @@ function mcOpenPopup(firm, designNo) {
   $("multi-popup-title").textContent = designNo;
   $("multi-popup-sub").textContent = [row.category, row.style, row.fabric].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`;
   $("multi-popup-list").innerHTML = st.multi.customers.map((c) => {
+    const failed = st.multi.loadFailed.has(c.id);
     const cur = mcExisting(c.id, designNo);
     // Prefill with the current total so it is never hidden; a fresh design shows
     // their existing qty (or 0), and the box is the NEW total, not an addition.
     const q = row.qty[c.id] !== undefined ? Number(row.qty[c.id]) : cur;
-    const hint = cur > 0 ? `Currently ${cur} set${cur === 1 ? "" : "s"} — enter the new total` : "Not yet ordered";
-    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${cur > 0 ? "has-order" : ""}">${hint}</span></div><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
+    const hint = failed
+      ? "Current order unavailable — entry OVERWRITES"
+      : cur > 0 ? `Currently ${cur} set${cur === 1 ? "" : "s"} — enter the new total` : "Not yet ordered";
+    const hintCls = failed ? "unknown" : cur > 0 ? "has-order" : "";
+    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${hintCls}">${hint}</span></div><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
   }).join("");
   openModal("multi-popup");
 }
@@ -3605,6 +3626,7 @@ function selectExhibition(id) {
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
   st.multi.existing = {};
+  st.multi.loadFailed = new Set();
   renderExhibitionSwitch();
   if (st.section) go(st.section);
 }
