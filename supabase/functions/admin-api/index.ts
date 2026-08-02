@@ -281,11 +281,11 @@ async function listDesigns(db: SupabaseClient) {
   }));
 }
 
-async function listMappings(db: SupabaseClient, exhibitionId: string) {
+async function listMappings(db: SupabaseClient) {
+  // Barcode mappings are global (one sticker run across every exhibition).
   const { data, error } = await db
     .from("barcode_mappings")
     .select("barcode,design_no,active,mapped_at,updated_at,designs(firm,category,style,fabric,pcs_per_set,color)")
-    .eq("exhibition_id", exhibitionId)
     .order("updated_at", { ascending: false })
     .limit(1000);
   if (error) throw error;
@@ -363,7 +363,7 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "listMappings") {
-      return jsonResponse(request, { ok: true, data: await listMappings(db, (await resolveExhibition(db, body)).id) });
+      return jsonResponse(request, { ok: true, data: await listMappings(db) });
     }
 
     if (action === "mapBarcode") {
@@ -371,7 +371,6 @@ Deno.serve(async (request: Request) => {
         p_barcode: clean(body.barcode),
         p_design_no: clean(body.designNo),
         p_admin_user_id: admin.id,
-        p_exhibition_id: (await resolveExhibition(db, body)).id,
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
@@ -381,7 +380,6 @@ Deno.serve(async (request: Request) => {
       if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 300) {
         throw new Error("Provide 1 to 300 mapping rows");
       }
-      const mapExhibitionId = (await resolveExhibition(db, body)).id;
       const results = [];
       for (const raw of body.items) {
         const item = raw as Record<string, unknown>;
@@ -390,7 +388,6 @@ Deno.serve(async (request: Request) => {
             p_barcode: clean(item.barcode),
             p_design_no: clean(item.designNo),
             p_admin_user_id: admin.id,
-            p_exhibition_id: mapExhibitionId,
           });
           if (error) throw error;
           results.push({ ok: true, data });
@@ -405,7 +402,6 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("admin_deactivate_barcode", {
         p_barcode: clean(body.barcode),
         p_admin_user_id: admin.id,
-        p_exhibition_id: (await resolveExhibition(db, body)).id,
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
@@ -804,12 +800,8 @@ Deno.serve(async (request: Request) => {
         if (authContract < 2) {
           throw new Error("The deployed customer-auth is out of date and does not pass exhibition slugs. Deploy the current customer-auth before creating a second exhibition.");
         }
-        // (b) Are the barcode functions exhibition-scoped? Check by parameter name.
-        const { data: scoped, error: sErr } = await db.rpc("barcode_functions_exhibition_scoped");
-        if (sErr) throw sErr;
-        if (scoped !== true) {
-          throw new Error("Barcode mapping is not exhibition-scoped yet. Apply migration 202608010004 before creating a second exhibition.");
-        }
+        // The barcode functions are no longer exhibition-scoped (mappings are
+        // global). Only the customer-auth slug contract still gates a 2nd event.
       }
 
       const { data, error } = await db.from("exhibitions").insert({

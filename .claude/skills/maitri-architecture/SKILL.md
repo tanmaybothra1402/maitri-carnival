@@ -104,6 +104,16 @@ reuse a sticker, deactivate the mapping first. Client-side checks mirror this fo
 instant feedback, but the database is the real boundary — the batch path and stale
 pages hit the same function.
 
+**Barcode mappings are GLOBAL, not per-exhibition.** `barcode_mappings` has PK
+`(barcode)` and no `exhibition_id`; `lookup_barcode` / `admin_map_barcode` /
+`admin_deactivate_barcode` take no exhibition. Designs are global, so a barcode
+that names a design is global too, and there is ONE physical sticker run shared
+across every exhibition. They were briefly scoped per-exhibition (Brief 3.6, to
+allow reprinting a per-event set) and reverted once the stickers became a single
+shared run (migration `202608010011`). **Do not re-scope them** — the one-way guard
+is now genuinely global, and re-adding `exhibition_id` would fragment a barcode
+across events for no reason.
+
 ## Units
 
 `pieces = sets × pcs_per_set`. Customers order in **sets**; `pcs_per_set` is

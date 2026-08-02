@@ -56,6 +56,12 @@ read-only in the Sheet**, or its push must route through the guarded function.
 
 `staff_profiles` is mirrored read-only for visibility only.
 
+**`barcode_mappings` is read-only** for the same guard-bypass reason (a Sheet push
+skips `admin_map_barcode` and its one-way `BARCODE_ALREADY_MAPPED` guard). Mappings
+are **global** — PK `(barcode)`, no `exhibition_id` column (one sticker run across
+every exhibition; reverted from the Brief 3.6 per-exhibition scoping in
+`202608010011`). Do not re-add `exhibition_id` here or in the mirror config.
+
 ## Coercion traps
 
 `coerce()` converts spreadsheet cells to database values by column name.

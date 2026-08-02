@@ -33,12 +33,10 @@ const TABLES: Record<string, TableCfg> = {
     // Read-only in the Sheet. The durable reason: a Sheet push runs with the
     // service role and bypasses admin_map_barcode entirely — including the
     // one-way BARCODE_ALREADY_MAPPED guard — exactly like order_items bypasses
-    // _write_order. Mapping must go through the guarded function. (Exhibition
-    // scoping also broke the mechanics: the PK is now (barcode, exhibition_id),
-    // so the barcode-only onConflict fails and exhibition_id must never come
-    // from the Sheet — but the guard-bypass is why this stays read-only.)
-    // Bulk mapping is served instead by an admin-api action that LOOPS
-    // admin_map_barcode (guard preserved). See CLAUDE_CODE_BRIEFS.md.
+    // _write_order. Mapping must go through the guarded function. Bulk mapping is
+    // served instead by an admin-api action that LOOPS admin_map_barcode (guard
+    // preserved). Mappings are GLOBAL (one sticker run across every exhibition) —
+    // no exhibition_id column; PK is (barcode). See maitri-sheet-sync.
     write: [],
     insert: false,
   },

@@ -364,7 +364,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 </div></section>
 <section class="subpanel hidden" id="products-mapping">
 <div class="card map-build-card">
-  <div><span class="section-kicker">Barcode mapping <span class="scope-note" id="mapping-scope"></span></span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
+  <div><span class="section-kicker">Barcode mapping</span><h1>Map stickers to designs</h1><p class="copy">Scan a sticker, pick its design, add it to the batch. Save once at the end.</p></div>
   <div class="map-build-grid">
     <div><label for="map-barcode">Barcode</label><input id="map-barcode" autocomplete="off" placeholder="Scan or type"/><div class="map-barcode-status hidden" id="map-barcode-status"></div></div>
     <div class="map-design-field"><label for="map-design">Design</label><input id="map-design" autocomplete="off" placeholder="Type any part, e.g. 1234"/><div class="map-suggest hidden" id="map-suggest"></div></div>
@@ -2100,7 +2100,6 @@ async function saleAdd(raw) {
   try {
     const data = await rpc("lookup_barcode", {
         p_barcode: String(raw || "").trim(),
-        p_exhibition_id: st.exhibitionId,
       }),
       r = Array.isArray(data) ? data[0] : data;
     if (!r) throw Error("Barcode not mapped");
@@ -2316,7 +2315,7 @@ $("multi-firms").onclick = (e) => {
 };
 async function mcAdd(raw) {
   try {
-    const data = await rpc("lookup_barcode", { p_barcode: String(raw || "").trim(), p_exhibition_id: st.exhibitionId });
+    const data = await rpc("lookup_barcode", { p_barcode: String(raw || "").trim() });
     const r = Array.isArray(data) ? data[0] : data;
     if (!r) throw Error("Barcode not mapped");
     if (![st.multi.firm, "Both"].includes(r.firm)) throw Error(`${r.design_no} belongs to ${r.firm} — switch firm`);
@@ -3656,8 +3655,7 @@ function renderExhibitionSwitch() {
     banner.classList.remove("hidden");
     banner.textContent = `Viewing ${exName(st.exhibitionId)} — not the live event. New registrations and scans here do NOT affect the running exhibition.`;
   }
-  const scope = $("mapping-scope");
-  if (scope) scope.textContent = onLive ? "· current event" : `· ${exName(st.exhibitionId)}`;
+  // (Barcode mapping is global now — no per-exhibition scope label.)
 }
 function selectExhibition(id) {
   if (!id || id === st.exhibitionId) return;
