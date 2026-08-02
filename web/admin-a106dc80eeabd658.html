@@ -252,8 +252,16 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-summary-row.skip{opacity:.55}
 .mc-result-ok{color:#0a7d3c;font-weight:700}
 .mc-result-err{color:#c0392b;font-weight:700}
+.mc-result-warn{color:#8a5a00;font-weight:700}
 .mc-warn{margin:0 0 12px;padding:9px 12px;border:1px solid #f2c14b;border-radius:10px;background:#fff7e6;color:#8a5a00;font-size:11.5px;font-weight:600;line-height:1.4}
 .mc-has.unknown{color:#8a5a00;font-weight:700}
+.mc-has.removing{color:#c0392b;font-weight:700}
+.mc-popup-row.removing{opacity:.72}
+.mc-popup-row.removing b{text-decoration:line-through}
+.mc-remove-line{margin-top:4px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
+.mc-remove-line.undo{color:var(--deep)}
+.mc-removing-tag{font-size:10.5px;font-weight:800;color:var(--error);white-space:nowrap}
+td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .pc-dup{margin-top:5px;font-size:10.5px;font-weight:600;color:#c0392b;line-height:1.35}
 .pc-photo{border:1px dashed var(--border);border-radius:12px;padding:12px;margin-top:6px}
 .pc-progress{margin-top:8px;font-size:11px;color:var(--muted)}
@@ -2426,25 +2434,75 @@ function mcOpenPopup(firm, designNo) {
   st.multi.popupDesign = { firm, designNo };
   $("multi-popup-title").textContent = designNo;
   $("multi-popup-sub").textContent = [row.category, row.style, row.fabric].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`;
+  mcRenderPopupList();
+  openModal("multi-popup");
+}
+function mcRenderPopupList() {
+  const pd = st.multi.popupDesign;
+  if (!pd) return;
+  const row = (st.multi.rows[pd.firm] || []).find((x) => x.designNo === pd.designNo);
+  if (!row) return;
+  row.del = row.del || {};
   $("multi-popup-list").innerHTML = st.multi.customers.map((c) => {
     const failed = st.multi.loadFailed.has(c.id);
-    const cur = mcExisting(c.id, designNo);
+    const cur = mcExisting(c.id, pd.designNo);
+    const removing = !!row.del[c.id];
     // Prefill with the current total so it is never hidden; a fresh design shows
     // their existing qty (or 0), and the box is the NEW total, not an addition.
     const q = row.qty[c.id] !== undefined ? Number(row.qty[c.id]) : cur;
-    const hint = failed
-      ? "Current order unavailable — entry OVERWRITES"
-      : cur > 0 ? `Currently ${cur} set${cur === 1 ? "" : "s"} — enter the new total` : "Not yet ordered";
-    const hintCls = failed ? "unknown" : cur > 0 ? "has-order" : "";
-    return `<div class="mc-popup-row" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${hintCls}">${hint}</span></div><div class="mc-qty"><button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button></div></div>`;
+    const hint = removing
+      ? "Line will be removed"
+      : failed
+        ? "Current order unavailable — entry OVERWRITES"
+        : cur > 0 ? `Currently ${cur} set${cur === 1 ? "" : "s"} — enter the new total` : "Not yet ordered";
+    const hintCls = removing ? "removing" : failed ? "unknown" : cur > 0 ? "has-order" : "";
+    // A per-customer Remove is offered only when they actually HAVE this line —
+    // removing one they never had is a no-op that would bump the order version.
+    const action = removing
+      ? `<button class="mc-remove-line undo" data-mc-undo="${esc(c.id)}">Undo remove</button>`
+      : cur > 0 ? `<button class="mc-remove-line" data-mc-remove="${esc(c.id)}">Remove line</button>` : "";
+    const qtyCol = removing
+      ? `<span class="mc-removing-tag">Removing</span>`
+      : `<button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button>`;
+    return `<div class="mc-popup-row${removing ? " removing" : ""}" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${hintCls}">${hint}</span>${action}</div><div class="mc-qty">${qtyCol}</div></div>`;
   }).join("");
-  openModal("multi-popup");
+}
+function mcCommitPopupQty(row) {
+  // Read the visible qty inputs into row.qty. Customers marked for removal show a
+  // "Removing" tag instead of an input, so they are skipped here.
+  $("multi-popup-list").querySelectorAll("[data-mc-cust]").forEach((el) => {
+    const input = el.querySelector("[data-mc-qtyinput]");
+    if (!input) return;
+    const q = Math.max(0, Math.min(9999, Number(input.value) || 0));
+    if (q > 0) row.qty[el.dataset.mcCust] = q;
+    else delete row.qty[el.dataset.mcCust];
+  });
 }
 $("multi-popup-list").onclick = (e) => {
-  const b = e.target.closest("[data-mc-step]");
-  if (!b) return;
-  const input = b.parentElement.querySelector("[data-mc-qtyinput]");
-  input.value = Math.max(0, Math.min(9999, (Number(input.value) || 0) + Number(b.dataset.mcStep)));
+  const step = e.target.closest("[data-mc-step]");
+  if (step) {
+    const input = step.parentElement.querySelector("[data-mc-qtyinput]");
+    input.value = Math.max(0, Math.min(9999, (Number(input.value) || 0) + Number(step.dataset.mcStep)));
+    return;
+  }
+  const pd = st.multi.popupDesign;
+  const row = pd && (st.multi.rows[pd.firm] || []).find((x) => x.designNo === pd.designNo);
+  if (!row) return;
+  const rem = e.target.closest("[data-mc-remove]");
+  if (rem) {
+    mcCommitPopupQty(row); // keep other customers' unsaved edits
+    row.del = row.del || {};
+    row.del[rem.dataset.mcRemove] = true;
+    delete row.qty[rem.dataset.mcRemove];
+    mcRenderPopupList();
+    return;
+  }
+  const undo = e.target.closest("[data-mc-undo]");
+  if (undo) {
+    mcCommitPopupQty(row);
+    if (row.del) delete row.del[undo.dataset.mcUndo];
+    mcRenderPopupList();
+  }
 };
 $("multi-popup-add").onclick = () => {
   const pd = st.multi.popupDesign;
@@ -2452,12 +2510,12 @@ $("multi-popup-add").onclick = () => {
   const rows = st.multi.rows[pd.firm];
   const row = rows.find((x) => x.designNo === pd.designNo);
   if (row) {
-    $("multi-popup-list").querySelectorAll("[data-mc-cust]").forEach((el) => {
-      const q = Math.max(0, Math.min(9999, Number(el.querySelector("[data-mc-qtyinput]").value) || 0));
-      if (q > 0) row.qty[el.dataset.mcCust] = q;
-      else delete row.qty[el.dataset.mcCust];
-    });
-    if (!Object.keys(row.qty).length) rows.splice(rows.indexOf(row), 1); // nobody wants it
+    mcCommitPopupQty(row);
+    // Keep the row if anyone has a quantity OR a pending removal; otherwise nobody
+    // wants it and it never touched a saved order.
+    const hasQty = Object.keys(row.qty).length > 0;
+    const hasDel = row.del && Object.keys(row.del).some((id) => row.del[id]);
+    if (!hasQty && !hasDel) rows.splice(rows.indexOf(row), 1);
   }
   st.multi.popupDesign = null;
   closeModal("multi-popup");
@@ -2467,8 +2525,16 @@ $("multi-popup-remove").onclick = () => {
   const pd = st.multi.popupDesign;
   if (!pd) return;
   const rows = st.multi.rows[pd.firm];
-  const i = rows.findIndex((x) => x.designNo === pd.designNo);
-  if (i >= 0) rows.splice(i, 1);
+  const row = rows.find((x) => x.designNo === pd.designNo);
+  if (row) {
+    // "Remove design" now means: remove it for EVERYONE via per-customer delete
+    // ops. Customers who have it saved get a delete; pending (unsaved) quantities
+    // are dropped. If nobody has it saved, there is nothing to persist — drop it.
+    row.del = row.del || {};
+    row.qty = {};
+    st.multi.customers.forEach((c) => { if (mcExisting(c.id, pd.designNo) > 0) row.del[c.id] = true; });
+    if (!Object.keys(row.del).length) rows.splice(rows.indexOf(row), 1);
+  }
   st.multi.popupDesign = null;
   closeModal("multi-popup");
   mcRenderMatrix();
@@ -2481,8 +2547,11 @@ function mcRenderMatrix() {
   const head = `<tr><th class="mx-corner">Design</th>${st.multi.customers.map((c) => `<th class="mx-cust" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</th>`).join("")}</tr>`;
   const body = rows.map((row) => {
     const cells = st.multi.customers.map((c) => {
-      const q = Number(row.qty[c.id] || 0);
       const cur = mcExisting(c.id, row.designNo);
+      // A pending removal (only meaningful when they actually have the line).
+      if (row.del && row.del[c.id] && cur > 0)
+        return `<td class="mx-cell mx-remove" data-mc-open="${esc(row.designNo)}" title="removing (was ${cur})">✕</td>`;
+      const q = Number(row.qty[c.id] || 0);
       // zero = nothing; same = already had this qty (won't be re-written);
       // mx-changed = a real edit that will be saved.
       const cls = q === 0 ? "zero" : q === cur ? "same" : "mx-changed";
@@ -2499,32 +2568,38 @@ $("multi-matrix").onclick = (e) => {
   mcOpenPopup(st.multi.firm, cell.dataset.mcOpen); // editing a cell REOPENS the popup
 };
 function mcTotals() {
-  // Counts only CHANGES (qty>0 and different from the loaded current order), so
-  // the summary and Save button reflect what will actually be written.
+  // Counts CHANGES only (qty>0 and different from the loaded current order, plus
+  // pending removals of lines they actually have), so the summary and Save button
+  // reflect what will actually be written.
   const totals = {};
-  st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0 }));
+  st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0, dels: 0 }));
   ["Maitri", "Niharika"].forEach((firm) =>
     (st.multi.rows[firm] || []).forEach((row) =>
       st.multi.customers.forEach((c) => {
         const q = Number(row.qty[c.id] || 0);
         if (q > 0 && q !== mcExisting(c.id, row.designNo)) { totals[c.id].designs++; totals[c.id].sets += q; }
+        if (row.del && row.del[c.id] && mcExisting(c.id, row.designNo) > 0) totals[c.id].dels++;
       })));
   return totals;
 }
+function mcHasChanges(t) { return t.sets > 0 || t.dels > 0; }
 function mcUpdateSaveBtn() {
-  $("multi-save").disabled = !Object.values(mcTotals()).some((t) => t.sets > 0);
+  $("multi-save").disabled = !Object.values(mcTotals()).some(mcHasChanges);
 }
 $("multi-save").onclick = () => {
   const totals = mcTotals();
-  const active = st.multi.customers.filter((c) => totals[c.id].sets > 0);
+  const active = st.multi.customers.filter((c) => mcHasChanges(totals[c.id]));
   if (!active.length) { toast("No changes to save", "error"); return; }
   const skipped = st.multi.customers.length - active.length;
   mcConfirmMode = "save";
   $("multi-confirm-title").textContent = "Confirm order";
   $("multi-confirm-sub").textContent = `${active.length} customer${active.length === 1 ? "" : "s"} will be saved${skipped ? ` · ${skipped} unchanged, skipped` : ""}.`;
   $("multi-confirm-list").innerHTML = st.multi.customers.map((c) => {
-    const t = totals[c.id], skip = t.sets === 0;
-    return `<div class="mc-summary-row ${skip ? "skip" : ""}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>${skip ? "skipped" : `${t.designs} design${t.designs === 1 ? "" : "s"} / ${t.sets} set${t.sets === 1 ? "" : "s"}`}</span></div>`;
+    const t = totals[c.id], skip = !mcHasChanges(t);
+    const parts = [];
+    if (t.designs) parts.push(`${t.designs} design${t.designs === 1 ? "" : "s"} / ${t.sets} set${t.sets === 1 ? "" : "s"}`);
+    if (t.dels) parts.push(`${t.dels} removal${t.dels === 1 ? "" : "s"}`);
+    return `<div class="mc-summary-row ${skip ? "skip" : ""}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>${skip ? "skipped" : parts.join(" · ")}</span></div>`;
   }).join("");
   const save = $("multi-confirm-save");
   save.disabled = false;
@@ -2537,44 +2612,65 @@ function mcJobRequestId(custId, firm, items) {
 }
 $("multi-confirm-save").onclick = async () => {
   if (mcConfirmMode === "done") { closeModal("multi-confirm"); mcAfterSave(); return; }
-  // One job per (customer, firm) carrying only qty>0 designs. A customer with no
-  // quantity produces no job — a qty-0 order is never written (would start their
-  // 24h edit window for nothing).
+  // One job per (customer, firm). Every item carries _op (sendAdminSave enforces
+  // it too). Upserts are only CHANGED quantities; deletes are only for lines the
+  // customer actually has (mcExisting>0), so a removal never no-op-bumps a version.
   const jobs = [];
   st.multi.customers.forEach((c) =>
     ["Maitri", "Niharika"].forEach((firm) => {
-      const items = (st.multi.rows[firm] || [])
-        .filter((row) => { const q = Number(row.qty[c.id] || 0); return q > 0 && q !== mcExisting(c.id, row.designNo); })
-        .map((row) => ({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: Number(row.qty[c.id]) }));
+      const items = [];
+      (st.multi.rows[firm] || []).forEach((row) => {
+        if (row.del && row.del[c.id]) {
+          if (mcExisting(c.id, row.designNo) > 0) items.push({ _op: "delete", designNo: row.designNo, _delete: true });
+          return;
+        }
+        const q = Number(row.qty[c.id] || 0);
+        if (q > 0 && q !== mcExisting(c.id, row.designNo)) items.push({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: q });
+      });
       if (items.length) jobs.push({ customer: c, firm, items });
     }));
   if (!jobs.length) { toast("Nothing to save", "error"); return; }
   const btn = $("multi-confirm-save"), old = btn.textContent;
   const perCustomer = {};
-  st.multi.customers.forEach((c) => (perCustomer[c.id] = { company: c.companyName, colorIdx: c.colorIdx, ok: 0, fail: 0, errors: [] }));
+  st.multi.customers.forEach((c) => (perCustomer[c.id] = { company: c.companyName, colorIdx: c.colorIdx, ok: 0, fail: 0, removed: 0, errors: [], warns: [] }));
   try {
     btn.disabled = true;
     let done = 0;
     for (const job of jobs) {
       btn.textContent = `Saving… ${done}/${jobs.length}`;
+      const pc = perCustomer[job.customer.id];
       try {
-        await sendAdminSave(job.customer.id, job.firm, job.items, mcJobRequestId(job.customer.id, job.firm, job.items));
-        perCustomer[job.customer.id].ok++;
-        // Reflect the newly-saved quantities so a re-scan shows the right total.
+        const d = await sendAdminSave(job.customer.id, job.firm, job.items, mcJobRequestId(job.customer.id, job.firm, job.items));
+        pc.ok++;
+        // Trust the server's returned order, not the client's guess, when updating
+        // what each customer now has.
+        const stillThere = new Set((d?.order?.items || []).map((it) => it.designNo));
         (st.multi.existing[job.customer.id] ||= {});
-        job.items.forEach((it) => { st.multi.existing[job.customer.id][it.designNo] = it.qty; });
+        job.items.forEach((it) => {
+          if (it._op === "delete") {
+            // If a concurrent edit (or a stale guard) left the line in place, the
+            // removal did NOT happen — say so rather than showing a green confirm.
+            if (stillThere.has(it.designNo)) pc.warns.push(`${it.designNo} still on the order — reopen and check`);
+            else { delete st.multi.existing[job.customer.id][it.designNo]; pc.removed++; }
+          } else {
+            st.multi.existing[job.customer.id][it.designNo] = it.qty;
+          }
+        });
       } catch (err) {
         // Partial failure is expected. Record it, keep going, never roll back.
-        perCustomer[job.customer.id].fail++;
-        perCustomer[job.customer.id].errors.push(`${job.firm}: ${err.message}`);
+        pc.fail++;
+        pc.errors.push(mcFriendlyError(err.message));
       }
       done++;
     }
     const failed = Object.values(perCustomer).filter((p) => p.fail > 0).length;
-    const saved = Object.values(perCustomer).filter((p) => p.ok > 0 && p.fail === 0).length;
-    mcLastFailures = failed > 0;
+    const warned = Object.values(perCustomer).filter((p) => !p.fail && p.warns.length).length;
+    const saved = Object.values(perCustomer).filter((p) => p.ok > 0 && !p.fail && !p.warns.length).length;
+    // Keep the matrix (do not clear) if anything failed OR a removal did not land,
+    // so staff can retry it.
+    mcLastFailures = failed > 0 || warned > 0;
     mcRenderResults(perCustomer);
-    if (failed) toast(`${saved} saved · ${failed} had errors`, "error");
+    if (failed || warned) toast(`${saved} saved · ${failed + warned} need a check`, "error");
     else toast(`Saved ${saved} customer order${saved === 1 ? "" : "s"}`, "success");
   } catch (e) {
     toast(e.message, "error");
@@ -2582,14 +2678,23 @@ $("multi-confirm-save").onclick = async () => {
     btn.disabled = false;
   }
 };
+function mcFriendlyError(msg) {
+  const m = String(msg || "");
+  const disp = m.match(/DESIGN_DISPATCHED_(.+)$/);
+  if (disp) return `${disp[1]} already dispatched — undispatch first`;
+  return m;
+}
 function mcRenderResults(perCustomer) {
   mcConfirmMode = "done";
   $("multi-confirm-title").textContent = "Results";
-  $("multi-confirm-sub").textContent = "Per-customer outcome. Anything that failed stays in the matrix — fix it and save again.";
+  $("multi-confirm-sub").textContent = "Per-customer outcome. Anything that failed or needs a check stays in the matrix — fix it and save again.";
   $("multi-confirm-list").innerHTML = st.multi.customers.map((c) => {
     const p = perCustomer[c.id];
     if (!p.ok && !p.fail) return `<div class="mc-summary-row skip"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>skipped</span></div>`;
-    const status = p.fail ? `<span class="mc-result-err">${esc(p.errors.join(" · "))}</span>` : `<span class="mc-result-ok">saved</span>`;
+    let status;
+    if (p.fail) status = `<span class="mc-result-err">${esc(p.errors.join(" · "))}</span>`;
+    else if (p.warns.length) status = `<span class="mc-result-warn">${esc(p.warns.join(" · "))}</span>`;
+    else status = `<span class="mc-result-ok">saved${p.removed ? ` · ${p.removed} removed` : ""}</span>`;
     return `<div class="mc-summary-row"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b>${status}</div>`;
   }).join("");
   const save = $("multi-confirm-save");
