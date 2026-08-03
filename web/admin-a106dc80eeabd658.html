@@ -72,6 +72,12 @@ table.pgrid td.pg-active input{width:18px;height:18px}
 table.pgrid td.pg-act{width:64px;text-align:center;padding:0 3px;white-space:nowrap}
 .pg-rowbtn{width:24px;height:24px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--slate);font-size:12px;cursor:pointer;margin:0 1px}
 .pg-rowbtn.del{color:var(--error)}
+table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px}
+.pg-thumb{width:44px;height:58px;object-fit:cover;border-radius:5px;background:#eef2f0;vertical-align:middle;cursor:pointer}
+.pg-drop{display:inline-block;font-size:9px;color:var(--muted);border:1px dashed var(--border);border-radius:6px;padding:9px 6px;cursor:default}
+.pg-up{font-size:13px;color:var(--muted)}
+.pg-imgwarn{position:absolute;top:0;right:1px;font-size:11px;color:#B45309;cursor:help}
+.grid-wrap.pg-dragover{outline:2px dashed var(--teal);outline-offset:-3px}
 /* ── Dispatch ─────────────────────────────────────────────────────────── */
 .dispatch-head-card>input{margin-top:12px}
 .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
@@ -299,6 +305,16 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-warn{margin:0 0 12px;padding:9px 12px;border:1px solid #f2c14b;border-radius:10px;background:#fff7e6;color:#8a5a00;font-size:11.5px;font-weight:600;line-height:1.4}
 .mc-has.unknown{color:#8a5a00;font-weight:700}
 .mc-has.removing{color:#c0392b;font-weight:700}
+.mc-popup-thumb{width:46px;height:60px;object-fit:cover;border-radius:9px;background:#eef2f0;flex:0 0 auto}
+.mc-note-wrap{position:relative;margin-top:6px}
+.mc-note{width:100%;min-height:32px;max-height:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;line-height:1.35;resize:vertical;color:var(--ink)}
+.mc-note-count{position:absolute;right:7px;bottom:5px;font-size:8.5px;color:var(--muted);pointer-events:none}
+.firm-badge{display:inline-flex;align-items:center;vertical-align:middle;margin-left:6px;padding:2px 7px;border-radius:999px;font-size:8.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.firm-badge.maitri{background:rgba(43,115,121,.14);color:var(--teal-deep)}
+.firm-badge.niharika{background:rgba(230,0,126,.12);color:#B0136A}
+.firm-badge.both{gap:2px;padding:1px 2px;background:var(--foam)}
+.firm-badge.both button{width:20px;height:18px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:9px;font-weight:900;cursor:pointer}
+.firm-badge.both button.on{background:var(--teal-deep);color:#fff}
 .mc-popup-row.removing{opacity:.72}
 .mc-popup-row.removing b{text-decoration:line-through}
 .mc-remove-line{margin-top:4px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
@@ -381,7 +397,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
     <div class="selected-customer-copy"><span class="section-kicker">Ordering for</span><h2 id="sale-party">—</h2><p class="selected-customer-meta" id="sale-customer-meta"></p><div class="selected-order-summary" id="sale-summary"></div></div>
     <button class="btn ghost small change-customer-btn" id="sale-close">Change</button>
   </div>
-  <div class="segment sale-firm-switch" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
+  <div class="segment sale-firm-switch hidden" id="sale-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
   <div class="sale-scan-block"><label>Scan barcode or type a design number</label><div class="sale-scan-row"><input id="sale-barcode" placeholder="Barcode or design no." autocomplete="off"/><button class="btn" id="sale-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="sale-camera">Use camera scanner</button></div>
   <div class="reader" id="sale-reader"></div><div class="copy" id="sale-note"></div><div class="list" id="sale-cart"></div><div class="sale-savebar"><button class="btn" id="sale-save">Save order</button></div>
 </section>
@@ -417,8 +433,8 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <section class="subpanel hidden" id="products-grid"><div class="card">
   <div class="grid-head"><div><span class="section-kicker">Bulk add</span><h1>Add designs</h1><p class="copy">Type rows directly — Tab moves across, Enter starts a new row. A blank row is always waiting at the bottom. Nothing is written until you press Save. New designs have no barcode yet; the next free sticker is <b>MC-0644</b>.</p></div><div class="grid-actions"><button class="btn secondary small" id="grid-add">＋ Row</button><button class="btn small" id="grid-save">Save all</button></div></div>
   <div class="grid-report" id="grid-report"></div>
-  <div class="grid-wrap"><table class="pgrid" id="pgrid"><thead><tr><th class="pg-num">#</th><th>Design no.</th><th>Firm</th><th>Category</th><th>Style</th><th>Fabric</th><th class="pg-pcs">Pcs/set</th><th>Description</th><th>Active</th><th>Barcode</th><th></th></tr></thead><tbody id="pgrid-body"></tbody></table></div>
-  <datalist id="grid-styles"></datalist><datalist id="grid-fabrics"></datalist>
+  <div class="grid-wrap" id="grid-wrap"><table class="pgrid" id="pgrid"><thead><tr><th class="pg-num">#</th><th>Design no.</th><th>Firm</th><th>Category</th><th>Style</th><th>Fabric</th><th class="pg-pcs">Pcs/set</th><th>Description</th><th>Image</th><th>Active</th><th>Barcode</th><th></th></tr></thead><tbody id="pgrid-body"></tbody></table></div>
+  <datalist id="grid-styles"></datalist><datalist id="grid-fabrics"></datalist><input type="file" id="grid-file" accept="image/*" class="hidden"/>
 </div></section>
 <section class="subpanel hidden" id="products-mapping">
 <div class="card map-build-card">
@@ -550,7 +566,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
-<div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
+<div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><img id="multi-popup-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
 <div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
 <div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><button class="scan-btn scan-mode-btn" id="scan-mode">Batch</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button><div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
 <div class="modal" id="product-create-modal"><div class="sheet"><div class="sheet-head"><div><h2>New product</h2><p class="copy">Add a design to the catalogue. A photo is optional — you can attach one later.</p></div><button class="close" data-close="product-create-modal">✕</button></div>
@@ -715,6 +731,7 @@ const st = {
     firm: "Maitri",
     rows: { Maitri: [], Niharika: [] }, // each: {barcode, designNo, category, style, fabric, pcsPerSet, description, imageUrl, qty:{custId:sets}}
     existing: {},            // { custId: { designNo: sets } } — each customer's CURRENT order, loaded at Start
+    existingNote: {},        // { custId: { designNo: note } } — saved line notes, so a Done never wipes one
     loadFailed: new Set(),   // customer ids whose current order failed to preload — quantities would overwrite blind
     popupDesign: null,       // { firm, designNo } being edited in the qty popup
     reqIds: {},              // content-hashed request_id per (customer,firm) for idempotent batch retry
@@ -2055,6 +2072,7 @@ async function openSaleCustomer(c) {
   st.sale.firm = "Maitri";
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
+  st.sale.reqIds = {}; // per-firm save request ids, generated up front + reused on retry
   $("sale-find-card").classList.add("hidden");
   $("sale-results").innerHTML = "";
   $("sale-builder").classList.remove("hidden");
@@ -2084,32 +2102,39 @@ function saleCart() {
 function saleDeleted() {
   return st.sale.deleted[st.sale.firm];
 }
+function saleIsBoth(designNo) { const d = (st.designs || []).find((x) => x.designNo === designNo); return !!(d && d.firm === "Both"); }
+function saleRowHtml(firm, it, i) {
+  const linePieces = Number(it.qty) * (Number(it.pcsPerSet) || 1);
+  // A 'Both' design shows an M/N toggle to move the line; a firm-specific one shows a badge.
+  const badge = saleIsBoth(it.designNo)
+    ? `<span class="firm-badge both"><button data-sale="firm" data-firm="${firm}" data-i="${i}" data-to="Maitri" class="${firm === "Maitri" ? "on" : ""}" title="Maitri">M</button><button data-sale="firm" data-firm="${firm}" data-i="${i}" data-to="Niharika" class="${firm === "Niharika" ? "on" : ""}" title="Niharika">N</button></span>`
+    : `<span class="firm-badge ${firm.toLowerCase()}">${esc(firm)}</span>`;
+  return `<article class="sale-item" data-firm="${firm}">
+    <div class="sale-item-top">
+      ${it.imageUrl ? `<img class="sale-item-thumb" src="${esc(ik(it.imageUrl, "w-160,h-220,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy">` : '<div class="sale-item-thumb"></div>'}
+      <div class="sale-item-main">
+        <div class="sale-item-head"><div><div class="sale-item-title">${esc(it.designNo)} ${badge}</div><div class="sale-item-meta">${esc([it.category, it.style, it.fabric].filter(Boolean).join(" · ") || "Product details not added")}</div></div><span class="line-piece-pill">${linePieces} pcs</span></div>
+        <div class="sale-qty-panel"><span class="sale-qty-label">Sets</span><div class="sale-qty-controls"><button class="qty-step" data-sale="minus" data-firm="${firm}" data-i="${i}" aria-label="Reduce sets">−</button><input class="sale-qty-input" data-sale="qty" data-firm="${firm}" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" aria-label="Sets for ${esc(it.designNo)}"><button class="qty-step" data-sale="plus" data-firm="${firm}" data-i="${i}" aria-label="Increase sets">+</button></div></div>
+        <div class="sale-product-stats"><span class="pcs-set-subtext">${Number(it.pcsPerSet) || 1} pcs/set</span><button class="sale-remove" data-sale="remove" data-firm="${firm}" data-i="${i}" aria-label="Remove ${esc(it.designNo)}">Remove</button></div>
+      </div>
+    </div>
+    <div class="sale-note-wrap">
+      <label class="sale-note-label" for="sale-note-${firm}-${i}"><span>Order note</span><span class="sale-note-help">Optional</span></label>
+      <textarea id="sale-note-${firm}-${i}" class="sale-item-note" data-sale="note" data-firm="${firm}" data-i="${i}" maxlength="500" placeholder="Add colour preference, size mix or packing instruction">${esc(it.note)}</textarea>
+    </div>
+  </article>`;
+}
 function renderSale() {
-  document.querySelectorAll("#sale-firms button").forEach((b) => b.classList.toggle("active", b.dataset.firm === st.sale.firm));
-  const cart = saleCart(),
-    sets = cart.reduce((s, i) => s + Number(i.qty), 0),
-    pieces = cart.reduce((s, i) => s + Number(i.qty) * (Number(i.pcsPerSet) || 1), 0);
-  $("sale-summary").innerHTML = `<span>${esc(st.sale.firm)}</span><span>${cart.length} design${cart.length === 1 ? "" : "s"}</span><span>${sets} set${sets === 1 ? "" : "s"}</span>`;
+  const sum = (f) => st.sale.carts[f].reduce((a, it) => { a.sets += Number(it.qty); a.pieces += Number(it.qty) * (Number(it.pcsPerSet) || 1); return a; }, { sets: 0, pieces: 0 });
+  const m = sum("Maitri"), n = sum("Niharika"), nM = st.sale.carts.Maitri.length, nN = st.sale.carts.Niharika.length;
+  // Two subtotals (per firm) plus the combined total, always visible.
+  $("sale-summary").innerHTML =
+    `<span>Maitri · ${nM} design${nM === 1 ? "" : "s"} · ${m.sets} set${m.sets === 1 ? "" : "s"}</span>` +
+    `<span>Niharika · ${nN} design${nN === 1 ? "" : "s"} · ${n.sets} set${n.sets === 1 ? "" : "s"}</span>` +
+    `<span>Total · ${nM + nN} design${nM + nN === 1 ? "" : "s"} · ${m.sets + n.sets} set${m.sets + n.sets === 1 ? "" : "s"} · ${m.pieces + n.pieces} pcs</span>`;
   $("sale-cart").className = "sale-cart-list";
-  $("sale-cart").innerHTML = cart.length
-    ? cart.map((it, i) => {
-        const linePieces = Number(it.qty) * (Number(it.pcsPerSet) || 1);
-        return `<article class="sale-item">
-          <div class="sale-item-top">
-            ${it.imageUrl ? `<img class="sale-item-thumb" src="${esc(ik(it.imageUrl, "w-160,h-220,c-at_max,q-55"))}" alt="${esc(it.designNo)}" loading="lazy">` : '<div class="sale-item-thumb"></div>'}
-            <div class="sale-item-main">
-              <div class="sale-item-head"><div><div class="sale-item-title">${esc(it.designNo)}</div><div class="sale-item-meta">${esc([it.category,it.style,it.fabric].filter(Boolean).join(" · ") || "Product details not added")}</div></div><span class="line-piece-pill">${linePieces} pcs</span></div>
-              <div class="sale-qty-panel"><span class="sale-qty-label">Sets</span><div class="sale-qty-controls"><button class="qty-step" data-sale="minus" data-i="${i}" aria-label="Reduce sets">−</button><input class="sale-qty-input" data-sale="qty" data-i="${i}" type="number" min="1" max="9999" value="${it.qty}" aria-label="Sets for ${esc(it.designNo)}"><button class="qty-step" data-sale="plus" data-i="${i}" aria-label="Increase sets">+</button></div></div>
-              <div class="sale-product-stats"><span class="pcs-set-subtext">${Number(it.pcsPerSet) || 1} pcs/set</span><button class="sale-remove" data-sale="remove" data-i="${i}" aria-label="Remove ${esc(it.designNo)}">Remove</button></div>
-            </div>
-          </div>
-          <div class="sale-note-wrap">
-            <label class="sale-note-label" for="sale-note-${i}"><span>Order note</span><span class="sale-note-help">Optional</span></label>
-            <textarea id="sale-note-${i}" class="sale-item-note" data-sale="note" data-i="${i}" maxlength="500" placeholder="Add colour preference, size mix or packing instruction">${esc(it.note)}</textarea>
-          </div>
-        </article>`;
-      }).join("")
-    : '<div class="sale-empty"><div class="sale-empty-icon">＋</div><b>No designs added yet</b><span>Scan or enter a barcode to start this order.</span></div>';
+  const rows = ["Maitri", "Niharika"].flatMap((f) => st.sale.carts[f].map((it, i) => saleRowHtml(f, it, i)));
+  $("sale-cart").innerHTML = rows.length ? rows.join("") : '<div class="sale-empty"><div class="sale-empty-icon">＋</div><b>No designs added yet</b><span>Scan or type a design number — each design lands under its own firm.</span></div>';
 }
 $("sale-firms").onclick = (e) => {
   const b = e.target.closest("[data-firm]");
@@ -2131,20 +2156,29 @@ $("sale-close").onclick = () => {
 $("sale-cart").onclick = (e) => {
   const b = e.target.closest("[data-sale]");
   if (!b || ["INPUT", "TEXTAREA"].includes(b.tagName)) return;
-  const i = Number(b.dataset.i),
-    it = saleCart()[i];
+  const firm = b.dataset.firm, i = Number(b.dataset.i), cart = st.sale.carts[firm], it = cart[i];
+  if (b.dataset.sale === "firm") {
+    // 'Both' design: move the line to the chosen firm (delete from the old, add to the new).
+    const to = b.dataset.to;
+    if (it && to && to !== firm) {
+      cart.splice(i, 1);
+      if (it._serverExists) st.sale.deleted[firm].add(it.designNo);
+      it._dirty = true; it._serverExists = false;
+      st.sale.deleted[to].delete(it.designNo);
+      st.sale.carts[to].push(it);
+    }
+    renderSale(); return;
+  }
   if (!it) return;
-  if (b.dataset.sale === "plus") it.qty = Math.min(9999, it.qty + 1);
-  if (b.dataset.sale === "minus") it.qty = Math.max(1, it.qty - 1);
-  if (b.dataset.sale === "remove") {
-    const [x] = saleCart().splice(i, 1);
-    if (x._serverExists) saleDeleted().add(x.designNo);
-  } else it._dirty = true;
+  if (b.dataset.sale === "plus") { it.qty = Math.min(9999, it.qty + 1); it._dirty = true; }
+  else if (b.dataset.sale === "minus") { it.qty = Math.max(1, it.qty - 1); it._dirty = true; }
+  else if (b.dataset.sale === "remove") { const [x] = cart.splice(i, 1); if (x._serverExists) st.sale.deleted[firm].add(x.designNo); }
   renderSale();
 };
 $("sale-cart").onchange = (e) => {
   if (e.target.dataset.sale === "qty") {
-    const it = saleCart()[Number(e.target.dataset.i)];
+    const it = st.sale.carts[e.target.dataset.firm][Number(e.target.dataset.i)];
+    if (!it) return;
     it.qty = Math.max(1, Math.min(9999, Number(e.target.value) || 1));
     it._dirty = true;
     renderSale();
@@ -2152,7 +2186,8 @@ $("sale-cart").onchange = (e) => {
 };
 $("sale-cart").oninput = (e) => {
   if (e.target.dataset.sale === "note") {
-    const it = saleCart()[Number(e.target.dataset.i)];
+    const it = st.sale.carts[e.target.dataset.firm][Number(e.target.dataset.i)];
+    if (!it) return;
     it.note = e.target.value.slice(0, 500);
     it._dirty = true;
   }
@@ -2236,28 +2271,21 @@ async function resolveEntry(raw) {
   }
   throw Error(`“${q}” is not a known barcode or design number — check it and try again.`);
 }
+function saleFirmFor(d) { return d.firm === "Both" ? "Maitri" : d.firm; } // 'Both' defaults to Maitri (flip per-row)
+function saleHasDesign(designNo) { return st.sale.carts.Maitri.some((x) => x.designNo === designNo) || st.sale.carts.Niharika.some((x) => x.designNo === designNo); }
 async function saleAdd(raw) {
   try {
     const d = await resolveEntry(raw);
     if (!d) return;
-    if (![st.sale.firm, "Both"].includes(d.firm))
-      throw Error(firmMismatch(d.designNo, d.firm, st.sale.firm));
-    if (saleCart().some((x) => x.designNo === d.designNo))
-      throw Error("Design already added");
-    saleDeleted().delete(d.designNo);
-    saleCart().push({
-      barcode: d.barcode,
-      designNo: d.designNo,
-      imageUrl: d.imageUrl,
-      category: d.category,
-      style: d.style,
-      fabric: d.fabric,
-      pcsPerSet: d.pcsPerSet,
-      description: d.description,
-      note: "",
-      qty: 1,
-      _dirty: true,
-      _serverExists: false,
+    // Combined entry: route by the design's OWN firm — no firm gate, so
+    // DESIGN_..._DOES_NOT_BELONG_TO_... is unreachable from the sale screen.
+    const firm = saleFirmFor(d);
+    if (saleHasDesign(d.designNo)) throw Error("Design already added");
+    st.sale.deleted[firm].delete(d.designNo);
+    st.sale.carts[firm].push({
+      barcode: d.barcode, designNo: d.designNo, imageUrl: d.imageUrl, category: d.category,
+      style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description,
+      note: "", qty: 1, _dirty: true, _serverExists: false,
     });
     $("sale-barcode").value = "";
     renderSale();
@@ -2291,42 +2319,45 @@ async function sendAdminSave(customerId, firm, items, requestId) {
   if (requestId) payload.requestId = requestId;
   return admin("assistedSaveOrder", payload);
 }
+function saleReqKey(firm, items) { return firm + "|" + items.map((i) => i.designNo + ":" + (i._delete ? "del" : i.qty)).sort().join(","); }
+function saleReqId(firm, items) { const k = saleReqKey(firm, items); return (st.sale.reqIds ||= {})[k] ||= crypto.randomUUID(); }
+function saleFirmJob(firm) {
+  const items = st.sale.carts[firm].filter((x) => x._dirty)
+    .map((x) => ({ _op: "upsert", barcode: x.barcode, designNo: x.designNo, qty: x.qty, note: x.note }))
+    .concat([...st.sale.deleted[firm]].map((designNo) => ({ _op: "delete", designNo, _delete: true })));
+  return { firm, items };
+}
 $("sale-save").onclick = async () => {
   if (!st.sale.customer) return;
-  const items = saleCart()
-    .filter((x) => x._dirty)
-    .map((x) => ({
-      _op: "upsert",
-      barcode: x.barcode,
-      designNo: x.designNo,
-      qty: x.qty,
-      note: x.note,
-    }))
-    .concat(
-      [...saleDeleted()].map((designNo) => ({
-        _op: "delete",
-        designNo,
-        _delete: true,
-      })),
-    );
-  if (!items.length) {
-    toast("No unsaved changes");
-    return;
-  }
-  const saveButton = $("sale-save"), oldText = saveButton.textContent;
+  // One _write_order call per firm, ONLY for firms with changes — never an empty
+  // items array. Request ids are generated up front and REUSED on retry (keyed by
+  // firm+content), so a retried half returns its cached response, never double-writes.
+  const jobs = ["Maitri", "Niharika"].map(saleFirmJob).filter((j) => j.items.length);
+  if (!jobs.length) { toast("No unsaved changes"); return; }
+  const btn = $("sale-save"), old = btn.textContent, results = [];
   try {
-    saveButton.disabled = true;
-    saveButton.textContent = "Saving…";
-    const d = await sendAdminSave(st.sale.customer.id, st.sale.firm, items);
-    st.sale.carts[st.sale.firm] = (d.order?.items || []).map(hydrate);
-    st.sale.deleted[st.sale.firm].clear();
+    btn.disabled = true;
+    for (const job of jobs) {
+      btn.textContent = `Saving ${job.firm}…`;
+      try {
+        const d = await sendAdminSave(st.sale.customer.id, job.firm, job.items, saleReqId(job.firm, job.items));
+        st.sale.carts[job.firm] = (d.order?.items || []).map(hydrate);
+        st.sale.deleted[job.firm].clear();
+        delete st.sale.reqIds[saleReqKey(job.firm, job.items)]; // consumed only on success
+        results.push({ firm: job.firm, ok: true });
+      } catch (err) {
+        // Per-firm: a failure is visible and retryable, never a silent partial.
+        results.push({ firm: job.firm, ok: false, error: mcFriendlyError(err.message) });
+      }
+    }
     renderSale();
-    toast("Order saved", "success");
+    const okFirms = results.filter((r) => r.ok).map((r) => r.firm), fails = results.filter((r) => !r.ok);
+    if (fails.length) toast(`${okFirms.length ? okFirms.join(" + ") + " saved · " : ""}${fails.map((f) => f.firm + " failed — " + f.error).join(" · ")}. Retry.`, "error");
+    else toast(`Saved — ${okFirms.join(" + ")}`, "success");
   } catch (e) {
     toast(e.message, "error");
   } finally {
-    saveButton.disabled = false;
-    saveButton.textContent = oldText;
+    btn.disabled = false; btn.textContent = old;
   }
 };
 /* ---------- Multi-customer ordering (Brief 4) ----------
@@ -2413,6 +2444,7 @@ $("multi-start").onclick = async () => {
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
   st.multi.existing = {};
+  st.multi.existingNote = {};
   st.multi.loadFailed = new Set();
   updateSaleMode();
   document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x.dataset.firm === "Maitri"));
@@ -2429,9 +2461,10 @@ $("multi-start").onclick = async () => {
       // A failed load must NOT be recorded as {} — that reads as "not ordered" and
       // would let a salesperson overwrite an existing order blind. Track it instead.
       if (!d) { st.multi.loadFailed.add(id); return; }
-      const map = {};
-      (d.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; }));
+      const map = {}, notes = {};
+      (d.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; if (it.note) notes[it.designNo] = String(it.note); }));
       st.multi.existing[id] = map;
+      (st.multi.existingNote ||= {})[id] = notes;
     });
   } finally {
     loading(false);
@@ -2449,6 +2482,9 @@ function mcRenderLoadWarn() {
 }
 function mcExisting(custId, designNo) {
   return Number((st.multi.existing[custId] || {})[designNo] || 0);
+}
+function mcExistingNote(custId, designNo) {
+  return String(((st.multi.existingNote || {})[custId] || {})[designNo] || "");
 }
 $("multi-close").onclick = () => {
   st.multi.building = false;
@@ -2486,6 +2522,16 @@ function mcOpenPopup(firm, designNo) {
   st.multi.popupDesign = { firm, designNo };
   $("multi-popup-title").textContent = designNo;
   $("multi-popup-sub").textContent = [row.category, row.style, row.fabric].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`;
+  const thumb = $("multi-popup-thumb");
+  thumb.classList.add("hidden"); thumb.onerror = () => thumb.classList.add("hidden");
+  if (row.imageUrl) { thumb.src = ik(row.imageUrl, "w-160,q-70"); thumb.onload = () => thumb.classList.remove("hidden"); }
+  else {
+    // Cache miss → one fallback fetch for this design's image. Render nothing if it stays empty.
+    admin("getProductDetail", { designNo }).then((d) => {
+      const u = d && d.design && d.design.imageUrl;
+      if (u && st.multi.popupDesign && st.multi.popupDesign.designNo === designNo) { row.imageUrl = u; thumb.src = ik(u, "w-160,q-70"); thumb.onload = () => thumb.classList.remove("hidden"); }
+    }).catch(() => {});
+  }
   mcRenderPopupList();
   openModal("multi-popup");
 }
@@ -2495,6 +2541,7 @@ function mcRenderPopupList() {
   const row = (st.multi.rows[pd.firm] || []).find((x) => x.designNo === pd.designNo);
   if (!row) return;
   row.del = row.del || {};
+  row.notes = row.notes || {};
   $("multi-popup-list").innerHTML = st.multi.customers.map((c) => {
     const failed = st.multi.loadFailed.has(c.id);
     const cur = mcExisting(c.id, pd.designNo);
@@ -2516,20 +2563,33 @@ function mcRenderPopupList() {
     const qtyCol = removing
       ? `<span class="mc-removing-tag">Removing</span>`
       : `<button data-mc-step="-1" aria-label="Fewer sets">−</button><input type="number" min="0" max="9999" value="${q}" data-mc-qtyinput aria-label="Sets for ${esc(c.companyName)}"><button data-mc-step="1" aria-label="More sets">+</button>`;
-    return `<div class="mc-popup-row${removing ? " removing" : ""}" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${hintCls}">${hint}</span>${action}</div><div class="mc-qty">${qtyCol}</div></div>`;
+    // Per-customer note, pre-filled from what they already have so pressing Done
+    // untouched never wipes a saved note.
+    const noteVal = row.notes[c.id] !== undefined ? row.notes[c.id] : mcExistingNote(c.id, pd.designNo);
+    const noteField = removing ? "" : `<div class="mc-note-wrap"><textarea class="mc-note" data-mc-note maxlength="500" rows="1" placeholder="Note (optional)" aria-label="Note for ${esc(c.companyName)}">${esc(noteVal)}</textarea><span class="mc-note-count">${noteVal.length}/500</span></div>`;
+    return `<div class="mc-popup-row${removing ? " removing" : ""}" data-mc-cust="${esc(c.id)}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><div class="mc-popup-who"><b>${esc(c.companyName)}</b><span class="mc-has ${hintCls}">${hint}</span>${action}${noteField}</div><div class="mc-qty">${qtyCol}</div></div>`;
   }).join("");
 }
 function mcCommitPopupQty(row) {
-  // Read the visible qty inputs into row.qty. Customers marked for removal show a
-  // "Removing" tag instead of an input, so they are skipped here.
+  // Read the visible qty + note inputs into the row. Customers marked for removal
+  // show a "Removing" tag instead of an input, so they are skipped for qty.
+  row.notes = row.notes || {};
   $("multi-popup-list").querySelectorAll("[data-mc-cust]").forEach((el) => {
+    const cid = el.dataset.mcCust;
+    const noteEl = el.querySelector("[data-mc-note]");
+    if (noteEl) row.notes[cid] = noteEl.value.slice(0, 500);
     const input = el.querySelector("[data-mc-qtyinput]");
     if (!input) return;
     const q = Math.max(0, Math.min(9999, Number(input.value) || 0));
-    if (q > 0) row.qty[el.dataset.mcCust] = q;
-    else delete row.qty[el.dataset.mcCust];
+    if (q > 0) row.qty[cid] = q;
+    else delete row.qty[cid];
   });
 }
+$("multi-popup-list").oninput = (e) => {
+  if (!e.target.matches("[data-mc-note]")) return;
+  const cnt = e.target.parentElement.querySelector(".mc-note-count");
+  if (cnt) cnt.textContent = `${e.target.value.length}/500`;
+};
 $("multi-popup-list").onclick = (e) => {
   const step = e.target.closest("[data-mc-step]");
   if (step) {
@@ -2624,17 +2684,21 @@ function mcTotals() {
   // pending removals of lines they actually have), so the summary and Save button
   // reflect what will actually be written.
   const totals = {};
-  st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0, dels: 0 }));
+  st.multi.customers.forEach((c) => (totals[c.id] = { designs: 0, sets: 0, dels: 0, notes: 0 }));
   ["Maitri", "Niharika"].forEach((firm) =>
     (st.multi.rows[firm] || []).forEach((row) =>
       st.multi.customers.forEach((c) => {
         const q = Number(row.qty[c.id] || 0);
         if (q > 0 && q !== mcExisting(c.id, row.designNo)) { totals[c.id].designs++; totals[c.id].sets += q; }
+        else if (q > 0) {
+          const note = row.notes && row.notes[c.id] !== undefined ? row.notes[c.id] : mcExistingNote(c.id, row.designNo);
+          if (note !== mcExistingNote(c.id, row.designNo)) totals[c.id].notes++;
+        }
         if (row.del && row.del[c.id] && mcExisting(c.id, row.designNo) > 0) totals[c.id].dels++;
       })));
   return totals;
 }
-function mcHasChanges(t) { return t.sets > 0 || t.dels > 0; }
+function mcHasChanges(t) { return t.sets > 0 || t.dels > 0 || t.notes > 0; }
 function mcUpdateSaveBtn() {
   $("multi-save").disabled = !Object.values(mcTotals()).some(mcHasChanges);
 }
@@ -2651,6 +2715,7 @@ $("multi-save").onclick = () => {
     const parts = [];
     if (t.designs) parts.push(`${t.designs} design${t.designs === 1 ? "" : "s"} / ${t.sets} set${t.sets === 1 ? "" : "s"}`);
     if (t.dels) parts.push(`${t.dels} removal${t.dels === 1 ? "" : "s"}`);
+    if (t.notes) parts.push(`${t.notes} note${t.notes === 1 ? "" : "s"}`);
     return `<div class="mc-summary-row ${skip ? "skip" : ""}"><span class="mc-popup-dot" style="background:${mcColor(c.colorIdx)}"></span><b>${esc(c.companyName)}</b><span>${skip ? "skipped" : parts.join(" · ")}</span></div>`;
   }).join("");
   const save = $("multi-confirm-save");
@@ -2677,7 +2742,12 @@ $("multi-confirm-save").onclick = async () => {
           return;
         }
         const q = Number(row.qty[c.id] || 0);
-        if (q > 0 && q !== mcExisting(c.id, row.designNo)) items.push({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: q });
+        if (q > 0) {
+          // Always carry the note (pre-filled = the saved one), so an item sent for a
+          // qty change never blanks a note; send a note-only change too.
+          const note = row.notes && row.notes[c.id] !== undefined ? row.notes[c.id] : mcExistingNote(c.id, row.designNo);
+          if (q !== mcExisting(c.id, row.designNo) || note !== mcExistingNote(c.id, row.designNo)) items.push({ _op: "upsert", barcode: row.barcode, designNo: row.designNo, qty: q, note });
+        }
       });
       if (items.length) jobs.push({ customer: c, firm, items });
     }));
@@ -2698,14 +2768,16 @@ $("multi-confirm-save").onclick = async () => {
         // what each customer now has.
         const stillThere = new Set((d?.order?.items || []).map((it) => it.designNo));
         (st.multi.existing[job.customer.id] ||= {});
+        (st.multi.existingNote ||= {})[job.customer.id] ||= {};
         job.items.forEach((it) => {
           if (it._op === "delete") {
             // If a concurrent edit (or a stale guard) left the line in place, the
             // removal did NOT happen — say so rather than showing a green confirm.
             if (stillThere.has(it.designNo)) pc.warns.push(`${it.designNo} still on the order — reopen and check`);
-            else { delete st.multi.existing[job.customer.id][it.designNo]; pc.removed++; }
+            else { delete st.multi.existing[job.customer.id][it.designNo]; delete st.multi.existingNote[job.customer.id][it.designNo]; pc.removed++; }
           } else {
             st.multi.existing[job.customer.id][it.designNo] = it.qty;
+            st.multi.existingNote[job.customer.id][it.designNo] = it.note || "";
           }
         });
       } catch (err) {
@@ -2870,11 +2942,11 @@ function beep() {
 async function saleBatchAdd(text) {
   const d = await resolveEntry(text);
   if (!d) return null;
-  if (![st.sale.firm, "Both"].includes(d.firm)) throw Error(firmMismatch(d.designNo, d.firm, st.sale.firm));
-  saleDeleted().delete(d.designNo);
-  const existing = saleCart().find((x) => x.designNo === d.designNo);
+  const firm = saleFirmFor(d);
+  st.sale.deleted[firm].delete(d.designNo);
+  const existing = st.sale.carts.Maitri.concat(st.sale.carts.Niharika).find((x) => x.designNo === d.designNo);
   if (existing) { existing.qty = Math.min(9999, (Number(existing.qty) || 0) + 1); existing._dirty = true; renderSale(); return { designNo: d.designNo, action: "incremented" }; }
-  saleCart().push({ barcode: d.barcode, designNo: d.designNo, imageUrl: d.imageUrl, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, note: "", qty: 1, _dirty: true, _serverExists: false });
+  st.sale.carts[firm].push({ barcode: d.barcode, designNo: d.designNo, imageUrl: d.imageUrl, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, note: "", qty: 1, _dirty: true, _serverExists: false });
   renderSale();
   return { designNo: d.designNo, action: "added" };
 }
@@ -3153,11 +3225,17 @@ function renderGrid() {
   if (!rows.length || gridNorm(rows[rows.length - 1].designNo)) rows.push(gridBlankRow());
   const catOpts = (v) => ['<option value=""></option>'].concat(GRID_CATEGORIES.map((c) => `<option${c === v ? " selected" : ""}>${esc(c)}</option>`)).join("");
   const firmOpts = (v) => GRID_FIRMS.map((f) => `<option${f === v ? " selected" : ""}>${esc(f)}</option>`).join("");
+  const dupMap = gridDupImageUrls();
   $("pgrid-body").innerHTML = rows.map((r, i) => {
     const has = !!gridNorm(r.designNo);
     const bc = has ? (gridExistingExact(r.designNo) ? "existing" : "new · no barcode") : "";
     const cls = r.saved ? "pg-saved" : (has ? "pg-new" : "");
     const err = r._err || {}, c = (f) => (err[f] ? "pg-cell-err" : "");
+    const flag = gridImageFlag(r.designNo, dupMap);
+    const imgCell = r._uploading
+      ? '<span class="pg-up">…</span>'
+      : (r.imageUrl ? `<img class="pg-thumb" src="${esc(ik(r.imageUrl, "w-72,h-96,c-at_max,q-60"))}" alt="" data-zoom="${esc(r.imageUrl)}">` : (has ? '<span class="pg-drop">drop</span>' : ''))
+        + (flag ? `<span class="pg-imgwarn" title="Image looks wrong: ${esc(flag)} (fix in Products, not here)">⚠</span>` : "");
     return `<tr class="${cls}" data-i="${i}">
       <td class="pg-num">${i + 1}</td>
       <td class="${c('designNo')}"><input data-f="designNo" value="${esc(r.designNo)}" autocomplete="off"></td>
@@ -3167,6 +3245,7 @@ function renderGrid() {
       <td class="${c('fabric')}"><input data-f="fabric" list="grid-fabrics" value="${esc(r.fabric)}" autocomplete="off"></td>
       <td class="pg-pcs ${c('pcsPerSet')}"><input data-f="pcsPerSet" type="number" min="1" max="9999" value="${esc(String(r.pcsPerSet))}"></td>
       <td><input data-f="description" value="${esc(r.description)}" autocomplete="off"></td>
+      <td class="pg-img" data-i="${i}">${imgCell}</td>
       <td class="pg-active"><input data-f="active" type="checkbox"${r.active ? " checked" : ""}></td>
       <td class="pg-bc">${esc(bc)}</td>
       <td class="pg-act"><button class="pg-rowbtn" data-act="dup" title="Duplicate row">⧉</button><button class="pg-rowbtn del" data-act="del" title="Delete row">✕</button></td>
@@ -3199,12 +3278,76 @@ $("pgrid-body").onchange = (e) => {
   }
 };
 $("pgrid-body").onclick = (e) => {
+  const imgCell = e.target.closest(".pg-img");
+  if (imgCell) { st.grid._pendRow = Number(imgCell.dataset.i); $("grid-file").value = ""; $("grid-file").click(); return; }
   const b = e.target.closest("[data-act]"); if (!b) return;
   const i = Number(b.closest("[data-i]").dataset.i), rows = st.grid.rows;
   if (b.dataset.act === "dup") rows.splice(i + 1, 0, { ...rows[i], designNo: "", saved: false, _err: null });
   else { rows.splice(i, 1); if (!rows.length) rows.push(gridBlankRow()); }
   renderGrid();
 };
+$("grid-file").onchange = async (e) => {
+  const f = e.target.files && e.target.files[0], i = st.grid && st.grid._pendRow;
+  if (!f || i == null) return;
+  const res = await gridUploadImage(i, f);
+  if (!res.ok) toast(res.reason, "error");
+};
+function gridDupImageUrls() {
+  const m = {};
+  (st.designs || []).forEach((d) => { const u = String(d.imageUrl || "").split("?")[0]; if (u) m[u] = (m[u] || 0) + 1; });
+  return m;
+}
+function gridImageFlag(designNo, dupMap) {
+  const d = gridExistingExact(designNo);
+  if (!d || !d.imageUrl) return "";
+  const url = String(d.imageUrl), bare = url.split("?")[0];
+  const prefix = (String(designNo).match(/^[A-Za-z]+/)?.[0] || "").toUpperCase();
+  const folder = ((bare.match(/\/([^/]+)\/[^/]+$/) || [])[1] || "").toUpperCase();
+  if (prefix && folder && folder !== prefix) return "wrong folder (/" + folder + ")";
+  if ((dupMap[bare] || 0) > 1) return "shared with another design";
+  if (/\?updatedAt=/.test(url)) return "has ?updatedAt";
+  return "";
+}
+async function gridUploadImage(i, file) {
+  const r = st.grid.rows[i];
+  if (!r) return { ok: false, reason: "no row" };
+  const dn = gridNorm(r.designNo);
+  if (!dn) return { ok: false, reason: "add the design number first, then attach the image" };
+  if (!/^image\//.test(file.type || "")) return { ok: false, reason: "not an image file" };
+  r._uploading = true; renderGrid();
+  try {
+    // useUniqueFileName stays true (uploadToImageKit) and we STORE the returned URL —
+    // never predict it (sanitised filenames collide; overwrite would destroy a distinct image).
+    const url = await uploadToImageKit(file, dn);
+    r.imageUrl = url; r.saved = false; r._uploading = false; renderGrid();
+    return { ok: true };
+  } catch (e) { r._uploading = false; renderGrid(); return { ok: false, reason: e.message }; }
+}
+function gridMatchRow(fileName) {
+  // Reuse canonDesign so filename matching agrees with the sale screen. -1 if none/ambiguous.
+  const key = canonDesign(String(fileName).replace(/\.[^.]+$/, ""));
+  if (!key) return -1;
+  const hits = st.grid.rows.map((r, i) => ({ r, i })).filter(({ r }) => gridNorm(r.designNo) && canonDesign(r.designNo) === key);
+  return hits.length === 1 ? hits[0].i : -1;
+}
+["dragenter", "dragover"].forEach((ev) => $("grid-wrap").addEventListener(ev, (e) => { e.preventDefault(); $("grid-wrap").classList.add("pg-dragover"); }));
+["dragleave", "drop"].forEach((ev) => $("grid-wrap").addEventListener(ev, () => $("grid-wrap").classList.remove("pg-dragover")));
+$("grid-wrap").addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const files = [...((e.dataTransfer && e.dataTransfer.files) || [])].filter((f) => /^image\//.test(f.type || ""));
+  if (!files.length) return;
+  const cell = e.target.closest && e.target.closest(".pg-img");
+  if (cell && files.length === 1) { const res = await gridUploadImage(Number(cell.dataset.i), files[0]); if (!res.ok) toast(res.reason, "error"); return; }
+  // Many files (or dropped on the table): auto-match by filename. Never guess silently.
+  const matched = [], unmatched = [];
+  for (const f of files) {
+    const idx = gridMatchRow(f.name);
+    if (idx < 0) { unmatched.push(f.name); continue; }
+    const res = await gridUploadImage(idx, f);
+    (res.ok ? matched : unmatched).push(res.ok ? f.name : f.name + " (" + res.reason + ")");
+  }
+  $("grid-report").innerHTML = `<div class="${unmatched.length ? "gr-err" : "gr-ok"}">${matched.length} image${matched.length === 1 ? "" : "s"} matched by filename${unmatched.length ? ` · ${unmatched.length} unmatched (fill the design number or rename the file): ${unmatched.map(esc).join(", ")}` : ""}.</div>`;
+});
 $("pgrid-body").addEventListener("paste", (e) => {
   if (!e.target.dataset || e.target.dataset.f !== "designNo") return; // only the design column fills down
   const text = (e.clipboardData || window.clipboardData).getData("text");
@@ -4306,6 +4449,7 @@ function selectExhibition(id) {
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
   st.multi.existing = {};
+  st.multi.existingNote = {};
   st.multi.loadFailed = new Set();
   renderExhibitionSwitch();
   if (st.section) go(st.section);
