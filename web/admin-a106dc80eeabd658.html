@@ -37,9 +37,15 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .scan-title{flex:1;min-width:0;color:#fff;font-size:13px;font-weight:800;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .scan-btn{width:44px;height:44px;flex:0 0 auto;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
 .scan-btn.on{background:var(--orange);color:#fff}
-.scan-hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 80px);z-index:2;text-align:center;color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.7);padding:0 22px}
+.scan-hint{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 62px);z-index:2;text-align:center;color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.7);padding:0 22px}
 .scan-wide-btn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);z-index:2;transform:translateX(-50%);min-height:44px;padding:10px 20px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.32)}
 .scan-wide-btn.on{background:var(--orange);color:#fff}
+.scan-mode-btn{width:auto;padding:0 13px;font-size:11px;font-weight:850}
+.scan-batch{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 74px);z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:11px;padding:8px 9px 8px 15px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12.5px;font-weight:800;white-space:nowrap}
+.scan-undo{border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:11px;font-weight:850;padding:6px 13px;cursor:pointer}
+.scan-idle{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(11,15,14,.84);cursor:pointer}
+.scan-idle-card{color:#fff;font-size:17px;font-weight:850;text-align:center;line-height:1.55}
+.scan-idle-card span{font-size:13px;font-weight:700;opacity:.85}
 /* ── Dispatch ─────────────────────────────────────────────────────────── */
 .dispatch-head-card>input{margin-top:12px}
 .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
@@ -514,7 +520,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
 <div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
 <div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
-<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button></div>
+<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><button class="scan-btn scan-mode-btn" id="scan-mode">Batch</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button><div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
 <div class="modal" id="product-create-modal"><div class="sheet"><div class="sheet-head"><div><h2>New product</h2><p class="copy">Add a design to the catalogue. A photo is optional — you can attach one later.</p></div><button class="close" data-close="product-create-modal">✕</button></div>
 <div class="grid2">
   <div><label>Design number</label><input id="pc-design" autocomplete="off"/><div class="pc-dup hidden" id="pc-dup"></div></div>
@@ -841,6 +847,7 @@ function setupNavigation() {
   );
 }
 function go(section) {
+  if (st.scanner || st.scanIdleTimer) stopScanner(); // never leave a live camera when the section changes
   if (!moduleAllowed(section)) {
     toast("You do not have access", "error");
     return;
@@ -2797,6 +2804,113 @@ async function ensureScanner() {
     document.head.appendChild(s);
   });
 }
+// ---- 3D–3E: stay-open batch scanning + popup mode ----
+const SCAN_COOLDOWN_MS = 700;      // min gap before a DIFFERENT code is accepted
+const SCAN_SAME_LOCKOUT_MS = 2500; // a sticker sitting in frame stays locked out this long
+const SCAN_IDLE_MS = 90000;        // batch: release the camera after this with no successful decode
+function scanReadMode() {
+  // Namespaced key; read wrapped so Safari private mode (which throws) can't kill the scanner.
+  try { return localStorage.getItem("maitri.admin.scanMode") === "popup" ? "popup" : "batch"; }
+  catch { return "batch"; }
+}
+function scanWriteMode(m) { try { localStorage.setItem("maitri.admin.scanMode", m); } catch {} }
+function scanAccept(code, now) {
+  const g = st.scanGuard || (st.scanGuard = { lastCode: "", lastAt: 0, coolUntil: 0 });
+  if (now < g.coolUntil) return false;                                            // global pace between accepts
+  if (code === g.lastCode && now - g.lastAt < SCAN_SAME_LOCKOUT_MS) return false; // same sticker still in frame
+  g.lastCode = code; g.lastAt = now; g.coolUntil = now + SCAN_COOLDOWN_MS;
+  return true;
+}
+let __scanAudio = null;
+function beep() {
+  // Secondary cue only — vibration is what staff notice in a loud hall.
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    __scanAudio = __scanAudio || new AC();
+    const o = __scanAudio.createOscillator(), g = __scanAudio.createGain();
+    o.type = "square"; o.frequency.value = 880; g.gain.value = 0.05;
+    o.connect(g); g.connect(__scanAudio.destination);
+    const t = __scanAudio.currentTime; o.start(t); o.stop(t + 0.08);
+  } catch {}
+}
+async function saleBatchAdd(text) {
+  const d = await resolveEntry(text);
+  if (!d) return null;
+  if (![st.sale.firm, "Both"].includes(d.firm)) throw Error(firmMismatch(d.designNo, d.firm, st.sale.firm));
+  saleDeleted().delete(d.designNo);
+  const existing = saleCart().find((x) => x.designNo === d.designNo);
+  if (existing) { existing.qty = Math.min(9999, (Number(existing.qty) || 0) + 1); existing._dirty = true; renderSale(); return { designNo: d.designNo, action: "incremented" }; }
+  saleCart().push({ barcode: d.barcode, designNo: d.designNo, imageUrl: d.imageUrl, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, note: "", qty: 1, _dirty: true, _serverExists: false });
+  renderSale();
+  return { designNo: d.designNo, action: "added" };
+}
+async function mcBatchAdd(text) {
+  const d = await resolveEntry(text);
+  if (!d) return null;
+  if (![st.multi.firm, "Both"].includes(d.firm)) throw Error(firmMismatch(d.designNo, d.firm, st.multi.firm));
+  const rows = st.multi.rows[st.multi.firm];
+  if (rows.find((x) => x.designNo === d.designNo)) {
+    // Multi qty is inherently per-customer: a rescan is a NO-OP, not a bulk +1 across
+    // everyone. Silently changing N customers' quantities on a stray second pass is
+    // exactly the quiet data error the order-save arc closed.
+    toast(`${d.designNo} already added for all ${st.multi.customers.length} — set quantities in the matrix`, "error");
+    return { designNo: d.designNo, action: "noop" };
+  }
+  const row = { barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, qty: {} };
+  st.multi.customers.forEach((c) => { row.qty[c.id] = 1; });
+  rows.push(row);
+  mcRenderMatrix();
+  return { designNo: d.designNo, action: "added" };
+}
+function scanUndo() {
+  const b = st.scanBatch;
+  if (!b || !b.undo.length) return;
+  const last = b.undo.pop();
+  if (last.target === "sale") {
+    const cart = st.sale.carts[last.firm] || [];
+    const i = cart.findIndex((x) => x.designNo === last.designNo);
+    if (i >= 0) { if (last.action === "incremented") cart[i].qty = Math.max(1, (Number(cart[i].qty) || 1) - 1); else cart.splice(i, 1); }
+    renderSale();
+  } else {
+    const rows = st.multi.rows[last.firm] || [];
+    const i = rows.findIndex((x) => x.designNo === last.designNo);
+    if (i >= 0) rows.splice(i, 1);
+    mcRenderMatrix();
+  }
+  b.count = Math.max(0, b.count - 1);
+  b.last = b.undo.length ? b.undo[b.undo.length - 1].designNo : "";
+  scanUpdateBatchUI();
+}
+function scanUpdateBatchUI() {
+  const b = st.scanBatch || (st.scanBatch = { count: 0, last: "", undo: [] });
+  const show = st.scanMode === "batch" && b.count > 0;
+  $("scan-batch").classList.toggle("hidden", !show);
+  if (show) $("scan-batch-info").textContent = `${b.count} added${b.last ? " · last: " + b.last : ""}`;
+}
+function scanSyncModeUI() {
+  $("scan-mode").textContent = st.scanMode === "batch" ? "Batch" : "One-shot";
+  $("scan-mode").classList.toggle("on", st.scanMode === "batch");
+  scanUpdateBatchUI();
+}
+function scanResetIdle() {
+  if (st.scanIdleTimer) { clearTimeout(st.scanIdleTimer); st.scanIdleTimer = null; }
+  if (st.scanMode === "batch" && st.scanner) st.scanIdleTimer = setTimeout(scanIdlePause, SCAN_IDLE_MS);
+}
+async function scanIdlePause() {
+  st.scanIdleTimer = null;
+  if (!st.scanner) return;
+  if (st.torchOn) { try { await st.scanner.applyVideoConstraints({ advanced: [{ torch: false }] }); } catch {} }
+  try { await st.scanner.stop(); } catch {}
+  try { st.scanner.clear(); } catch {}
+  st.scanner = null; st.torchOn = false;
+  $("scan-torch").classList.add("hidden");
+  $("scan-idle").classList.remove("hidden");
+}
+async function scanResumeFromIdle() {
+  $("scan-idle").classList.add("hidden");
+  try { await runScanner(st.scannerTarget); scanResetIdle(); } catch (e) { toast(e.message, "error"); }
+}
 function scanFormats() {
   const F = window.Html5QrcodeSupportedFormats;
   // QR is what the repo's generator produces; CODE_128/39 are kept as a safety net
@@ -2851,41 +2965,83 @@ async function runScanner(target) {
   $("scan-torch").classList.toggle("hidden", !torchOk); // iOS Safari has no torch → button stays hidden
   $("scan-torch").classList.remove("on");
 }
-function onScanned(target, text, res) {
-  navigator.vibrate?.(70);
-  // If a 1D barcode decoded, use the wide box for the rest of the session. The
-  // manual toggle is the guaranteed recovery if a square box ever blocks a 1D
-  // decode outright (auto-switch alone can't, since it needs a decode first).
+async function onScanned(target, text, res) {
+  const now = Date.now();
+  if (!scanAccept(text, now)) return; // dedupe (same-code lockout) + cooldown between accepts
+  // If a 1D barcode decoded, use the wide box for the rest of the session (takes
+  // effect on the next open). The manual toggle is the guaranteed recovery.
   const fmt = (res && res.result && res.result.format && res.result.format.formatName) || "";
   if (fmt && fmt !== "QR_CODE") st.scanBoxWide = true;
-  if (target === "sale") saleAdd(text);
-  else if (target === "multi") mcAdd(text);
-  else { $("map-barcode").value = text; renderBarcodeStatus(); }
-  stopScanner(); // single-scan for 3A–3C; 3D–3E makes the stream stay open
+  navigator.vibrate?.(70);
+  beep();
+  scanResetIdle();
+  // Barcode-mapping scan is always one-shot (a design is picked per barcode there).
+  if (target === "map") { $("map-barcode").value = text; renderBarcodeStatus(); stopScanner(); return; }
+  if (st.scanMode === "popup") {
+    if (target === "multi") {
+      try { if (st.scanner) { st.scanner.pause(true); st.scanPaused = true; } } catch {}
+      try { await mcAdd(text); } catch {}
+      // If the popup did NOT open (e.g. firm mismatch just toasted), un-pause so the
+      // camera is never left frozen with no sheet to resume it.
+      if (!$("multi-popup").classList.contains("open")) {
+        try { if (st.scanner) st.scanner.resume(); } catch {}
+        st.scanPaused = false; scanResetIdle();
+      }
+    } else {
+      saleAdd(text);   // single-sale popup = the current one-shot behaviour
+      stopScanner();
+    }
+    return;
+  }
+  // BATCH: add immediately and keep scanning.
+  try {
+    const r = target === "multi" ? await mcBatchAdd(text) : await saleBatchAdd(text);
+    if (r && r.action !== "noop") {
+      (st.scanBatch.undo ||= []).push({ target, designNo: r.designNo, action: r.action, firm: target === "multi" ? st.multi.firm : st.sale.firm });
+      st.scanBatch.count++;
+      st.scanBatch.last = r.designNo;
+      scanUpdateBatchUI();
+    }
+  } catch (e) { toast(e.message, "error"); }
 }
 async function startScanner(target) {
   await stopScanner();
   await ensureScanner();
   st.scannerTarget = target;
+  st.scanMode = st.scanMode || scanReadMode();
+  st.scanGuard = { lastCode: "", lastAt: 0, coolUntil: 0 };
+  st.scanBatch = { count: 0, last: "", undo: [] };
+  st.scanPaused = false;
   $("scan-wide").classList.toggle("on", !!st.scanBoxWide);
   $("scan-wide").textContent = st.scanBoxWide ? "Square (QR)" : "Wide barcode";
+  // Mode toggle + batch only apply to sale/multi, not the mapping scan.
+  $("scan-mode").classList.toggle("hidden", !(target === "sale" || target === "multi"));
+  scanSyncModeUI();
   openModal("scan-modal");
-  try { await runScanner(target); }
+  try { await runScanner(target); scanResetIdle(); }
   catch (e) { await stopScanner(); throw e; }
 }
 async function restartScanner() {
   if (st.scanner) { try { await st.scanner.stop(); } catch {} try { st.scanner.clear(); } catch {} st.scanner = null; }
   await runScanner(st.scannerTarget);
+  scanResetIdle();
 }
 async function stopScanner() {
-  if (st.scanner) {
-    if (st.torchOn) { try { await st.scanner.applyVideoConstraints({ advanced: [{ torch: false }] }); } catch {} }
-    try { await st.scanner.stop(); } catch {}
-    try { st.scanner.clear(); } catch {}
-  }
+  if (st.scanIdleTimer) { clearTimeout(st.scanIdleTimer); st.scanIdleTimer = null; }
+  const s = st.scanner, wasTorch = st.torchOn;
+  // Null the handle FIRST, so a scan callback firing mid-teardown (or a caller that
+  // doesn't await, like go()) sees the scanner already released — no half-stopped race.
   st.scanner = null;
   st.torchOn = false;
+  st.scanPaused = false;
+  $("scan-idle").classList.add("hidden");
+  $("scan-batch").classList.add("hidden");
   closeModal("scan-modal");
+  if (s) {
+    if (wasTorch) { try { await s.applyVideoConstraints({ advanced: [{ torch: false }] }); } catch {} }
+    try { await s.stop(); } catch {}
+    try { s.clear(); } catch {}
+  }
 }
 $("scan-close").onclick = () => stopScanner();
 $("scan-torch").onclick = async () => {
@@ -2900,6 +3056,14 @@ $("scan-wide").onclick = async () => {
   $("scan-wide").textContent = st.scanBoxWide ? "Square (QR)" : "Wide barcode";
   try { await restartScanner(); } catch (e) { toast(e.message, "error"); }
 };
+$("scan-mode").onclick = () => {
+  st.scanMode = st.scanMode === "batch" ? "popup" : "batch";
+  scanWriteMode(st.scanMode);
+  scanSyncModeUI();
+  scanResetIdle();
+};
+$("scan-undo").onclick = () => scanUndo();
+$("scan-idle").onclick = () => scanResumeFromIdle();
 // Prewarm the camera only after a real gesture inside the sale section, and only
 // if permission is ALREADY granted — never trigger a prompt on page load (a
 // denied-then-sticky prompt would break scanning for the day).
@@ -4713,6 +4877,14 @@ function openModal(id) {
 }
 function closeModal(id) {
   $(id).classList.remove("open");
+  // Popup mode pauses the live camera while the qty sheet is up. Resume on EVERY
+  // close path (Done / Remove / X / backdrop all route through here) — never on a
+  // single button. A missed resume leaves a live camera and a dead scanner.
+  if (id === "multi-popup" && st.scanPaused && st.scanner) {
+    try { st.scanner.resume(); } catch {}
+    st.scanPaused = false;
+    scanResetIdle();
+  }
 }
 document
   .querySelectorAll("[data-close]")
