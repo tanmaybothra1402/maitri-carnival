@@ -31,8 +31,18 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .perm{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:700}.perm input{width:17px;height:17px;flex:0 0 auto}.cred{margin-top:12px;padding:12px;border:1px dashed var(--teal);border-radius:11px;background:var(--foam);font-size:12px;line-height:1.7}.toast{position:fixed;left:50%;top:72px;z-index:240;display:none;max-width:90%;padding:10px 16px;border-radius:22px;background:var(--charcoal);color:#fff;font-size:12px;transform:translateX(-50%)}.toast.open{display:block}.toast.success{background:#166534}.toast.error{background:#B91C1C}.loading{position:fixed;inset:0;z-index:230;display:none;place-items:center;background:rgba(25,31,29,.46)}.loading.open{display:grid}.loader{padding:22px 28px;border-radius:15px;background:#fff;color:var(--deep);font-weight:800}.reader{display:none;margin-top:10px;border-radius:12px;overflow:hidden}.reader.open{display:block}
 .scan-modal{position:fixed;inset:0;z-index:200;display:none;background:#0b0f0e}
 .scan-modal.open{display:block}
-.scan-reader{position:absolute;inset:0}
-.scan-reader video{width:100%!important;height:100%!important;object-fit:cover}
+/* width/height:100% (not just inset:0) survive html5-qrcode overwriting our
+   position:absolute with an inline position:relative at start() — inset:0 only
+   sizes an absolutely-positioned box, so without these the preview collapsed to
+   zero height (live stream, red dot, nothing on screen). */
+.scan-reader{position:absolute;inset:0;width:100%;height:100%}
+.scan-reader video{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover}
+.scan-error{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:24px;background:#0b0f0e}
+.scan-error.hidden{display:none}
+.scan-error-card{max-width:320px;text-align:center;color:#fff}
+.scan-error-card b{display:block;font-size:16px;margin-bottom:8px}
+.scan-error-card span{display:block;font-size:12.5px;line-height:1.5;color:#c7d0cd;margin-bottom:18px;word-break:break-word}
+.scan-error-card .btn{width:100%}
 .scan-topbar{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;background:linear-gradient(rgba(0,0,0,.55),transparent)}
 .scan-title{flex:1;min-width:0;color:#fff;font-size:13px;font-weight:800;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .scan-btn{width:44px;height:44px;flex:0 0 auto;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
@@ -580,7 +590,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
 <div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><img id="multi-popup-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
 <div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
-<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><button class="scan-btn scan-mode-btn" id="scan-mode">Batch</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button><div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
+<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-error hidden" id="scan-error"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><button class="scan-btn scan-mode-btn" id="scan-mode">Batch</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button><div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
 <div class="modal" id="product-create-modal"><div class="sheet"><div class="sheet-head"><div><h2>New product</h2><p class="copy">Add a design to the catalogue. A photo is optional — you can attach one later.</p></div><button class="close" data-close="product-create-modal">✕</button></div>
 <div class="grid2">
   <div><label>Design number</label><input id="pc-design" autocomplete="off"/><div class="pc-dup hidden" id="pc-dup"></div></div>
@@ -3121,6 +3131,28 @@ async function onScanned(target, text, res) {
     }
   } catch (e) { toast(e.message, "error"); }
 }
+function afterLayout() {
+  // Two rAF: the modal switched display:none→block this frame; the first frame
+  // applies the style, the second lets layout settle so the reader has real size
+  // BEFORE html5-qrcode measures it (a 0×0 measure = a stream playing into nothing).
+  return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+function scanFallbackInput(target) {
+  return target === "map" ? $("map-barcode") : target === "multi" ? $("multi-barcode") : $("sale-barcode");
+}
+async function showScanError(target, reason) {
+  // A failed start must be LOUD, not a live scanner pointed at nothing. Release the
+  // camera but keep the modal open so the message is read; offer manual entry.
+  if (st.scanIdleTimer) { clearTimeout(st.scanIdleTimer); st.scanIdleTimer = null; }
+  const s = st.scanner; st.scanner = null; st.torchOn = false; st.scanPaused = false;
+  if (s) { try { await s.stop(); } catch {} try { s.clear(); } catch {} }
+  $("scan-batch").classList.add("hidden");
+  $("scan-idle").classList.add("hidden");
+  const el = $("scan-error");
+  el.innerHTML = `<div class="scan-error-card"><b>Camera could not start</b><span>${esc(reason)}</span><button class="btn" id="scan-error-type">Type the design number instead</button></div>`;
+  el.classList.remove("hidden");
+  $("scan-error-type").onclick = () => { stopScanner(); const inp = scanFallbackInput(target); if (inp) { inp.focus(); inp.select?.(); } };
+}
 async function startScanner(target) {
   await stopScanner();
   await ensureScanner();
@@ -3134,9 +3166,14 @@ async function startScanner(target) {
   // Mode toggle + batch only apply to sale/multi, not the mapping scan.
   $("scan-mode").classList.toggle("hidden", !(target === "sale" || target === "multi"));
   scanSyncModeUI();
+  $("scan-error").classList.add("hidden"); $("scan-error").innerHTML = "";
   openModal("scan-modal");
+  await afterLayout();
+  const box = $("scan-reader").getBoundingClientRect();
+  console.info("[scan] reader box", Math.round(box.width) + "×" + Math.round(box.height));
+  if (box.width < 2 || box.height < 2) { await showScanError(target, `the preview area has no size (${Math.round(box.width)}×${Math.round(box.height)}) — reopen, or type it in`); return; }
   try { await runScanner(target); scanResetIdle(); }
-  catch (e) { await stopScanner(); throw e; }
+  catch (e) { await showScanError(target, (e && e.message) ? e.message : "camera error"); }
 }
 async function restartScanner() {
   if (st.scanner) { try { await st.scanner.stop(); } catch {} try { st.scanner.clear(); } catch {} st.scanner = null; }
@@ -3153,6 +3190,7 @@ async function stopScanner() {
   st.scanPaused = false;
   $("scan-idle").classList.add("hidden");
   $("scan-batch").classList.add("hidden");
+  $("scan-error").classList.add("hidden");
   closeModal("scan-modal");
   if (s) {
     if (wasTorch) { try { await s.applyVideoConstraints({ advanced: [{ torch: false }] }); } catch {} }
