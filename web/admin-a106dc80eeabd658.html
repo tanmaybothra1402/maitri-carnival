@@ -315,6 +315,8 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .firm-badge.both{gap:2px;padding:1px 2px;background:var(--foam)}
 .firm-badge.both button{width:20px;height:18px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:9px;font-weight:900;cursor:pointer}
 .firm-badge.both button.on{background:var(--teal-deep);color:#fff}
+.update-banner{position:fixed;left:0;right:0;bottom:0;z-index:300;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:13px 16px calc(13px + env(safe-area-inset-bottom));background:var(--orange);color:#fff;font-size:12.5px;font-weight:800;text-align:center;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
+.update-banner button{flex:0 0 auto;border:0;border-radius:999px;background:#fff;color:var(--deep);font-size:12px;font-weight:850;padding:9px 18px;cursor:pointer}
 .mc-popup-row.removing{opacity:.72}
 .mc-popup-row.removing b{text-decoration:line-through}
 .mc-remove-line{margin-top:4px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
@@ -3197,6 +3199,35 @@ $("page-sale")?.addEventListener("pointerdown", prewarmScanCamera, { once: true 
 // Release the camera if the phone is backgrounded with the scanner open, so it
 // never holds the lens/torch and overheats. (Full stay-open semantics are 3D–3E.)
 document.addEventListener("visibilitychange", () => { if (document.hidden && st.scanner) stopScanner(); });
+
+// ---- Build-version guard ----
+// A stale cached HTML on a phone silently runs old code (no service worker; Safari's
+// HTTP cache / a home-screen web-clip pins it, and a ?v= link doesn't help a bookmark).
+// BUILD_ID is stamped by the Pages workflow from the commit sha, and version.json is
+// emitted from the SAME commit — they cannot disagree. On load and on every return to
+// the foreground, if the deployed version differs we PROMPT. We never auto-reload:
+// a staff member mid-order must not lose an unsaved cart.
+const BUILD_ID = "__BUILD_ID__";
+async function checkBuildVersion() {
+  if (BUILD_ID === "__BUILD_ID__") return; // un-stamped (local/dev, or injection didn't run) — never nag
+  try {
+    const r = await fetch("version.json", { cache: "no-store" });
+    if (!r.ok) return;
+    const v = (await r.json()).build;
+    if (v && v !== BUILD_ID) showUpdateBanner(v);
+  } catch {}
+}
+function showUpdateBanner(v) {
+  if ($("update-banner")) return;
+  const el = document.createElement("div");
+  el.id = "update-banner"; el.className = "update-banner";
+  el.innerHTML = `<span>A new version is available — your current changes are safe.</span><button id="update-now">Tap to update</button>`;
+  document.body.appendChild(el);
+  // Reload to a fresh ?v= URL (the one cache-key the diagnosis proved returns fresh).
+  $("update-now").onclick = () => location.replace(location.pathname + "?v=" + encodeURIComponent(v));
+}
+checkBuildVersion();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkBuildVersion(); });
 $("sale-camera").onclick = () =>
   startScanner("sale").catch((e) => toast(e.message, "error"));
 /* Products */

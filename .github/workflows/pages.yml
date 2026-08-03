@@ -23,6 +23,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Stamp build version (HTML BUILD_ID + version.json, both from this commit)
+        run: |
+          echo "{\"build\":\"${GITHUB_SHA}\"}" > web/version.json
+          # Replace ONLY the const declaration — the sentinel check
+          # `BUILD_ID === "__BUILD_ID__"` must stay literal so an un-stamped/dev build never nags.
+          sed -i "s|const BUILD_ID = \"__BUILD_ID__\"|const BUILD_ID = \"${GITHUB_SHA}\"|" web/admin-*.html
+          echo "version.json: $(cat web/version.json)"
+          grep -o "const BUILD_ID = \"[0-9a-f]*\"" web/admin-*.html | head -1 || { echo "BUILD_ID not stamped"; exit 1; }
       - name: Upload web folder
         uses: actions/upload-pages-artifact@v3
         with:
