@@ -46,6 +46,32 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .scan-idle{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(11,15,14,.84);cursor:pointer}
 .scan-idle-card{color:#fff;font-size:17px;font-weight:850;text-align:center;line-height:1.55}
 .scan-idle-card span{font-size:13px;font-weight:700;opacity:.85}
+/* Bulk product grid (desktop-first) */
+.grid-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.grid-actions{display:flex;gap:8px;flex:0 0 auto}
+.grid-report{margin:0 0 10px}
+.grid-report .gr-err{padding:9px 12px;border:1px solid #FCA5A5;border-radius:10px;background:#FEF2F2;color:#B91C1C;font-size:11.5px;font-weight:750;line-height:1.5}
+.grid-report .gr-ok{padding:9px 12px;border:1px solid #86EFAC;border-radius:10px;background:#F0FDF4;color:#166534;font-size:11.5px;font-weight:750}
+.grid-report .gr-line{display:block;margin-top:3px;font-weight:600}
+.grid-wrap{overflow:auto;max-height:64vh;border:1px solid var(--border);border-radius:12px}
+table.pgrid{border-collapse:separate;border-spacing:0;font-size:12px;min-width:980px;width:100%}
+table.pgrid th,table.pgrid td{border-bottom:1px solid var(--border);border-right:1px solid var(--line);text-align:left}
+table.pgrid th{padding:8px}
+table.pgrid td{padding:0}
+table.pgrid thead th{position:sticky;top:0;z-index:2;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+table.pgrid th.pg-num,table.pgrid td.pg-num{width:34px;text-align:center;color:var(--muted);font-weight:800;font-size:11px}
+table.pgrid th.pg-pcs{width:74px}
+table.pgrid td input,table.pgrid td select{width:100%;height:34px;border:0;background:transparent;padding:0 8px;font-size:12px;color:var(--ink);font-weight:600;font-family:inherit}
+table.pgrid td input:focus,table.pgrid td select:focus{outline:2px solid var(--teal);outline-offset:-2px;background:#fff}
+table.pgrid td.pg-cell-err input,table.pgrid td.pg-cell-err select{background:#FEF2F2;box-shadow:inset 0 0 0 1px #FCA5A5}
+table.pgrid tr.pg-new td{background:#FFFDF5}
+table.pgrid tr.pg-saved td{background:#F1FAF4}
+table.pgrid td.pg-bc{color:var(--muted);font-size:10.5px;padding:0 8px;white-space:nowrap}
+table.pgrid td.pg-active{text-align:center}
+table.pgrid td.pg-active input{width:18px;height:18px}
+table.pgrid td.pg-act{width:64px;text-align:center;padding:0 3px;white-space:nowrap}
+.pg-rowbtn{width:24px;height:24px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--slate);font-size:12px;cursor:pointer;margin:0 1px}
+.pg-rowbtn.del{color:var(--error)}
 /* ── Dispatch ─────────────────────────────────────────────────────────── */
 .dispatch-head-card>input{margin-top:12px}
 .chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
@@ -382,11 +408,17 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 </section>
 </main>
 <main class="page" id="page-products">
-<div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button></div>
+<div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="grid">Bulk add</button></div>
 <section class="subpanel" id="products-master"><div class="card product-master-card">
   <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Product Master <span class="scope-note">· all events</span></h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
   <button class="btn small hidden" id="product-new" style="margin-bottom:10px">＋ New product</button>
   <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
+</div></section>
+<section class="subpanel hidden" id="products-grid"><div class="card">
+  <div class="grid-head"><div><span class="section-kicker">Bulk add</span><h1>Add designs</h1><p class="copy">Type rows directly — Tab moves across, Enter starts a new row. A blank row is always waiting at the bottom. Nothing is written until you press Save. New designs have no barcode yet; the next free sticker is <b>MC-0644</b>.</p></div><div class="grid-actions"><button class="btn secondary small" id="grid-add">＋ Row</button><button class="btn small" id="grid-save">Save all</button></div></div>
+  <div class="grid-report" id="grid-report"></div>
+  <div class="grid-wrap"><table class="pgrid" id="pgrid"><thead><tr><th class="pg-num">#</th><th>Design no.</th><th>Firm</th><th>Category</th><th>Style</th><th>Fabric</th><th class="pg-pcs">Pcs/set</th><th>Description</th><th>Active</th><th>Barcode</th><th></th></tr></thead><tbody id="pgrid-body"></tbody></table></div>
+  <datalist id="grid-styles"></datalist><datalist id="grid-fabrics"></datalist>
 </div></section>
 <section class="subpanel hidden" id="products-mapping">
 <div class="card map-build-card">
@@ -822,6 +854,7 @@ function setupNavigation() {
     products: {
       master: "products.view",
       mapping: "products.mapping",
+      grid: "products.create",
     },
     admin: {
       slots: "admin.slots",
@@ -3096,7 +3129,149 @@ async function loadProductsModule() {
     if (!has("products.mapping")) return denySub("products", "master");
     await loadMapping();
   }
+  if (sub === "grid") {
+    if (!has("products.create")) return denySub("products", "master");
+    await loadGrid();
+  }
 }
+/* ---- Bulk product grid (Products → Bulk add). Desktop-first, single-editor. ---- */
+const GRID_CATEGORIES = ["Unstiched", "Kurta Pant", "Garment", "Big Size"];
+const GRID_FIRMS = ["Maitri", "Niharika", "Both"];
+function gridBlankRow() { return { designNo: "", firm: "Maitri", category: "", style: "", fabric: "", pcsPerSet: 2, description: "", imageUrl: "", active: true, saved: false, _err: null }; }
+function gridNorm(s) { return String(s || "").replace(/\s+/g, " ").trim(); } // collapse internal whitespace, trim
+function gridExistingExact(dn) { const n = gridNorm(dn); return n ? (st.designs || []).find((d) => d.designNo === n) : null; }
+async function loadGrid() {
+  if (!(st.designs || []).length) { try { st.designs = await admin("listDesigns"); st.cache.designsAt = Date.now(); } catch {} }
+  $("grid-styles").innerHTML = distinctTaxa("style").map((v) => `<option value="${esc(v)}">`).join("");
+  $("grid-fabrics").innerHTML = distinctTaxa("fabric").map((v) => `<option value="${esc(v)}">`).join("");
+  if (!st.grid) st.grid = { rows: [gridBlankRow()] };
+  renderGrid();
+}
+function renderGrid() {
+  // Always keep a blank row waiting at the bottom.
+  const rows = st.grid.rows;
+  if (!rows.length || gridNorm(rows[rows.length - 1].designNo)) rows.push(gridBlankRow());
+  const catOpts = (v) => ['<option value=""></option>'].concat(GRID_CATEGORIES.map((c) => `<option${c === v ? " selected" : ""}>${esc(c)}</option>`)).join("");
+  const firmOpts = (v) => GRID_FIRMS.map((f) => `<option${f === v ? " selected" : ""}>${esc(f)}</option>`).join("");
+  $("pgrid-body").innerHTML = rows.map((r, i) => {
+    const has = !!gridNorm(r.designNo);
+    const bc = has ? (gridExistingExact(r.designNo) ? "existing" : "new · no barcode") : "";
+    const cls = r.saved ? "pg-saved" : (has ? "pg-new" : "");
+    const err = r._err || {}, c = (f) => (err[f] ? "pg-cell-err" : "");
+    return `<tr class="${cls}" data-i="${i}">
+      <td class="pg-num">${i + 1}</td>
+      <td class="${c('designNo')}"><input data-f="designNo" value="${esc(r.designNo)}" autocomplete="off"></td>
+      <td class="${c('firm')}"><select data-f="firm">${firmOpts(r.firm)}</select></td>
+      <td class="${c('category')}"><select data-f="category">${catOpts(r.category)}</select></td>
+      <td class="${c('style')}"><input data-f="style" list="grid-styles" value="${esc(r.style)}" autocomplete="off"></td>
+      <td class="${c('fabric')}"><input data-f="fabric" list="grid-fabrics" value="${esc(r.fabric)}" autocomplete="off"></td>
+      <td class="pg-pcs ${c('pcsPerSet')}"><input data-f="pcsPerSet" type="number" min="1" max="9999" value="${esc(String(r.pcsPerSet))}"></td>
+      <td><input data-f="description" value="${esc(r.description)}" autocomplete="off"></td>
+      <td class="pg-active"><input data-f="active" type="checkbox"${r.active ? " checked" : ""}></td>
+      <td class="pg-bc">${esc(bc)}</td>
+      <td class="pg-act"><button class="pg-rowbtn" data-act="dup" title="Duplicate row">⧉</button><button class="pg-rowbtn del" data-act="del" title="Delete row">✕</button></td>
+    </tr>`;
+  }).join("");
+}
+$("pgrid-body").oninput = (e) => {
+  const tr = e.target.closest("[data-i]"); if (!tr) return;
+  const i = Number(tr.dataset.i), f = e.target.dataset.f, r = st.grid.rows[i];
+  if (!f || !r) return;
+  r.saved = false;
+  if (f === "active") r.active = e.target.checked;
+  else if (f === "pcsPerSet") r.pcsPerSet = e.target.value === "" ? "" : Number(e.target.value);
+  else r[f] = e.target.value;
+  // Keep a trailing blank row; re-render and restore the caret so typing flows.
+  if (i === st.grid.rows.length - 1 && gridNorm(r.designNo)) {
+    st.grid.rows.push(gridBlankRow());
+    renderGrid();
+    const inp = $("pgrid-body").querySelector(`[data-i="${i}"] [data-f="${f}"]`);
+    if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch {} }
+  }
+};
+$("pgrid-body").onchange = (e) => {
+  const f = e.target.dataset.f, tr = e.target.closest("[data-i]");
+  if (!tr || (f !== "style" && f !== "fabric")) return;
+  const v = e.target.value.trim();
+  // A genuinely new style/fabric must be confirmed — the one controlled door for new taxonomy.
+  if (v && !distinctTaxa(f).includes(v) && !confirm(`Add new ${f} "${v}"? Pick from the list if it already exists, to avoid a typo.`)) {
+    st.grid.rows[Number(tr.dataset.i)][f] = ""; e.target.value = "";
+  }
+};
+$("pgrid-body").onclick = (e) => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const i = Number(b.closest("[data-i]").dataset.i), rows = st.grid.rows;
+  if (b.dataset.act === "dup") rows.splice(i + 1, 0, { ...rows[i], designNo: "", saved: false, _err: null });
+  else { rows.splice(i, 1); if (!rows.length) rows.push(gridBlankRow()); }
+  renderGrid();
+};
+$("pgrid-body").addEventListener("paste", (e) => {
+  if (!e.target.dataset || e.target.dataset.f !== "designNo") return; // only the design column fills down
+  const text = (e.clipboardData || window.clipboardData).getData("text");
+  if (!text || !/[\n\t]/.test(text)) return; // a single value pastes normally
+  e.preventDefault();
+  let i = Number(e.target.closest("[data-i]").dataset.i);
+  text.split(/\r?\n/).map((l) => l.split(/\t/)[0]).filter((v) => v.trim()).forEach((v) => {
+    while (st.grid.rows.length <= i) st.grid.rows.push(gridBlankRow());
+    st.grid.rows[i].designNo = gridNorm(v); st.grid.rows[i].saved = false; i++;
+  });
+  renderGrid();
+});
+$("grid-add").onclick = () => { st.grid.rows.push(gridBlankRow()); renderGrid(); };
+function gridValidate() {
+  // Blank rows ignored. Returns { savable:[payload+_row], errors:[{i,msg}] }. Reuses
+  // canonDesign (the manual-entry resolver) so the grid and the sale screen agree on
+  // what "MR - 4349" means.
+  const rows = st.grid.rows, errors = [], savable = [], seen = new Map();
+  rows.forEach((r) => (r._err = null));
+  rows.forEach((r, i) => {
+    const dn = gridNorm(r.designNo);
+    if (!dn) return;
+    r.designNo = dn; // normalise NEW entries in place; existing rows are never rewritten elsewhere
+    const ef = {}, add = (msg, field) => { errors.push({ i, msg }); if (field) ef[field] = true; };
+    const key = canonDesign(dn);
+    if (seen.has(key)) add(`Row ${i + 1}: "${dn}" duplicates row ${seen.get(key) + 1} in this grid`, "designNo");
+    else seen.set(key, i);
+    if (!(st.designs || []).some((d) => d.designNo === dn)) {
+      const canon = (st.designs || []).filter((d) => canonDesign(d.designNo) === key);
+      if (canon.length === 1) add(`Row ${i + 1}: "${dn}" differs from existing "${canon[0].designNo}" only by spacing/case — use the exact number or fix it`, "designNo");
+      else if (canon.length > 1) add(`Row ${i + 1}: "${dn}" is ambiguous — matches ${canon.map((d) => `"${d.designNo}"`).join(", ")}; pick one`, "designNo");
+    }
+    if (!GRID_FIRMS.includes(r.firm)) add(`Row ${i + 1}: firm must be Maitri, Niharika or Both`, "firm");
+    if (!GRID_CATEGORIES.includes(r.category)) add(`Row ${i + 1}: pick a category`, "category");
+    const pcs = Math.round(Number(r.pcsPerSet));
+    if (!Number.isFinite(pcs) || pcs < 1 || pcs > 9999) add(`Row ${i + 1}: pcs/set must be 1–9999`, "pcsPerSet");
+    r._err = Object.keys(ef).length ? ef : null;
+    if (!errors.some((x) => x.i === i)) savable.push({ designNo: dn, firm: r.firm, category: r.category, style: gridNorm(r.style), fabric: gridNorm(r.fabric), pcsPerSet: pcs, description: String(r.description || "").trim(), imageUrl: r.imageUrl || "", active: r.active !== false, _row: r });
+  });
+  return { savable, errors };
+}
+$("grid-save").onclick = async () => {
+  const { savable, errors } = gridValidate();
+  renderGrid();
+  const rep = $("grid-report");
+  if (errors.length) { rep.innerHTML = `<div class="gr-err">${errors.length} problem${errors.length === 1 ? "" : "s"} — nothing saved. Fix these, then Save:${errors.map((e) => `<span class="gr-line">${esc(e.msg)}</span>`).join("")}</div>`; return; }
+  if (!savable.length) { rep.innerHTML = `<div class="gr-err">Nothing to save — type at least one design number.</div>`; return; }
+  const btn = $("grid-save"), old = btn.textContent;
+  try {
+    btn.disabled = true; btn.textContent = "Saving…";
+    const d = await admin("saveProductRows", { rows: savable.map(({ _row, ...r }) => r) });
+    const results = d?.results || [];
+    let okN = 0; const fails = [];
+    savable.forEach((s, k) => {
+      const res = results[k];
+      if (res && res.ok) { okN++; s._row.saved = true; }
+      else fails.push(`${s.designNo}: ${mapError(res ? res.error : "no response")}`);
+    });
+    try { st.designs = await admin("listDesigns"); st.cache.designsAt = Date.now(); } catch {}
+    renderGrid();
+    rep.innerHTML = fails.length
+      ? `<div class="gr-err">${okN} saved · ${fails.length} failed:${fails.map((f) => `<span class="gr-line">${esc(f)}</span>`).join("")}</div>`
+      : `<div class="gr-ok">${okN} design${okN === 1 ? "" : "s"} saved. They now show in Product Master.</div>`;
+    toast(fails.length ? `${okN} saved · ${fails.length} failed` : `${okN} saved`, fails.length ? "error" : "success");
+  } catch (e) { toast(e.message, "error"); }
+  finally { btn.disabled = false; btn.textContent = old; }
+};
 async function loadProducts(force = false) {
   const fresh = st.designs.length && Date.now() - st.cache.designsAt < 120000;
   if (!fresh || force) {
