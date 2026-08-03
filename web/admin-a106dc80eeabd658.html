@@ -3073,19 +3073,49 @@ function scanQrbox() {
     return { width: s, height: s };
   };
 }
+function scanErrText(e) {
+  // iOS camera failures (OverconstrainedError, NotReadableError, NotAllowedError)
+  // are DOMExceptions whose .message is often EMPTY — the useful bit is .name.
+  if (!e) return "camera error";
+  if (typeof e === "string") return e;
+  if (e.name && e.message) return `${e.name}: ${e.message}`;
+  return e.name || e.message || String(e);
+}
 async function runScanner(target) {
   const camId = await chooseScanCamera();
-  st.scanner = new Html5Qrcode("scan-reader", {
-    formatsToSupport: scanFormats(),
-    experimentalFeatures: { useBarCodeDetectorIfSupported: true }, // Android fast path; iOS falls through
-    verbose: false,
-  });
-  const src = camId
-    ? { deviceId: { exact: camId }, width: { ideal: 1280 }, height: { ideal: 1280 } }
-    : { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 1280 } };
-  const cfg = { fps: 15, qrbox: scanQrbox(), disableFlip: true };
-  if (!st.scanBoxWide) cfg.aspectRatio = 1; // square frame only in QR mode; a 1D box wants a wider frame
-  await st.scanner.start(src, cfg, (text, res) => onScanned(target, text, res), () => {});
+  const box = st.scanBoxWide ? {} : { aspectRatio: 1 }; // square frame only in QR mode
+  const cfg = { fps: 15, qrbox: scanQrbox(), disableFlip: true, ...box };
+  const plainCfg = { fps: 15, qrbox: scanQrbox(), disableFlip: true }; // no aspectRatio — last resort
+  // Fallback ladder. A single over-constrained request (exact lens + square aspect +
+  // 1280) is exactly what iPhones reject with an empty-message OverconstrainedError.
+  // Try the focused request first, then relax to plain environment-facing.
+  const attempts = [];
+  if (camId) attempts.push({ src: { deviceId: { exact: camId }, width: { ideal: 1280 }, height: { ideal: 1280 } }, cfg });
+  attempts.push({ src: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 1280 } }, cfg });
+  attempts.push({ src: { facingMode: "environment" }, cfg: plainCfg }); // plainest: let the camera choose
+  let lastErr = null, started = false;
+  for (let i = 0; i < attempts.length; i++) {
+    st.scanner = new Html5Qrcode("scan-reader", {
+      formatsToSupport: scanFormats(),
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true }, // Android fast path; iOS falls through
+      verbose: false,
+    });
+    try {
+      await st.scanner.start(attempts[i].src, attempts[i].cfg, (text, res) => onScanned(target, text, res), () => {});
+      started = true;
+      // If the pinned lens failed but a fallback worked, drop the cached lens so the
+      // next open re-enumerates rather than repeating a bad deviceId.
+      if (i > 0) { st.scanCamsChecked = false; st.scanCameraId = null; }
+      break;
+    } catch (e) {
+      lastErr = e;
+      console.warn("[scan] start attempt", i + 1, "failed:", scanErrText(e), e);
+      try { await st.scanner.stop(); } catch {}
+      try { st.scanner.clear(); } catch {}
+      st.scanner = null;
+    }
+  }
+  if (!started) throw lastErr || new Error("camera error");
   let torchOk = false;
   try { const caps = st.scanner.getRunningTrackCapabilities(); torchOk = !!(caps && caps.torch); } catch {}
   st.torchOn = false;
@@ -3173,7 +3203,7 @@ async function startScanner(target) {
   console.info("[scan] reader box", Math.round(box.width) + "×" + Math.round(box.height));
   if (box.width < 2 || box.height < 2) { await showScanError(target, `the preview area has no size (${Math.round(box.width)}×${Math.round(box.height)}) — reopen, or type it in`); return; }
   try { await runScanner(target); scanResetIdle(); }
-  catch (e) { await showScanError(target, (e && e.message) ? e.message : "camera error"); }
+  catch (e) { await showScanError(target, scanErrText(e)); }
 }
 async function restartScanner() {
   if (st.scanner) { try { await st.scanner.stop(); } catch {} try { st.scanner.clear(); } catch {} st.scanner = null; }
