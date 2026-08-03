@@ -1,4 +1,4 @@
-
+ 
 /**
  * Maitri Carnival 2026 — Supabase two-way data mirror.
  *
@@ -40,7 +40,7 @@ const DS_TABS = {
 
 // Columns that are editable and pushed back (everything else is reference-only).
 const DS_EDITABLE = {
-  designs: ['firm','image_url','category','style','fabric','pcs_per_set','description','active'],
+  designs: [],  // read-only: the app (admin Products) is authoritative for the catalogue; a Sheet push bypasses the per-row guards and a blank cell would wipe image_url. Pull stays a live view.
   barcode_mappings: [],  // read-only: Sheet pushes bypass admin_map_barcode's guard (see SHEETS_MIRROR.md)
   customers: ['company_name','contact_name','city','state','gstin','agent','active'],
   orders: ['status','admin_unlocked'],
@@ -55,7 +55,7 @@ const DS_EDITABLE = {
 // Supabase. Guarded server-side by a freshness token, a delete ceiling, and a
 // protected-row list; guarded here by a named confirmation dialog.
 const DS_DIFF_DELETABLE = [
-  'designs',
+  // 'designs' removed: read-only (see DS_EDITABLE) — the app owns the catalogue.
   'barcode_mappings',
   'slots',
   'customers',
@@ -69,10 +69,11 @@ function onOpen() {
     .addItem('② Pull ALL tables', 'dsPullAll')
     .addSeparator()
     .addItem('Push this tab', 'dsPushActive')
-    .addSeparator()
-    .addItem('Set Designs dropdowns', 'dsDesignValidation')
-    .addItem('Lift Designs dropdowns (bulk import)', 'dsLiftDesignValidation')
     .addToUi();
+  // Designs are now edited in the admin console (Products), which is authoritative
+  // for the catalogue — the Designs tab is a read-only view, so the old Sheet-side
+  // "Set / Lift Designs dropdowns (bulk import)" items are retired (a Designs push
+  // is refused with a read-only message). The functions remain defined but unlinked.
 }
 
 // Apply dropdown validation to the Designs tab's category/style/fabric columns

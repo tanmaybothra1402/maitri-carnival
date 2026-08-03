@@ -17,12 +17,16 @@ async function hmacSha1Hex(key: string, data: string): Promise<string> {
 // App uploads follow the existing ImageKit library, filed by design prefix — see
 // the maitri-media skill. Never dump at the root (unfindable among 11.7K files).
 function imagekitFolder(designNo: string): string {
+  // Bare letter prefix, e.g. "MU - 0322" -> "/MU". This matches the catalogue
+  // convention VERIFIED against the DB: 579/593 stored image URLs sit under the
+  // bare-prefix folder (/MU, /BS, /NRK…). The earlier "-DESIGN" mapping appears in
+  // ZERO of the 593 stored URLs, so it was almost certainly never exercised — this
+  // only aligns FUTURE uploads with the catalogue. UNVERIFIED that "-DESIGN" ever
+  // wrote a real file. The stored URL is authoritative regardless: we upload with
+  // useUniqueFileName and persist whatever ImageKit returns — the folder is not
+  // predicted or relied on. (Only caller: signImageUpload.)
   const prefix = (clean(designNo).match(/^[A-Za-z]+/)?.[0] ?? "").toUpperCase();
-  const map: Record<string, string> = {
-    BS: "BS-DESIGN", MR: "MR-DESIGN", ML: "ML-DESIGN", MU: "MU-DESIGN", KT: "KT-DESIGN",
-    NRK: "NRK-DESIGN", MRK: "NRK-DESIGN", // Niharika lines
-  };
-  return "/" + (map[prefix] ?? "App-Uploads");
+  return prefix ? "/" + prefix : "/App-Uploads";
 }
 
 function normalizePhone(value: unknown): string {
@@ -220,6 +224,7 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   getProductDetail: ["products.view"],
   updateProduct: ["products.edit"],
   createProduct: ["products.create"],
+  saveProductRows: ["products.create"],
   setProductImage: ["products.create"],
   signImageUpload: ["products.create"],
   checkIn: ["reception.checkin"],
@@ -552,6 +557,64 @@ Deno.serve(async (request: Request) => {
         .eq("design_no", dn).select("design_no,image_url").single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "saveProductRows") {
+      // Bulk product grid. Loops the SAME per-row logic as createProduct/updateProduct
+      // (never upsert_product_rows, which blanks image_url/category/fabric/firm when a
+      // column is omitted). Per-row try/catch so one bad row is marked and retryable
+      // while the rest commit.
+      if (!Array.isArray(body.rows) || body.rows.length < 1 || body.rows.length > 200) {
+        throw new Error("Provide 1 to 200 product rows");
+      }
+      const results: Array<Record<string, unknown>> = [];
+      for (const raw of body.rows) {
+        const row = raw as Record<string, unknown>;
+        const dn = clean(row.designNo);
+        try {
+          if (!dn) throw new Error("Design number is required");
+          const firm = clean(row.firm);
+          if (!["Maitri", "Niharika", "Both"].includes(firm)) throw new Error("Firm must be Maitri, Niharika or Both");
+          const pcsPerSet = Math.round(Number(row.pcsPerSet));
+          if (!Number.isFinite(pcsPerSet) || pcsPerSet < 1 || pcsPerSet > 9999) throw new Error("Pcs per set must be between 1 and 9999");
+          const { data: existing, error: exErr } = await db.from("designs").select("design_no").eq("design_no", dn).maybeSingle();
+          if (exErr) throw exErr;
+          if (existing) {
+            const patch: Record<string, unknown> = {
+              firm,
+              category: clean(row.category),
+              style: clean(row.style),
+              fabric: clean(row.fabric),
+              pcs_per_set: pcsPerSet,
+              description: clean(row.description),
+              active: row.active === undefined ? true : Boolean(row.active),
+            };
+            // Only touch image_url when a URL is actually supplied — an omitted/blank
+            // image must NEVER wipe an existing photo (the upsert_product_rows trap).
+            if (clean(row.imageUrl)) patch.image_url = clean(row.imageUrl);
+            const { error } = await db.from("designs").update(patch).eq("design_no", dn).select("design_no").single();
+            if (error) throw error;
+            results.push({ ok: true, designNo: dn, action: "updated" });
+          } else {
+            const { error } = await db.from("designs").insert({
+              design_no: dn,
+              firm,
+              category: clean(row.category),
+              style: clean(row.style),
+              fabric: clean(row.fabric),
+              description: clean(row.description),
+              pcs_per_set: pcsPerSet,
+              image_url: clean(row.imageUrl),
+              active: row.active === undefined ? true : Boolean(row.active),
+            }).select("design_no").single();
+            if (error) throw error;
+            results.push({ ok: true, designNo: dn, action: "created" });
+          }
+        } catch (error) {
+          results.push({ ok: false, designNo: dn, error: errorMessage(error) });
+        }
+      }
+      return jsonResponse(request, { ok: true, data: { results } });
     }
 
     if (action === "signImageUpload") {

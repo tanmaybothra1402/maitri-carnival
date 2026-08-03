@@ -23,9 +23,17 @@ const TABLES: Record<string, TableCfg> = {
   designs: {
     pk: "design_no",
     cols: ["design_no","firm","image_url","category","style","fabric","pcs_per_set","description","active","sync_version","updated_at"],
-    write: ["firm","image_url","category","style","fabric","pcs_per_set","description","active"],
+    // Read-only. The app is now authoritative for the catalogue (admin Products →
+    // bulk grid / single create-edit, which route through admin-api with the
+    // per-row guards). A Sheet push runs with the service role and would bypass
+    // those guards — and, worse, image_url: a blank Sheet cell would wipe a
+    // product photo, exhausting nothing but corrupting the catalogue silently.
+    // Pull (DB → Sheet) stays, so the Sheet remains a live read-only view.
+    // NB: designs is also removed from DIFF_DELETABLE below — both edits or neither,
+    // or write:[] with designs still deletable would let a push silently delete rows.
+    write: [],
     hide: ["color"],
-    insert: true,
+    insert: false,
   },
   barcode_mappings: {
     pk: "barcode",
@@ -127,8 +135,11 @@ const MAX_DELETES_ABSOLUTE = 25;
 const MAX_DELETES_FRACTION = 0.10;
 
 // Tables where a missing row may be deleted at all.
+// designs is intentionally ABSENT: it is read-only (write: []), and with write:[]
+// the READ_ONLY_TABLE guard only fires when a table is NOT in this set — so leaving
+// designs here would bypass the guard and let a push silently delete rows. Both the
+// write:[] and this removal must stay together.
 const DIFF_DELETABLE = new Set([
-  "designs",
   "barcode_mappings",
   "slots",
   "customers",
