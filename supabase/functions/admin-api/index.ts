@@ -212,7 +212,10 @@ async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffCon
 }
 
 const ACTION_PERMISSIONS: Record<string, string[]> = {
-  listDesigns: ["products.view", "products.mapping"],
+  // dashboard.view included so the dashboard's per-design thumbnails can load the
+  // catalogue. Staff-only (admin-api checks app_metadata.role) — never `authenticated`,
+  // so this does not widen master-image exposure to customers.
+  listDesigns: ["products.view", "products.mapping", "dashboard.view"],
   listMappings: ["products.mapping"],
   mapBarcode: ["products.mapping"],
   mapBatch: ["products.mapping"],
