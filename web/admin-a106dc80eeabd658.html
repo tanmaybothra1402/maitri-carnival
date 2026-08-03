@@ -3414,8 +3414,8 @@ $("pgrid-body").addEventListener("focusout", async (e) => {
   if (!dn) return;
   const dup = await findDesignDupFresh(dn);
   const rep = $("grid-report");
-  if (dup && dup.kind === "near") rep.innerHTML = designDupHtml(dup, {});
-  else if (dup && dup.kind === "exact") rep.innerHTML = `<div class="gr-ok">“${esc(dn)}” exists — this row will UPDATE it (firm/attributes/pcs), not create a new design.</div>`;
+  // Add-only: an existing design (near OR exact) is a problem, not an update.
+  if (dup) rep.innerHTML = designDupHtml(dup);
 });
 // ---- Shared duplicate-design check (bulk grid + single-product form) ----
 // design_no is the PK, so EXACT dups already fail at the DB. The value here is the
@@ -3441,8 +3441,7 @@ function designHasBarcode(dn) {
   if (!st.mappings || !st.mappings.length) return null; // mapping cache not loaded → unknown
   return (st.mappings || []).some((m) => m.designNo === dn && m.active !== false);
 }
-function designDupHtml(dup, opts) {
-  opts = opts || {};
+function designDupHtml(dup) {
   if (dup.kind === "near") {
     const names = dup.near.map((d) => `“${esc(d.designNo)}”`).join(", ");
     return `<div class="dup-near"><b>“${esc(dup.dn)}” is too close to ${names}.</b> These differ only by spacing/case — if both exist, staff cannot reliably type either. Use the exact existing number, or fix the spelling.</div>`;
@@ -3450,10 +3449,10 @@ function designDupHtml(dup, opts) {
   const d = dup.design, bc = designHasBarcode(d.designNo);
   const rows = [["Firm", d.firm], ["Category", d.category], ["Style", d.style], ["Fabric", d.fabric], ["Pcs/set", d.pcsPerSet], ["Status", d.active ? "Active" : "Inactive"], ["Barcode", bc === null ? "open Mapping to check" : bc ? "mapped" : "none"]].filter(([, v]) => v !== undefined && v !== null && v !== "");
   const thumb = d.imageUrl ? `<img class="dup-thumb" src="${esc(ik(d.imageUrl, "w-96,h-128,c-at_max,q-55"))}" alt="">` : "";
-  const action = opts.update
-    ? `<span class="dup-note">Saving this row will UPDATE the existing design, not create a new one.</span>`
-    : (d.active ? `<button type="button" class="btn secondary small" data-dup-open="${esc(d.designNo)}">Open to edit</button>` : `<button type="button" class="btn secondary small" data-dup-reactivate="${esc(d.designNo)}">Reactivate</button>`);
-  return `<div class="dup-exact">${thumb}<div class="dup-body"><b>“${esc(d.designNo)}” already exists.</b>${opts.update ? "" : " Creating it again is rejected by the database — edit or reactivate the existing one."}<div class="dup-details">${rows.map(([k, v]) => `<span><i>${esc(k)}:</i> ${esc(String(v))}</span>`).join("")}</div>${action}</div></div>`;
+  const action = d.active
+    ? `<button type="button" class="btn secondary small" data-dup-open="${esc(d.designNo)}">Open to edit</button>`
+    : `<button type="button" class="btn secondary small" data-dup-reactivate="${esc(d.designNo)}">Reactivate</button>`;
+  return `<div class="dup-exact">${thumb}<div class="dup-body"><b>“${esc(d.designNo)}” already exists.</b> Creating it again is rejected — edit or reactivate the existing one.<div class="dup-details">${rows.map(([k, v]) => `<span><i>${esc(k)}:</i> ${esc(String(v))}</span>`).join("")}</div>${action}</div></div>`;
 }
 function friendlyProductError(msg) {
   const m = String(msg || "");
@@ -3478,6 +3477,10 @@ function gridValidate() {
       const canon = (st.designs || []).filter((d) => canonDesign(d.designNo) === key);
       if (canon.length === 1) add(`Row ${i + 1}: "${dn}" differs from existing "${canon[0].designNo}" only by spacing/case — use the exact number or fix it`, "designNo");
       else if (canon.length > 1) add(`Row ${i + 1}: "${dn}" is ambiguous — matches ${canon.map((d) => `"${d.designNo}"`).join(", ")}; pick one`, "designNo");
+    } else {
+      // ADD-only: an existing design is refused, never silently overwritten (parity
+      // with the single-product form). Editing is done in Product Master.
+      add(`Row ${i + 1}: "${dn}" already exists — open it in Product Master to edit, or remove this row`, "designNo");
     }
     if (!GRID_FIRMS.includes(r.firm)) add(`Row ${i + 1}: firm must be Maitri, Niharika or Both`, "firm");
     if (!GRID_CATEGORIES.includes(r.category)) add(`Row ${i + 1}: pick a category`, "category");
@@ -3489,6 +3492,7 @@ function gridValidate() {
   return { savable, errors };
 }
 $("grid-save").onclick = async () => {
+  await refreshDesigns(); // validate against the CURRENT catalogue — a stale cache must not wave a duplicate through
   const { savable, errors } = gridValidate();
   renderGrid();
   const rep = $("grid-report");
@@ -3702,7 +3706,7 @@ function pcRenderDup() {
   findDesignDupFresh(dn).then((dup) => {
     if ($("pc-design").value.trim() !== dn) return; // the field moved on
     if (!dup) { $("pc-dup").classList.add("hidden"); $("pc-dup").innerHTML = ""; $("pc-save").disabled = false; return; }
-    $("pc-dup").innerHTML = designDupHtml(dup, { update: false });
+    $("pc-dup").innerHTML = designDupHtml(dup);
     $("pc-dup").classList.remove("hidden");
     $("pc-save").disabled = true; // block a create on any exact OR near-match
   });

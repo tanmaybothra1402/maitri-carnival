@@ -560,10 +560,11 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "saveProductRows") {
-      // Bulk product grid. Loops the SAME per-row logic as createProduct/updateProduct
-      // (never upsert_product_rows, which blanks image_url/category/fabric/firm when a
-      // column is omitted). Per-row try/catch so one bad row is marked and retryable
-      // while the rest commit.
+      // Bulk product grid — ADD-only, mirrors createProduct per row (never
+      // upsert_product_rows, which blanks columns; never an update, which would let a
+      // bulk paste silently overwrite an existing design). An existing design_no is
+      // refused. Per-row try/catch so one bad row is marked and retryable while the
+      // rest commit.
       if (!Array.isArray(body.rows) || body.rows.length < 1 || body.rows.length > 200) {
         throw new Error("Provide 1 to 200 product rows");
       }
@@ -579,37 +580,23 @@ Deno.serve(async (request: Request) => {
           if (!Number.isFinite(pcsPerSet) || pcsPerSet < 1 || pcsPerSet > 9999) throw new Error("Pcs per set must be between 1 and 9999");
           const { data: existing, error: exErr } = await db.from("designs").select("design_no").eq("design_no", dn).maybeSingle();
           if (exErr) throw exErr;
-          if (existing) {
-            const patch: Record<string, unknown> = {
-              firm,
-              category: clean(row.category),
-              style: clean(row.style),
-              fabric: clean(row.fabric),
-              pcs_per_set: pcsPerSet,
-              description: clean(row.description),
-              active: row.active === undefined ? true : Boolean(row.active),
-            };
-            // Only touch image_url when a URL is actually supplied — an omitted/blank
-            // image must NEVER wipe an existing photo (the upsert_product_rows trap).
-            if (clean(row.imageUrl)) patch.image_url = clean(row.imageUrl);
-            const { error } = await db.from("designs").update(patch).eq("design_no", dn).select("design_no").single();
-            if (error) throw error;
-            results.push({ ok: true, designNo: dn, action: "updated" });
-          } else {
-            const { error } = await db.from("designs").insert({
-              design_no: dn,
-              firm,
-              category: clean(row.category),
-              style: clean(row.style),
-              fabric: clean(row.fabric),
-              description: clean(row.description),
-              pcs_per_set: pcsPerSet,
-              image_url: clean(row.imageUrl),
-              active: row.active === undefined ? true : Boolean(row.active),
-            }).select("design_no").single();
-            if (error) throw error;
-            results.push({ ok: true, designNo: dn, action: "created" });
-          }
+          // ADD-only: refuse an existing design rather than silently overwriting it
+          // (parity with createProduct). Editing an existing design is done in Product
+          // Master; a bulk grid that quietly overwrote firm/category/fabric was the bug.
+          if (existing) throw new Error(`${dn} already exists — edit it in Product Master instead of re-adding`);
+          const { error } = await db.from("designs").insert({
+            design_no: dn,
+            firm,
+            category: clean(row.category),
+            style: clean(row.style),
+            fabric: clean(row.fabric),
+            description: clean(row.description),
+            pcs_per_set: pcsPerSet,
+            image_url: clean(row.imageUrl),
+            active: row.active === undefined ? true : Boolean(row.active),
+          }).select("design_no").single();
+          if (error) throw error;
+          results.push({ ok: true, designNo: dn, action: "created" });
         } catch (error) {
           results.push({ ok: false, designNo: dn, error: errorMessage(error) });
         }
