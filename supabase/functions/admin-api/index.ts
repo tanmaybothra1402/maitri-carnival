@@ -1108,26 +1108,48 @@ Deno.serve(async (request: Request) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return jsonResponse(request, {
-        ok: true,
-        data: (data ?? []).map((o: any) => ({
-          orderId: o.id,
-          customerId: o.customer_id,
-          firm: o.firm,
-          status: o.status,
-          dispatchStatus: o.dispatch_status ?? "Pending",
-          designs: Number(o.total_designs) || 0,
-          sets: Number(o.total_sets) || 0,
-          pieces: Number(o.total_pieces) || 0,
-          updatedAt: o.updated_at,
-          companyName: o.customers?.company_name ?? "",
-          contactName: o.customers?.contact_name ?? "",
-          phone: o.customers?.phone_e164 ?? "",
-          city: o.customers?.city ?? "",
-          state: o.customers?.state ?? "",
-          agent: o.customers?.agent ?? "",
-        })),
-      });
+      const orders = (data ?? []).map((o: any) => ({
+        orderId: o.id,
+        customerId: o.customer_id,
+        firm: o.firm,
+        status: o.status,
+        dispatchStatus: o.dispatch_status ?? "Pending",
+        designs: Number(o.total_designs) || 0,
+        sets: Number(o.total_sets) || 0,
+        pieces: Number(o.total_pieces) || 0,
+        updatedAt: o.updated_at,
+        companyName: o.customers?.company_name ?? "",
+        contactName: o.customers?.contact_name ?? "",
+        phone: o.customers?.phone_e164 ?? "",
+        city: o.customers?.city ?? "",
+        state: o.customers?.state ?? "",
+        agent: o.customers?.agent ?? "",
+      }));
+      // By-order view (default): unchanged bare array.
+      if (!body.withLines) return jsonResponse(request, { ok: true, data: orders });
+      // By-product pick-list: also return every design line for these orders so the
+      // client can roll up "remaining to ship" per design. No images — quantities only.
+      const orderIds = orders.map((o) => o.orderId);
+      let lines: Array<Record<string, unknown>> = [];
+      if (orderIds.length) {
+        const [{ data: items, error: iErr }, { data: dls, error: dErr }] = await Promise.all([
+          db.from("order_items").select("order_id,design_no,qty,pcs_per_set_snapshot").in("order_id", orderIds),
+          db.from("dispatch_lines").select("order_id,design_no,dispatched_sets").in("order_id", orderIds),
+        ]);
+        if (iErr) throw iErr;
+        if (dErr) throw dErr;
+        const k = (oid: string, dn: string) => oid + " " + dn;
+        const dispatched = new Map<string, number>();
+        (dls ?? []).forEach((d: any) => dispatched.set(k(d.order_id, d.design_no), Number(d.dispatched_sets) || 0));
+        lines = (items ?? []).map((it: any) => ({
+          orderId: it.order_id,
+          designNo: it.design_no,
+          orderedSets: Number(it.qty) || 0,
+          dispatchedSets: dispatched.get(k(it.order_id, it.design_no)) || 0,
+          pcsPerSet: Number(it.pcs_per_set_snapshot) || 0,
+        }));
+      }
+      return jsonResponse(request, { ok: true, data: { orders, lines } });
     }
 
     // Full-resolution images here by design: dispatch staff must be able to

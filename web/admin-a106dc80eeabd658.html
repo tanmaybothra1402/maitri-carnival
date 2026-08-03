@@ -108,6 +108,14 @@ table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px
 .dispatch-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .dispatch-card-top b{font-size:13px;color:var(--teal-deep);overflow-wrap:anywhere}
 .dispatch-card-meta{margin-top:3px;font-size:10px;color:var(--muted);font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.dp-card{cursor:default}
+.dp-total{color:var(--teal-deep);font-size:12px;font-weight:850;text-align:right;white-space:nowrap;line-height:1.35;font-variant-numeric:tabular-nums}
+.dp-buyers{margin-top:10px;display:grid;gap:6px}
+.dp-buyer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 9px;border:1px solid var(--border);border-radius:9px;background:var(--foam)}
+.dp-buyer-main{min-width:0;display:flex;flex-direction:column;gap:1px}
+.dp-buyer-main b{font-size:11.5px;color:var(--deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-buyer-main span{font-size:9.5px;color:var(--muted);font-weight:600}
+.dp-buyer-sets{flex:0 0 auto;font-size:11px;font-weight:850;color:var(--teal-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
 .dispatch-card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px}
 .firm-pill{padding:3px 8px;border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.03em}
 .firm-pill.maitri{background:#EAE9F5;color:#2E2A6B}
@@ -504,6 +512,10 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
     <button class="chip" data-status="Partial">Partially completed</button>
     <button class="chip" data-status="Completed">Completed</button>
   </div>
+  <div class="chip-row" id="dispatch-mode-chips">
+    <button class="chip active" data-mode="order">By order</button>
+    <button class="chip" data-mode="product">By product</button>
+  </div>
 </div>
 <div class="list" id="dispatch-list"></div>
 </main>
@@ -783,7 +795,7 @@ const st = {
   editEntry: null,
   editProduct: null,
   entryRows: [],
-  dispatch: { rows: [], detail: null, firm: "", status: "" },
+  dispatch: { rows: [], detail: null, firm: "", status: "", mode: "order", product: null },
   cache: { designsAt: 0, mappingsAt: 0, dashboardAt: 0 },
 };
 function toast(m, t = "") {
@@ -3937,17 +3949,63 @@ function firmPill(firm) {
 
 async function loadDispatch() {
   if (!has("dispatch.view")) return;
+  const byProduct = st.dispatch.mode === "product";
   try {
-    const rows = await admin("listDispatch", {
+    const res = await admin("listDispatch", {
       query: $("dispatch-search").value.trim(),
       firm: st.dispatch.firm,
       dispatchStatus: st.dispatch.status,
+      withLines: byProduct,
     });
-    st.dispatch.rows = rows || [];
-    renderDispatchList();
+    if (byProduct) {
+      const orders = (res && res.orders) || [];
+      const lines = (res && res.lines) || [];
+      st.dispatch.rows = orders;
+      st.dispatch.product = aggregateDispatchByDesign(orders, lines);
+      renderDispatchProduct();
+    } else {
+      st.dispatch.rows = res || [];
+      renderDispatchList();
+    }
   } catch (e) {
     toast(e.message, "error");
   }
+}
+function aggregateDispatchByDesign(orders, lines) {
+  // Roll design lines up across every order into a pick-list: for each design, how
+  // many sets/pieces still need to ship, and which buyers still need them.
+  const byId = new Map((orders || []).map((o) => [o.orderId, o]));
+  const map = new Map();
+  (lines || []).forEach((l) => {
+    const remainSets = Math.max(0, (Number(l.orderedSets) || 0) - (Number(l.dispatchedSets) || 0));
+    if (remainSets <= 0) return; // nothing left to ship for this line
+    let g = map.get(l.designNo);
+    if (!g) { g = { designNo: l.designNo, sets: 0, pieces: 0, buyers: [] }; map.set(l.designNo, g); }
+    g.sets += remainSets;
+    g.pieces += remainSets * (Number(l.pcsPerSet) || 0);
+    const o = byId.get(l.orderId) || {};
+    g.buyers.push({
+      orderId: l.orderId,
+      company: o.companyName || o.contactName || "Unnamed party",
+      city: [o.city, o.state].filter(Boolean).join(", "),
+      firm: o.firm || "",
+      sets: remainSets,
+    });
+  });
+  return [...map.values()]
+    .map((g) => { g.buyers.sort((a, b) => b.sets - a.sets); return g; })
+    .sort((a, b) => b.sets - a.sets || b.pieces - a.pieces); // most left to ship first
+}
+function renderDispatchProduct() {
+  const rows = st.dispatch.product || [];
+  $("dispatch-list").innerHTML = rows.length
+    ? rows.map((d) => {
+        const buyers = d.buyers
+          .map((b) => `<div class="dp-buyer"><span class="dp-buyer-main"><b>${esc(b.company)}</b>${b.city ? `<span>${esc(b.city)}</span>` : ""}</span><span class="dp-buyer-sets">${b.sets} sets</span></div>`)
+          .join("");
+        return `<div class="dispatch-card dp-card"><div class="dispatch-card-top"><div><b>${esc(d.designNo)}</b><div class="dispatch-card-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} waiting</div></div><span class="dp-total">${d.sets} sets<br>${d.pieces} pcs</span></div><div class="dp-buyers">${buyers}</div></div>`;
+      }).join("")
+    : '<div class="empty">Nothing left to ship for these filters.</div>';
 }
 
 function renderDispatchList() {
@@ -3988,6 +4046,17 @@ $("dispatch-status-chips").onclick = (e) => {
   [...$("dispatch-status-chips").children].forEach((c) =>
     c.classList.toggle("active", c === b),
   );
+  loadDispatch();
+};
+
+$("dispatch-mode-chips").onclick = (e) => {
+  const b = e.target.closest("[data-mode]");
+  if (!b || b.dataset.mode === st.dispatch.mode) return;
+  st.dispatch.mode = b.dataset.mode;
+  [...$("dispatch-mode-chips").children].forEach((c) =>
+    c.classList.toggle("active", c === b),
+  );
+  $("dispatch-list").innerHTML = ""; // clear the other view while the new one loads
   loadDispatch();
 };
 
@@ -4672,7 +4741,7 @@ function selectExhibition(id) {
   st.entryRows = [];
   st.bookings = [];
   st.slots = [];
-  st.dispatch = { rows: [], detail: null, firm: "", status: "" };
+  st.dispatch = { rows: [], detail: null, firm: "", status: "", mode: "order", product: null };
   st.sale.customer = null;
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
