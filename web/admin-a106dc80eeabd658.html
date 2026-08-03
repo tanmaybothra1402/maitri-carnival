@@ -321,7 +321,16 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-remove-line.undo{color:var(--deep)}
 .mc-removing-tag{font-size:10.5px;font-weight:800;color:var(--error);white-space:nowrap}
 td.mx-cell.mx-remove{color:var(--error);font-weight:800}
-.pc-dup{margin-top:5px;font-size:10.5px;font-weight:600;color:#c0392b;line-height:1.35}
+.pc-dup{margin-top:6px;font-size:10.5px;font-weight:600;line-height:1.4}
+.dup-near{color:#B45309}
+.dup-exact{display:flex;gap:10px;align-items:flex-start;color:var(--ink);font-weight:600}
+.dup-thumb{width:48px;height:64px;object-fit:cover;border-radius:8px;background:#eef2f0;flex:0 0 auto}
+.dup-body{min-width:0}.dup-body b{color:#B91C1C}
+.dup-details{display:flex;flex-wrap:wrap;gap:3px 10px;margin:5px 0 7px}
+.dup-details span{font-size:10px;color:var(--muted)}
+.dup-details i{font-style:normal;font-weight:800;color:var(--slate)}
+.dup-note{display:block;font-size:10px;color:var(--muted);font-weight:600}
+.grid-report .dup-exact,.grid-report .dup-near{padding:9px 12px;border:1px solid #FCD34D;border-radius:10px;background:#FFFBEB}
 .pc-photo{border:1px dashed var(--border);border-radius:12px;padding:12px;margin-top:6px}
 .pc-progress{margin-top:8px;font-size:11px;color:var(--muted)}
 .pc-preview{margin-top:10px;display:flex;align-items:center;gap:10px}
@@ -3361,6 +3370,61 @@ $("pgrid-body").addEventListener("paste", (e) => {
   renderGrid();
 });
 $("grid-add").onclick = () => { st.grid.rows.push(gridBlankRow()); renderGrid(); };
+// Early duplicate feedback on the design cell (blur), same resolver as the sale screen.
+$("pgrid-body").addEventListener("focusout", async (e) => {
+  if (!e.target.dataset || e.target.dataset.f !== "designNo") return;
+  const tr = e.target.closest("[data-i]"); if (!tr) return;
+  const r = st.grid.rows[Number(tr.dataset.i)];
+  const dn = r && gridNorm(r.designNo);
+  if (!dn) return;
+  const dup = await findDesignDupFresh(dn);
+  const rep = $("grid-report");
+  if (dup && dup.kind === "near") rep.innerHTML = designDupHtml(dup, {});
+  else if (dup && dup.kind === "exact") rep.innerHTML = `<div class="gr-ok">“${esc(dn)}” exists — this row will UPDATE it (firm/attributes/pcs), not create a new design.</div>`;
+});
+// ---- Shared duplicate-design check (bulk grid + single-product form) ----
+// design_no is the PK, so EXACT dups already fail at the DB. The value here is the
+// CANONICAL near-match the PK can't catch — how the four existing collision pairs
+// were born. One resolver (canonDesign), one message, both screens.
+function findDesignDup(designNo) {
+  const dn = gridNorm(designNo);
+  if (!dn) return null;
+  const exact = (st.designs || []).find((d) => d.designNo === dn);
+  if (exact) return { kind: "exact", design: exact, dn };
+  const key = canonDesign(dn);
+  const near = (st.designs || []).filter((d) => canonDesign(d.designNo) === key);
+  return near.length ? { kind: "near", near, dn } : null;
+}
+async function findDesignDupFresh(designNo) {
+  // Advisory against the cached catalogue; refresh once (debounced) before declaring
+  // a number genuinely NEW, so a design created moments ago isn't missed.
+  let dup = findDesignDup(designNo);
+  if (!dup && gridNorm(designNo)) { if (await refreshDesigns()) dup = findDesignDup(designNo); }
+  return dup;
+}
+function designHasBarcode(dn) {
+  if (!st.mappings || !st.mappings.length) return null; // mapping cache not loaded → unknown
+  return (st.mappings || []).some((m) => m.designNo === dn && m.active !== false);
+}
+function designDupHtml(dup, opts) {
+  opts = opts || {};
+  if (dup.kind === "near") {
+    const names = dup.near.map((d) => `“${esc(d.designNo)}”`).join(", ");
+    return `<div class="dup-near"><b>“${esc(dup.dn)}” is too close to ${names}.</b> These differ only by spacing/case — if both exist, staff cannot reliably type either. Use the exact existing number, or fix the spelling.</div>`;
+  }
+  const d = dup.design, bc = designHasBarcode(d.designNo);
+  const rows = [["Firm", d.firm], ["Category", d.category], ["Style", d.style], ["Fabric", d.fabric], ["Pcs/set", d.pcsPerSet], ["Status", d.active ? "Active" : "Inactive"], ["Barcode", bc === null ? "open Mapping to check" : bc ? "mapped" : "none"]].filter(([, v]) => v !== undefined && v !== null && v !== "");
+  const thumb = d.imageUrl ? `<img class="dup-thumb" src="${esc(ik(d.imageUrl, "w-96,h-128,c-at_max,q-55"))}" alt="">` : "";
+  const action = opts.update
+    ? `<span class="dup-note">Saving this row will UPDATE the existing design, not create a new one.</span>`
+    : (d.active ? `<button type="button" class="btn secondary small" data-dup-open="${esc(d.designNo)}">Open to edit</button>` : `<button type="button" class="btn secondary small" data-dup-reactivate="${esc(d.designNo)}">Reactivate</button>`);
+  return `<div class="dup-exact">${thumb}<div class="dup-body"><b>“${esc(d.designNo)}” already exists.</b>${opts.update ? "" : " Creating it again is rejected by the database — edit or reactivate the existing one."}<div class="dup-details">${rows.map(([k, v]) => `<span><i>${esc(k)}:</i> ${esc(String(v))}</span>`).join("")}</div>${action}</div></div>`;
+}
+function friendlyProductError(msg) {
+  const m = String(msg || "");
+  if (/duplicate key|already exists|unique constraint|23505/i.test(m)) return "that design already exists — refresh and edit it instead of creating";
+  return typeof mapError === "function" ? mapError(m) : m;
+}
 function gridValidate() {
   // Blank rows ignored. Returns { savable:[payload+_row], errors:[{i,msg}] }. Reuses
   // canonDesign (the manual-entry resolver) so the grid and the sale screen agree on
@@ -3404,7 +3468,7 @@ $("grid-save").onclick = async () => {
     savable.forEach((s, k) => {
       const res = results[k];
       if (res && res.ok) { okN++; s._row.saved = true; }
-      else fails.push(`${s.designNo}: ${mapError(res ? res.error : "no response")}`);
+      else fails.push(`${s.designNo}: ${friendlyProductError(res ? res.error : "no response")}`);
     });
     try { st.designs = await admin("listDesigns"); st.cache.designsAt = Date.now(); } catch {}
     renderGrid();
@@ -3590,17 +3654,39 @@ $("product-new").onclick = () => {
   pcBlob = null;
   $("pc-preview").classList.add("hidden");
   $("pc-preview").innerHTML = "";
-  $("pc-dup").classList.add("hidden");
+  $("pc-dup").classList.add("hidden"); $("pc-dup").innerHTML = ""; $("pc-save").disabled = false;
   $("pc-progress").classList.add("hidden");
   $("pc-result").innerHTML = "";
   openModal("product-create-modal");
   setTimeout(() => $("pc-design").focus(), 80);
 };
-$("pc-design").oninput = () => {
+let pcDupTimer = null;
+function pcRenderDup() {
   const dn = $("pc-design").value.trim();
-  const dup = dn && (st.designs || []).some((d) => String(d.designNo) === dn);
-  $("pc-dup").classList.toggle("hidden", !dup);
-  if (dup) $("pc-dup").textContent = `${dn} already exists — creating would be rejected. Open it from the catalogue to edit instead.`;
+  if (!dn) { $("pc-dup").classList.add("hidden"); $("pc-dup").innerHTML = ""; $("pc-save").disabled = false; return; }
+  findDesignDupFresh(dn).then((dup) => {
+    if ($("pc-design").value.trim() !== dn) return; // the field moved on
+    if (!dup) { $("pc-dup").classList.add("hidden"); $("pc-dup").innerHTML = ""; $("pc-save").disabled = false; return; }
+    $("pc-dup").innerHTML = designDupHtml(dup, { update: false });
+    $("pc-dup").classList.remove("hidden");
+    $("pc-save").disabled = true; // block a create on any exact OR near-match
+  });
+}
+$("pc-design").oninput = () => { clearTimeout(pcDupTimer); pcDupTimer = setTimeout(pcRenderDup, 300); };
+$("pc-design").addEventListener("blur", pcRenderDup);
+$("pc-dup").onclick = async (e) => {
+  const open = e.target.closest("[data-dup-open]"), react = e.target.closest("[data-dup-reactivate]");
+  if (open) { closeModal("product-create-modal"); openProduct(open.dataset.dupOpen).catch((err) => toast(err.message, "error")); return; }
+  if (react) {
+    const dn = react.dataset.dupReactivate, d = (st.designs || []).find((x) => x.designNo === dn);
+    if (!d) return;
+    try {
+      await admin("updateProduct", { designNo: dn, firm: d.firm, pcsPerSet: d.pcsPerSet, category: d.category, style: d.style, fabric: d.fabric, description: d.description, active: true });
+      d.active = true; st.cache.designsAt = 0;
+      toast(`${dn} reactivated`, "success");
+      pcRenderDup(); loadProducts(true).catch(() => {});
+    } catch (err) { toast(friendlyProductError(err.message), "error"); }
+  }
 };
 $("pc-pick").onclick = () => $("pc-file").click();
 $("pc-file").onchange = async (e) => {
@@ -3623,7 +3709,8 @@ $("pc-file").onchange = async (e) => {
 $("pc-save").onclick = async () => {
   const dn = $("pc-design").value.trim();
   if (!dn) { toast("Enter a design number", "error"); return; }
-  if ((st.designs || []).some((d) => String(d.designNo) === dn)) { toast("That design already exists — edit it instead", "error"); return; }
+  const dupNow = findDesignDup(dn);
+  if (dupNow) { toast(dupNow.kind === "exact" ? "That design already exists — edit or reactivate it instead" : "That number is too close to an existing design — fix the spelling", "error"); return; }
   const btn = $("pc-save"), old = btn.textContent;
   try {
     btn.disabled = true;
@@ -3650,7 +3737,7 @@ $("pc-save").onclick = async () => {
     loadProducts(true).catch(() => {});
     toast(imageUrl ? "Product created with photo" : "Product created", "success");
   } catch (e) {
-    toast(e.message, "error");
+    toast(friendlyProductError(e.message), "error");
   } finally {
     btn.disabled = false;
     btn.textContent = old;

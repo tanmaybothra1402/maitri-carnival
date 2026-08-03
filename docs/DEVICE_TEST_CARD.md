@@ -12,7 +12,15 @@ Distribute/open: `admin-a106dc80eeabd658.html?v=269ae0e`
 
 ---
 
-## A. Combined order entry — Sale Order (do this FIRST)
+## 0. Customer app + the check-in gate (do these FIRST — upstream of everything)
+
+No order exists until a customer is registered and checked in, so these sit
+upstream of every Section A scenario.
+
+36. **New customer, end to end, on a phone** — using the customer link, from scratch: **register** → **Reception** checks them in → the customer opens **their own order screen** → confirm what they can actually see and do (they can build an order; they must **not** see any product images anywhere, including the PDF). In July **197 customers logged in and wrote nothing** — nothing else on this card would catch that recurring.
+37. **Reception check-in gate** — search a customer **by phone**, **check in**, and confirm the **Sale Order screen immediately allows ordering** for them. Check-in is the first hard gate and nothing else tests it end to end.
+
+## A. Combined order entry — Sale Order (the big one — do right after Section 0)
 
 Use a throwaway test customer. Open **Sale Order** and pick that customer.
 
