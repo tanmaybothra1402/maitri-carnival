@@ -28,9 +28,11 @@ jobs:
           echo "{\"build\":\"${GITHUB_SHA}\"}" > web/version.json
           # Replace ONLY the const declaration — the sentinel check
           # `BUILD_ID === "__BUILD_ID__"` must stay literal so an un-stamped/dev build never nags.
-          sed -i "s|const BUILD_ID = \"__BUILD_ID__\"|const BUILD_ID = \"${GITHUB_SHA}\"|" web/admin-*.html
+          sed -i "s|const BUILD_ID = \"__BUILD_ID__\"|const BUILD_ID = \"${GITHUB_SHA}\"|" web/admin-*.html web/user.html
           echo "version.json: $(cat web/version.json)"
-          grep -o "const BUILD_ID = \"[0-9a-f]*\"" web/admin-*.html | head -1 || { echo "BUILD_ID not stamped"; exit 1; }
+          stamped=$(grep -l "const BUILD_ID = \"${GITHUB_SHA}\"" web/admin-*.html web/user.html | wc -l)
+          echo "stamped files: ${stamped} (expect 2)"
+          [ "${stamped}" -eq 2 ] || { echo "BUILD_ID not stamped in both apps"; exit 1; }
       - name: Upload web folder
         uses: actions/upload-pages-artifact@v3
         with:

@@ -8,11 +8,27 @@ untested exposure** — it is the path *every* order takes and a wrong firm-rout
 or a dropped per-firm save is *silent*, unlike a scanner miss which is visible at
 the counter. **Do Section A first.**
 
-Distribute/open: `admin-a106dc80eeabd658.html?v=269ae0e`
+**After Step 0 below, staff just open the plain URL — the build-version guard keeps
+it current.** The running build shows as `build <7-char sha>` in **Admin → Settings**
+and at the **bottom of the customer order screen**; confirm it matches the latest commit.
 
 ---
 
-## 0. Customer app + the check-in gate (do these FIRST — upstream of everything)
+## 0. MANDATORY — force-refresh every floor device FIRST (before anything below)
+
+The build-version guard is **forward-protection only**: a device only starts checking
+`version.json` once it has loaded a build that *contains* the guard. Every device
+holding an older build today will **never** see the update banner on its own.
+
+0. On **EVERY** phone and tablet that will be used on 13–14 August: open the console,
+   **clear Safari/Chrome website data for the site** (or **remove and re-add the
+   home-screen icon**), **reload**, and confirm the visible **`build <sha>`** matches the
+   **current** build. **Nothing below this line is valid until the device reads the right
+   build** — any result collected on a stale build must be **discarded and re-run**.
+
+---
+
+## Customer app + the check-in gate (do these next — upstream of Section A)
 
 No order exists until a customer is registered and checked in, so these sit
 upstream of every Section A scenario.

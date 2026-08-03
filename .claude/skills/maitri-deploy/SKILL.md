@@ -99,6 +99,25 @@ those are advisory — real HTTP headers win.
 opened the console earlier is running the old build, and during an event that
 means missing modules and missing fixes.
 
+### Build-version guard (auto-stamped — never bump by hand)
+
+Both apps carry a build-version guard. `web/version.json` and the `const BUILD_ID`
+in `web/admin-*.html` **and** `web/user.html` are stamped **automatically by the
+Pages workflow** (`.github/workflows/pages.yml`) from `github.sha` at deploy time —
+they are always the commit sha and can never disagree. **Do not edit `version.json`
+or `BUILD_ID` by hand, and do not commit a value for either** (the source keeps the
+literal `__BUILD_ID__` placeholder; the sentinel check `BUILD_ID === "__BUILD_ID__"`
+must stay literal so a local/dev build never prompts). On load and on every
+return-to-foreground, a client whose build differs from `version.json` shows a
+**"Tap to update"** banner (never auto-reloads — an unsaved cart is preserved). The
+running build is visible as `build <7-char sha>` in Admin → Settings and at the
+bottom of the customer order screen.
+
+**The guard is forward-protection only:** a device only starts checking once it has
+loaded a build that *contains* the guard. Every device already holding an older
+build must be force-refreshed once before it will ever see the banner — this is a
+mandatory pre-event step (see the device card, line 0).
+
 ## Verifying a schema change reached the database
 
 ```sql

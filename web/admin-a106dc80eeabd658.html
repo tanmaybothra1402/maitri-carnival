@@ -317,6 +317,7 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .firm-badge.both button.on{background:var(--teal-deep);color:#fff}
 .update-banner{position:fixed;left:0;right:0;bottom:0;z-index:300;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:13px 16px calc(13px + env(safe-area-inset-bottom));background:var(--orange);color:#fff;font-size:12.5px;font-weight:800;text-align:center;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
 .update-banner button{flex:0 0 auto;border:0;border-radius:999px;background:#fff;color:var(--deep);font-size:12px;font-weight:850;padding:9px 18px;cursor:pointer}
+.build-tag{margin-top:14px;text-align:center;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.05em}
 .mc-popup-row.removing{opacity:.72}
 .mc-popup-row.removing b{text-decoration:line-through}
 .mc-remove-line{margin-top:4px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
@@ -542,7 +543,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 </div>
 <div class="card"><h2>Team Members</h2><p class="copy">Tap a member to update access, reset their password or remove the account.</p><div class="list" id="staff-list"></div></div>
 </section>
-<section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button></div></section>
+<section class="subpanel hidden" id="admin-settings"><div class="card"><h1>System Settings</h1><div class="grid2"><div><label>Event name</label><input id="set-event"/></div><div><label>Edit window hours</label><input id="set-hours" max="168" min="1" type="number"/></div><div><label>Start date</label><input id="set-start" type="date"/></div><div><label>End date</label><input id="set-end" type="date"/></div><div><label>Registration</label><select id="set-registration"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div><label>New access code <span class="optional">blank keeps current</span></label><input id="set-code"/></div></div><label class="perm" style="margin-top:10px"><input id="set-clear-code" type="checkbox"/> Disable existing access code</label><button class="btn" id="settings-save" style="margin-top:12px">Save settings</button><p class="build-tag" id="build-tag"></p></div></section>
 <section class="subpanel hidden" id="admin-exhibitions">
 <div class="card">
   <span class="section-kicker">Events</span>
@@ -3223,11 +3224,14 @@ function showUpdateBanner(v) {
   el.id = "update-banner"; el.className = "update-banner";
   el.innerHTML = `<span>A new version is available — your current changes are safe.</span><button id="update-now">Tap to update</button>`;
   document.body.appendChild(el);
-  // Reload to a fresh ?v= URL (the one cache-key the diagnosis proved returns fresh).
-  $("update-now").onclick = () => location.replace(location.pathname + "?v=" + encodeURIComponent(v));
+  // Reload to a fresh ?v= URL (the one cache-key the diagnosis proved returns fresh),
+  // preserving any existing query params.
+  $("update-now").onclick = () => { const u = new URL(location.href); u.searchParams.set("v", v); location.replace(u.pathname + u.search); };
 }
 checkBuildVersion();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) checkBuildVersion(); });
+// Make the running build readable in one second on the floor (Admin → Settings).
+(() => { const b = $("build-tag"); if (b) b.textContent = BUILD_ID === "__BUILD_ID__" ? "build dev" : "build " + BUILD_ID.slice(0, 7); })();
 $("sale-camera").onclick = () =>
   startScanner("sale").catch((e) => toast(e.message, "error"));
 /* Products */

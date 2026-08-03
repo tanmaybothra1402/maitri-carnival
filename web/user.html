@@ -44,6 +44,9 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .phone{display:flex;gap:8px}.prefix{width:60px;min-width:60px;display:grid;place-items:center;border:1px solid #D8E1DE;border-radius:10px;background:var(--foam);color:var(--teal-deep);font-weight:800}
     .btn{width:100%;min-height:48px;margin-top:13px;border:0;border-radius:10px;background:var(--teal-deep);color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+    .update-banner{position:fixed;left:0;right:0;bottom:0;z-index:300;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:13px 16px calc(13px + env(safe-area-inset-bottom));background:var(--orange);color:#fff;font-size:12.5px;font-weight:800;text-align:center;box-shadow:0 -8px 24px rgba(0,0,0,.28)}
+    .update-banner button{flex:0 0 auto;width:auto;min-height:0;margin:0;border:0;border-radius:999px;background:#fff;color:var(--teal-deep);font-size:12px;font-weight:850;padding:9px 18px;cursor:pointer}
+    .build-tag{margin-top:14px;text-align:center;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.05em}
     .btn.secondary{border:1.5px solid var(--teal-deep);background:#fff;color:var(--teal-deep)}
     .btn.ghost{border:1px solid var(--border);background:#fff;color:var(--slate)}
     .btn:disabled{background:#E7EBE9;color:#949A97;cursor:not-allowed}
@@ -228,6 +231,7 @@ input,select,textarea{border:1px solid #D8E1DE;border-radius:var(--r-xs);backgro
 <div class="card"><h2>Order items</h2><div class="items" id="items"></div></div>
 <div class="savebar"><button class="btn" id="save-btn">Save order</button><button class="btn secondary" id="pdf-btn">Download PDF</button></div>
 <button class="btn ghost" id="back-lobby-btn">← Back to slot &amp; status</button>
+<p class="build-tag" id="build-tag"></p>
 </section>
 <!-- ACCOUNT -->
 <section class="hidden" id="account-screen">
@@ -262,6 +266,35 @@ const CONFIG = {
 };
 // Exhibition comes from the URL (?e=<slug>); empty falls back to is_current.
 CONFIG.exhibitionSlug = (new URLSearchParams(location.search).get("e") || "").trim().toLowerCase();
+// ---- Build-version guard ----
+// A buyer who opened the app during Carnival has that build's HTML cached on their
+// phone and would arrive with it (no service worker; Safari's HTTP cache / a
+// home-screen web-clip pins it). BUILD_ID + version.json are both stamped from the
+// same commit by the Pages workflow, so they can't disagree. On load and on every
+// return to the foreground we PROMPT if they differ — never auto-reload, so a
+// customer mid-cart never loses it. Fail-safe: an un-stamped build never nags.
+const BUILD_ID = "__BUILD_ID__";
+(() => { const b = document.getElementById("build-tag"); if (b) b.textContent = BUILD_ID === "__BUILD_ID__" ? "build dev" : "build " + BUILD_ID.slice(0, 7); })();
+async function checkBuildVersion() {
+  if (BUILD_ID === "__BUILD_ID__") return;
+  try {
+    const r = await fetch("version.json", { cache: "no-store" });
+    if (!r.ok) return;
+    const v = (await r.json()).build;
+    if (v && v !== BUILD_ID) showUpdateBanner(v);
+  } catch (_) {}
+}
+function showUpdateBanner(v) {
+  if (document.getElementById("update-banner")) return;
+  const el = document.createElement("div");
+  el.id = "update-banner"; el.className = "update-banner";
+  el.innerHTML = '<span>A new version is available — your cart is safe.</span><button id="update-now">Tap to update</button>';
+  document.body.appendChild(el);
+  // Preserve ?e=<slug> (and any other params); never auto-reload.
+  document.getElementById("update-now").onclick = () => { const u = new URL(location.href); u.searchParams.set("v", v); location.replace(u.pathname + u.search); };
+}
+checkBuildVersion();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) checkBuildVersion(); });
 const FIRMS = {
   Maitri: { name: "Maitri Texfab Private Limited", gstin: "24AAGCM4427L2ZB" },
   Niharika: { name: "Niharika Texfab LLP", gstin: "24AAWFN4840R1ZC" },
