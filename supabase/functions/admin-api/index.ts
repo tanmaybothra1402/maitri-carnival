@@ -506,7 +506,7 @@ Deno.serve(async (request: Request) => {
       if (!dn) throw new Error("Design number is required");
       const firm = clean(body.firm);
       if (!["Maitri", "Niharika", "Both"].includes(firm)) throw new Error("Firm must be Maitri, Niharika or Both");
-      // Image is owned by the Excel/sheet sync and is not editable here.
+      // Taxonomy only — the image is managed via setProductImage (add/replace/remove).
       const pcsPerSet = Math.round(Number(body.pcsPerSet));
       if (!Number.isFinite(pcsPerSet) || pcsPerSet < 1 || pcsPerSet > 9999) {
         throw new Error("Pcs per set must be between 1 and 9999");
@@ -553,10 +553,22 @@ Deno.serve(async (request: Request) => {
     }
 
     if (action === "setProductImage") {
-      // Attach (or replace) an app-captured photo on an existing design.
+      // Attach / replace / remove a design's photo. Removal is a DISTINCT explicit
+      // intent (clearImage:true), never an empty imageUrl — so a photo can never be
+      // wiped by omission (mirrors saveProductRows' only-set-when-supplied rule).
       const dn = clean(body.designNo);
       if (!dn) throw new Error("Design number is required");
-      const { data, error } = await db.from("designs").update({ image_url: clean(body.imageUrl) })
+      if (body.clearImage === true) {
+        // Deliberate removal. The ImageKit object is left orphaned — we do not delete
+        // from ImageKit here (removing the URL does not free storage).
+        const { data, error } = await db.from("designs").update({ image_url: "" })
+          .eq("design_no", dn).select("design_no,image_url").single();
+        if (error) throw error;
+        return jsonResponse(request, { ok: true, data });
+      }
+      const url = clean(body.imageUrl);
+      if (!url) throw new Error("No image to set — to remove a photo, use Remove");
+      const { data, error } = await db.from("designs").update({ image_url: url })
         .eq("design_no", dn).select("design_no,image_url").single();
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });

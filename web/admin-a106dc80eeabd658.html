@@ -267,6 +267,24 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 .sale-find-card,.sale-builder-card{border-color:#C9DAD6}.sale-search-wrap{position:relative}.sale-search-wrap input{padding-left:40px}.sale-search-icon{left:13px;color:var(--teal-deep)}.selected-customer-card{padding:12px;border:1px solid #C9DAD6;border-radius:var(--r);background:var(--foam)}.selected-customer-copy h2{color:var(--ink)}.sale-firm-switch{position:static}.sale-firm-switch button.active{background:var(--teal-deep);color:#fff}.sale-scan-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.sale-item-card{grid-template-columns:84px minmax(0,1fr);border-radius:var(--r-lg)}.sale-item-card img{width:84px;height:112px;object-fit:cover;object-position:center top;border-radius:var(--r-xs)}.sale-qty-row{display:flex;align-items:center;justify-content:center;gap:8px}.sale-qty-row button,.qty button,.qty-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:#fff;color:var(--teal-deep);font-size:20px;font-weight:800}.sale-qty-row input,.qty input,.qty-input{width:60px!important;height:44px!important;text-align:center;font-size:16px!important;font-weight:800!important}.sale-savebar{position:sticky;bottom:calc(var(--nav-h) + 8px);z-index:20;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.96);box-shadow:var(--sh-pop)}
 /* Product catalogue */
 .product-master-head{gap:12px}.catalogue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.catalogue-card{position:relative;overflow:hidden;padding:0;border:1px solid var(--line);border-radius:var(--r);background:#fff;box-shadow:var(--sh-1)}.catalogue-thumb{display:block;width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;object-position:center top;background:#EEF2F0}.catalogue-design{display:block;overflow:hidden;padding:7px 4px;color:var(--ink);font-size:10px;font-weight:900;text-align:center;text-overflow:ellipsis;white-space:nowrap}.catalogue-state-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border:2px solid #fff;border-radius:50%;background:var(--success);box-shadow:var(--sh-1)}.catalogue-card.inactive .catalogue-state-dot{background:var(--error)}.catalogue-card.inactive{opacity:.65}.catalogue-group-head{margin:16px 0 8px}
+.catalogue-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 2px}
+.pm-missing-chip{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B}
+.pm-missing-chip.on{background:#DC2626;color:#fff;border-color:#DC2626}
+.catalogue-badge-missing{display:none;position:absolute;top:6px;left:6px;z-index:2;padding:2px 6px;border-radius:6px;background:#DC2626;color:#fff;font-size:8px;font-weight:850}
+.catalogue-card.img-missing .catalogue-badge-missing{display:block}
+.catalogue-card.img-missing .catalogue-thumb{background:#FEF2F2}
+.pm-image{display:flex;gap:12px;align-items:flex-start;margin:4px 0 14px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--foam)}
+.pm-image.dragover{outline:2px dashed var(--teal);outline-offset:2px}
+.pm-thumb-wrap{position:relative;width:96px;height:126px;flex:0 0 auto;border-radius:10px;overflow:hidden;background:#EEF2F0;display:grid;place-items:center}
+.pm-thumb-wrap img{width:100%;height:100%;object-fit:cover}
+.pm-thumb-missing{display:none;position:absolute;color:var(--muted);font-size:10px;font-weight:800}
+.pm-thumb-wrap.empty .pm-thumb-missing{display:block}
+.pm-thumb-wrap.empty img{display:none}
+.pm-image-side{min-width:0;flex:1;display:flex;flex-direction:column;gap:8px}
+.pm-image-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pm-image-actions.hidden{display:none}
+.pm-image-hint{color:var(--muted);font-size:10px}
+.pm-image-progress{color:var(--teal-deep);font-size:11px;font-weight:800;min-height:14px}
 /* Team */
 .module-toggle-list{display:grid;gap:8px;margin-top:16px}.module-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff;text-transform:none;letter-spacing:0;cursor:pointer}.module-toggle:hover{background:#F8FBFA}.module-toggle span{display:block;min-width:0}.module-toggle b{display:block;color:var(--ink);font-size:13px}.module-toggle small{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:500;line-height:1.4}.module-toggle input{width:42px;height:24px;flex:0 0 auto;appearance:none;border:0;border-radius:var(--r-pill);background:#CBD5D1;cursor:pointer;position:relative;transition:background 120ms var(--ease)}.module-toggle input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--sh-1);transition:transform 120ms var(--ease)}.module-toggle input:checked{background:var(--teal-deep)}.module-toggle input:checked::after{transform:translateX(18px)}.module-toggle input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}.compact-toggle{margin-top:12px}.team-module-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.team-member-row{text-align:left;width:100%}
 /* Slots */
@@ -486,7 +504,9 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <section class="subpanel" id="products-master"><div class="card product-master-card">
   <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Product Master <span class="scope-note">· all events</span></h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
   <button class="btn small hidden" id="product-new" style="margin-bottom:10px">＋ New product</button>
-  <input id="product-search" placeholder="Search design, category, style or fabric"/><div class="catalogue-groups" id="product-list"></div>
+  <input id="product-search" placeholder="Search design, category, style or fabric"/>
+  <div class="catalogue-tools"><button class="chip" id="pm-check-images" type="button">Check all images</button><button class="chip pm-missing-chip hidden" id="pm-missing-toggle" type="button">⚠ <span id="pm-missing-count">0</span> missing</button></div>
+  <div class="catalogue-groups" id="product-list"></div>
 </div></section>
 <section class="subpanel hidden" id="products-grid"><div class="card">
   <div class="grid-head"><div><span class="section-kicker">Bulk add</span><h1>Add designs</h1><p class="copy">Type rows directly — Tab moves across, Enter starts a new row. A blank row is always waiting at the bottom. Nothing is written until you press Save. New designs have no barcode yet; the next free sticker is <b>MC-0644</b>.</p></div><div class="grid-actions"><button class="btn secondary small" id="grid-add">＋ Row</button><button class="btn small" id="grid-save">Save all</button></div></div>
@@ -660,7 +680,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <button class="btn" id="pc-save" style="width:100%;margin-top:14px">Save product</button>
 <div id="pc-result"></div>
 </div></div>
-<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div class="ta-field"><label>Category</label><input id="pm-category" autocomplete="off"/><div class="map-suggest hidden" id="pm-category-sug"></div></div><div class="ta-field"><label>Style</label><input id="pm-style" autocomplete="off"/><div class="map-suggest hidden" id="pm-style-sug"></div></div><div class="ta-field"><label>Fabric</label><input id="pm-fabric" autocomplete="off"/><div class="map-suggest hidden" id="pm-fabric-sug"></div></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
+<div class="modal" id="product-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="pm-title">Design</h2><p class="copy" id="pm-sub"></p></div><button class="close" data-close="product-modal">✕</button></div><div class="pm-image" id="pm-image"><div class="pm-thumb-wrap" id="pm-thumb-wrap"><img id="pm-thumb" alt=""><span class="pm-thumb-missing" id="pm-thumb-missing">No image</span></div><div class="pm-image-side"><div class="pm-image-actions" id="pm-image-actions"><button class="btn secondary small" id="pm-image-pick" type="button">Replace image</button><button class="btn small danger-outline" id="pm-image-remove" type="button">Remove</button></div><p class="pm-image-hint" id="pm-image-hint">Drag a photo here, or tap Replace.</p><p class="pm-image-progress" id="pm-image-progress"></p><input id="pm-image-file" type="file" accept="image/*" hidden/></div></div><div class="grid2"><div><label>Firm</label><select id="pm-firm"><option>Maitri</option><option>Niharika</option><option>Both</option></select></div><div><label>Pcs per set</label><input id="pm-pcs" min="1" type="number" value="4"/></div><div class="ta-field"><label>Category</label><input id="pm-category" autocomplete="off"/><div class="map-suggest hidden" id="pm-category-sug"></div></div><div class="ta-field"><label>Style</label><input id="pm-style" autocomplete="off"/><div class="map-suggest hidden" id="pm-style-sug"></div></div><div class="ta-field"><label>Fabric</label><input id="pm-fabric" autocomplete="off"/><div class="map-suggest hidden" id="pm-fabric-sug"></div></div><div><label>Status</label><select id="pm-active"><option value="true">Active</option><option value="false">Inactive</option></select></div></div><label>Description</label><textarea id="pm-description"></textarea><p class="copy" id="pm-barcodes"></p><button class="btn" id="pm-save" style="width:100%;margin-top:12px">Save product</button></div></div>
 <div class="modal" id="filter-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="filter-title">Add a filter</h2><p class="copy">Choose a field, then choose a value.</p></div><button class="close" data-close="filter-modal">✕</button></div><div class="grid2" id="filter-fields"></div><div class="list" id="filter-values"></div></div></div>
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
 <div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
@@ -3531,6 +3551,8 @@ function renderGrid() {
       <td class="pg-act"><button class="pg-rowbtn" data-act="dup" title="Duplicate row">⧉</button><button class="pg-rowbtn del" data-act="del" title="Delete row">✕</button></td>
     </tr>`;
   }).join("");
+  // A grid thumbnail that 404s gets the same visible warning (error events don't bubble).
+  $("pgrid-body").querySelectorAll("img.pg-thumb").forEach((img) => { img.onerror = () => { const cell = img.closest("td.pg-img"); if (cell && !cell.querySelector(".pg-imgwarn")) cell.insertAdjacentHTML("beforeend", '<span class="pg-imgwarn" title="Image failed to load — 404">⚠</span>'); img.style.opacity = ".2"; }; });
 }
 $("pgrid-body").oninput = (e) => {
   const tr = e.target.closest("[data-i]"); if (!tr) return;
@@ -3816,22 +3838,59 @@ function attachTaxaTypeahead(input, host, getPool) {
   const input = $(p + "-" + f), host = $(p + "-" + f + "-sug");
   if (input && host) attachTaxaTypeahead(input, host, () => distinctTaxa(f));
 }));
+function productMissing(d) {
+  // A stored URL that 404s is invisible server-side — the browser failing to load it
+  // (pmImgError → st.brokenImages) is the only cheap detector. No URL at all also counts.
+  st.brokenImages = st.brokenImages || new Set();
+  return !d || !d.imageUrl || st.brokenImages.has(d.designNo);
+}
+function pmImgError(img) {
+  st.brokenImages = st.brokenImages || new Set();
+  const card = img.closest(".catalogue-card"); if (card) card.classList.add("img-missing");
+  if (img.dataset && img.dataset.dn) st.brokenImages.add(img.dataset.dn);
+  pmUpdateMissingCount();
+}
+function pmUpdateMissingCount() {
+  const n = (st.designs || []).filter(productMissing).length;
+  const chip = $("pm-missing-toggle"), cnt = $("pm-missing-count");
+  if (cnt) cnt.textContent = n;
+  if (chip) chip.classList.toggle("hidden", n === 0 && !st.showMissingOnly);
+}
 function renderProducts() {
+  st.brokenImages = st.brokenImages || new Set();
   const q = $("product-search").value.trim().toLowerCase(),
     g = $("product-group").value || "category";
-  const rows = st.designs.filter((d) => !q || [d.designNo,d.firm,d.category,d.style,d.fabric,d.description].join(" ").toLowerCase().includes(q));
+  let rows = st.designs.filter((d) => !q || [d.designNo,d.firm,d.category,d.style,d.fabric,d.description].join(" ").toLowerCase().includes(q));
+  if (st.showMissingOnly) rows = rows.filter(productMissing);
   const groups = {};
   rows.forEach((d) => (groups[g ? d[g] || "Not specified" : "All products"] ??= []).push(d));
   $("product-list").innerHTML = Object.entries(groups).sort(([a],[b]) => a.localeCompare(b)).map(([name, items]) => `
     <section class="catalogue-group">
       <div class="catalogue-group-head"><h2>${esc(name)}</h2><span class="badge info">${items.length}</span></div>
       <div class="catalogue-grid">${items.sort((a,b) => String(a.designNo).localeCompare(String(b.designNo))).map(productTile).join("")}</div>
-    </section>`).join("") || '<div class="empty">No products match this search.</div>';
+    </section>`).join("") || (st.showMissingOnly ? '<div class="empty">No designs with a missing image. 🎉</div>' : '<div class="empty">No products match this search.</div>');
+  // error events don't bubble → attach a handler to each thumbnail (fires on a 404).
+  $("product-list").querySelectorAll("img.catalogue-thumb").forEach((img) => { img.onerror = () => pmImgError(img); });
+  pmUpdateMissingCount();
 }
 function productTile(d) {
-  const image = d.imageUrl ? `<img class="catalogue-thumb" src="${esc(ik(d.imageUrl,"w-140,h-140,c-at_max,q-48"))}" alt="${esc(d.designNo)}" loading="lazy">` : '<div class="catalogue-thumb"></div>';
-  return `<button class="catalogue-card ${d.active ? "" : "inactive"}" data-product="${esc(d.designNo)}">${image}<span class="catalogue-state-dot"></span><span class="catalogue-design">${esc(d.designNo)}</span></button>`;
+  const missing = productMissing(d);
+  const load = st.eagerImages ? "eager" : "lazy"; // eager only during an explicit "Check all images" sweep
+  const image = d.imageUrl
+    ? `<img class="catalogue-thumb" data-dn="${esc(d.designNo)}" src="${esc(ik(d.imageUrl,"w-140,h-140,c-at_max,q-48"))}" alt="${esc(d.designNo)}" loading="${load}">`
+    : '<div class="catalogue-thumb"></div>';
+  return `<button class="catalogue-card ${d.active ? "" : "inactive"}${missing ? " img-missing" : ""}" data-product="${esc(d.designNo)}">${image}<span class="catalogue-badge-missing">Image missing</span><span class="catalogue-state-dot"></span><span class="catalogue-design">${esc(d.designNo)}</span></button>`;
 }
+$("pm-check-images").onclick = () => {
+  st.eagerImages = true;
+  renderProducts(); // force every thumbnail to attempt a load; 404s badge themselves red
+  toast("Loading every image — broken ones get a red ‘Image missing’ badge", "success");
+};
+$("pm-missing-toggle").onclick = () => {
+  st.showMissingOnly = !st.showMissingOnly;
+  $("pm-missing-toggle").classList.toggle("on", st.showMissingOnly);
+  renderProducts();
+};
 $("product-search").oninput = renderProducts;
 $("product-group").onchange = renderProducts;
 $("product-list").onclick = (e) => {
@@ -3856,8 +3915,63 @@ async function openProduct(dn) {
     (d.barcodes
       .map((x) => x.barcode + (x.active ? "" : " (inactive)"))
       .join(", ") || "none");
+  // Image management (add / replace / remove). Requires products.create, same as the
+  // upload/sign path; a products.edit-only staffer sees the photo but no controls.
+  const canImage = has("products.create");
+  pmShowThumb(p.imageUrl);
+  $("pm-image-actions").classList.toggle("hidden", !canImage);
+  $("pm-image-hint").style.display = canImage ? "" : "none";
+  $("pm-image-pick").textContent = p.imageUrl ? "Replace image" : "Add image";
+  $("pm-image-remove").classList.toggle("hidden", !p.imageUrl);
+  $("pm-image-progress").textContent = "";
   openModal("product-modal");
 }
+function pmShowThumb(url) {
+  const wrap = $("pm-thumb-wrap"), img = $("pm-thumb");
+  if (url) { wrap.classList.remove("empty"); img.onerror = () => wrap.classList.add("empty"); img.src = ik(url, "w-320,h-420,c-at_max,q-65"); }
+  else { wrap.classList.add("empty"); img.removeAttribute("src"); }
+}
+async function pmUploadImage(file) {
+  const dn = st.editProduct;
+  if (!dn || !file) return;
+  try {
+    $("pm-image-progress").textContent = "Compressing…";
+    const blob = await compressImage(file);
+    $("pm-image-progress").textContent = "Uploading…";
+    const url = await uploadToImageKit(blob, dn); // useUniqueFileName true, no overwrite; STORE the returned URL
+    await admin("setProductImage", { designNo: dn, imageUrl: url });
+    const rec = (st.designs || []).find((x) => x.designNo === dn); if (rec) rec.imageUrl = url;
+    if (st.brokenImages) st.brokenImages.delete(dn);
+    pmShowThumb(url);
+    $("pm-image-remove").classList.remove("hidden");
+    $("pm-image-pick").textContent = "Replace image";
+    $("pm-image-progress").textContent = "";
+    st.cache.designsAt = 0; renderProducts();
+    toast("Image saved", "success");
+  } catch (e) { $("pm-image-progress").textContent = ""; toast(e.message, "error"); }
+}
+$("pm-image-pick").onclick = () => $("pm-image-file").click();
+$("pm-image-file").onchange = (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) pmUploadImage(f); };
+$("pm-image-remove").onclick = async () => {
+  const dn = st.editProduct;
+  if (!dn) return;
+  if (!confirm(`Remove the photo from ${dn}?\n\nThe design keeps all its other details and stays active. The image file is NOT deleted from ImageKit (this does not free storage) — the design simply shows no photo until you add one.`)) return;
+  try {
+    await admin("setProductImage", { designNo: dn, clearImage: true }); // explicit intent, never by omission
+    const rec = (st.designs || []).find((x) => x.designNo === dn); if (rec) rec.imageUrl = "";
+    pmShowThumb("");
+    $("pm-image-remove").classList.add("hidden");
+    $("pm-image-pick").textContent = "Add image";
+    st.cache.designsAt = 0; renderProducts();
+    toast("Image removed", "success");
+  } catch (e) { toast(e.message, "error"); }
+};
+(() => {
+  const zone = $("pm-image");
+  zone.ondragover = (e) => { e.preventDefault(); zone.classList.add("dragover"); };
+  zone.ondragleave = () => zone.classList.remove("dragover");
+  zone.ondrop = (e) => { e.preventDefault(); zone.classList.remove("dragover"); const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f && has("products.create")) pmUploadImage(f); };
+})();
 $("pm-save").onclick = async () => {
   try {
     await admin("updateProduct", {
