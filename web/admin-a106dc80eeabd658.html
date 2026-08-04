@@ -65,6 +65,10 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .scan-exit{position:absolute;left:0;right:0;bottom:0;z-index:4;width:100%;border:0;border-top:1px solid rgba(255,255,255,.14);padding:15px 16px calc(15px + env(safe-area-inset-bottom));background:rgba(17,22,21,.93);color:#fff;font-size:15px;font-weight:850;cursor:pointer}
 .scan-exit.hidden{display:none}
 .scan-exit-count{font-weight:700;opacity:.82}
+.scan-sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;max-height:72%;overflow:auto;padding:16px 16px calc(18px + env(safe-area-inset-bottom));background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -18px 44px rgba(0,0,0,.45)}
+.scan-sheet.hidden{display:none}
+.scan-sheet .sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.scan-sheet h2{font-size:16px}
 .scan-wide-btn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 86px);z-index:3;transform:translateX(-50%);min-height:44px;padding:10px 20px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.32)}
 .scan-wide-btn.on{background:var(--orange);color:#fff}
 .scan-mode-btn{width:auto;padding:0 13px;font-size:11px;font-weight:850}
@@ -491,11 +495,11 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
     <button class="btn ghost small change-customer-btn" id="multi-close">Change</button>
   </div>
   <div class="mc-warn hidden" id="multi-load-warn"></div>
-  <div class="segment sale-firm-switch" id="multi-firms" style="position:static"><button class="active" data-firm="Maitri">Maitri</button><button data-firm="Niharika">Niharika</button></div>
   <div class="sale-scan-block"><label>Scan barcode or type a design number</label><div class="sale-scan-row"><input id="multi-barcode" placeholder="Barcode or design no." autocomplete="off"/><button class="btn" id="multi-add">Add design</button></div><button class="btn secondary sale-camera-btn" id="multi-camera">Use camera scanner</button></div>
   <div class="reader" id="multi-reader"></div>
   <div class="mc-matrix-empty" id="multi-empty">Scan a barcode to add a design. Each design opens a box to set every customer's sets.</div>
   <div class="mc-matrix-wrap" id="multi-matrix"></div>
+  <div class="selected-order-summary" id="multi-subtotals" style="margin-top:12px"></div>
   <div class="sale-savebar"><button class="btn" id="multi-save">Review &amp; save</button></div>
 </section>
 </main>
@@ -648,8 +652,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
-<div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><img id="multi-popup-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
-<div class="modal" id="sale-scan-popup"><div class="sheet"><div class="sheet-head"><img id="ssp-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="ssp-title">Design</h2><p class="copy" id="ssp-sub"></p></div><button class="close" data-close="sale-scan-popup">✕</button></div><div class="ssp-qty-row"><span class="ssp-qty-label">Sets</span><div class="ssp-stepper"><button type="button" id="ssp-minus" aria-label="Fewer sets">−</button><input id="ssp-qty" type="number" min="1" max="9999" value="1" aria-label="Sets"><button type="button" id="ssp-plus" aria-label="More sets">+</button></div></div><div class="mc-note-wrap"><textarea class="mc-note" id="ssp-note" maxlength="500" rows="1" placeholder="Note (optional)" aria-label="Note"></textarea><span class="mc-note-count" id="ssp-note-count">0/500</span></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" data-close="sale-scan-popup" style="flex:1">Cancel</button><button class="btn" id="ssp-save" style="flex:1">Save</button></div></div></div>
+<div class="modal" id="multi-popup"><div class="sheet" id="multi-sheet"><div class="sheet-head"><img id="multi-popup-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" id="multi-sheet-close" aria-label="Skip">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Add to order</button></div></div></div>
 <div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
 <div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-error hidden" id="scan-error"></div>
 <div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div>
@@ -659,6 +662,8 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div>
 <button class="scan-wide-btn" id="scan-wide">Wide barcode</button>
 <button class="scan-exit" id="scan-exit" type="button">Go to order<span class="scan-exit-count" id="scan-exit-count"></span> ›</button>
+<div class="scan-sheet hidden" id="scan-sheet"><div class="sheet-head"><img id="ssp-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="ssp-title">Design</h2><p class="copy" id="ssp-sub"></p></div></div><div class="ssp-qty-row"><span class="ssp-qty-label">Sets</span><div class="ssp-stepper"><button type="button" id="ssp-minus" aria-label="Fewer sets">−</button><input id="ssp-qty" type="number" min="1" max="9999" value="1" aria-label="Sets"><button type="button" id="ssp-plus" aria-label="More sets">+</button></div></div><div class="mc-note-wrap"><textarea class="mc-note" id="ssp-note" maxlength="500" rows="1" placeholder="Note (optional)" aria-label="Note"></textarea><span class="mc-note-count" id="ssp-note-count">0/500</span></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="ssp-skip" style="flex:1">Skip</button><button class="btn" id="ssp-save" style="flex:1">Add to order</button></div></div>
+<div class="scan-sheet hidden" id="scan-sheet-mc"></div>
 <div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
 <div class="modal" id="product-create-modal"><div class="sheet"><div class="sheet-head"><div><h2>New product</h2><p class="copy">Add a design to the catalogue. A photo is optional — you can attach one later.</p></div><button class="close" data-close="product-create-modal">✕</button></div>
 <div class="grid2">
@@ -2190,6 +2195,7 @@ function hydrate(i) {
   };
 }
 async function openSaleCustomer(c) {
+  if (multiHoldsCustomer(c.id)) { toast(`${c.companyName} is already open in Multi-customer ordering. Save or close that order first.`, "error"); return; }
   st.sale.customer = c;
   st.sale.firm = "Maitri";
   st.sale.carts = { Maitri: [], Niharika: [] };
@@ -2222,6 +2228,21 @@ async function openSaleCustomer(c) {
 }
 function saleCart() {
   return st.sale.carts[st.sale.firm];
+}
+// ---- PART D: cross-flow same-customer guard (client-side, same session only) ----
+// A customer open with unsaved edits in one flow cannot be opened in the other —
+// an empty-looking order that is actually full is how goods get ordered twice.
+// Released automatically on save (dirty/changes clear) or close. NO server lock.
+function saleHasUnsaved() {
+  return ["Maitri", "Niharika"].some((f) => (st.sale.carts?.[f] || []).some((it) => it._dirty));
+}
+function singleHoldsCustomer(id) {
+  return !!(st.sale && st.sale.customer && st.sale.customer.id === id && saleHasUnsaved());
+}
+function multiHoldsCustomer(id) {
+  if (!(st.multi && st.multi.building && st.multi.customers.some((c) => c.id === id))) return false;
+  const t = (mcTotals() || {})[id];
+  return !!(t && mcHasChanges(t));
 }
 function saleDeleted() {
   return st.sale.deleted[st.sale.firm];
@@ -2545,7 +2566,10 @@ $("multi-results").onclick = (e) => {
   const c = JSON.parse(b.dataset.mcCustomer);
   const i = st.multi.customers.findIndex((x) => x.id === c.id);
   if (i >= 0) st.multi.customers.splice(i, 1);
-  else st.multi.customers.push({ ...c });
+  else {
+    if (singleHoldsCustomer(c.id)) { toast(`${c.companyName} is already open in Sale Order. Save or close that order first.`, "error"); return; }
+    st.multi.customers.push({ ...c });
+  }
   st.multi.customers.forEach((x, idx) => (x.colorIdx = idx));
   const sel = mcSelected(c.id);
   b.classList.toggle("mc-selected", sel);
@@ -2570,35 +2594,45 @@ $("multi-start").onclick = async () => {
   if (!st.multi.customers.length) return;
   st.multi.building = true;
   st.scanMode = "popup"; // multi also opens in one-by-one every time
-  st.multi.firm = "Maitri";
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
   st.multi.existing = {};
   st.multi.existingNote = {};
   st.multi.loadFailed = new Set();
   updateSaleMode();
-  document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x.dataset.firm === "Maitri"));
   $("multi-party").textContent = `${st.multi.customers.length} customer${st.multi.customers.length === 1 ? "" : "s"}`;
   $("multi-builder-chips").innerHTML = st.multi.customers.map((c) => `<span class="mc-chip" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</span>`).join("");
   mcRenderMatrix();
-  // Preload each customer's current order so the popup shows what they already
-  // have — a salesperson must see an existing 10 before typing a new total.
+  // Preload each customer's current order (BOTH firms) so their existing lines show
+  // in the matrix with current quantities and notes — never blank an order that is
+  // actually full. A failed load is flagged loudly, never rendered as empty.
   try {
     loading(true, "Loading current orders…");
     const loaded = await Promise.all(st.multi.customers.map((c) =>
       admin("getCustomerOrders", { customerId: c.id }).then((d) => ({ id: c.id, d })).catch(() => ({ id: c.id, d: null }))));
     loaded.forEach(({ id, d }) => {
-      // A failed load must NOT be recorded as {} — that reads as "not ordered" and
-      // would let a salesperson overwrite an existing order blind. Track it instead.
       if (!d) { st.multi.loadFailed.add(id); return; }
       const map = {}, notes = {};
-      (d.orders || []).forEach((o) => (o.items || []).forEach((it) => { map[it.designNo] = Number(it.qty) || 0; if (it.note) notes[it.designNo] = String(it.note); }));
+      (d.orders || []).forEach((o) => (o.items || []).forEach((it) => {
+        map[it.designNo] = Number(it.qty) || 0;
+        if (it.note) notes[it.designNo] = String(it.note);
+        // PART C: seed a matrix row (in the order's firm) prefilled per customer.
+        const firm = o.firm === "Niharika" ? "Niharika" : "Maitri";
+        let row = st.multi.rows[firm].find((x) => x.designNo === it.designNo);
+        if (!row) {
+          row = { barcode: it.barcode, designNo: it.designNo, category: it.category, style: it.style, fabric: it.fabric, pcsPerSet: it.pcsPerSet, description: it.description, imageUrl: it.imageUrl || (it.designs && it.designs.image_url) || "", isBoth: ((st.designs || []).find((x) => x.designNo === it.designNo) || {}).firm === "Both", qty: {}, notes: {} };
+          st.multi.rows[firm].push(row);
+        }
+        row.qty[id] = Number(it.qty) || 0; // current qty — shows as "same" until edited, so no spurious write
+        if (it.note) (row.notes ||= {})[id] = String(it.note);
+      }));
       st.multi.existing[id] = map;
       (st.multi.existingNote ||= {})[id] = notes;
     });
   } finally {
     loading(false);
   }
+  mcRenderMatrix(); // now render the seeded existing lines
   mcRenderLoadWarn();
   setTimeout(() => $("multi-barcode").focus(), 80);
 };
@@ -2621,32 +2655,32 @@ $("multi-close").onclick = () => {
   updateSaleMode();
   mcSearch();
 };
-$("multi-firms").onclick = (e) => {
-  const b = e.target.closest("[data-firm]");
-  if (!b) return;
-  st.multi.firm = b.dataset.firm;
-  document.querySelectorAll("#multi-firms button").forEach((x) => x.classList.toggle("active", x === b));
-  mcRenderMatrix();
-};
-async function mcAdd(raw) {
+// Combined entry (mirrors single sale): no firm toggle. Route each design to its
+// OWN firm; a design already placed (incl. a Both flipped to the other firm) stays.
+function mcFirmOf(designNo) {
+  if ((st.multi.rows.Maitri || []).some((x) => x.designNo === designNo)) return "Maitri";
+  if ((st.multi.rows.Niharika || []).some((x) => x.designNo === designNo)) return "Niharika";
+  return null;
+}
+async function mcAdd(raw, inScanner) {
   try {
     const d = await resolveEntry(raw);
-    if (!d) return;
-    if (![st.multi.firm, "Both"].includes(d.firm))
-      throw Error(firmMismatch(d.designNo, d.firm, st.multi.firm));
-    const rows = st.multi.rows[st.multi.firm];
-    if (!rows.find((x) => x.designNo === d.designNo))
-      rows.push({ barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, qty: {} });
+    if (!d) return false;
+    let firm = mcFirmOf(d.designNo) || saleFirmFor(d); // keep an existing placement (Both may be flipped)
+    if (!st.multi.rows[firm].find((x) => x.designNo === d.designNo))
+      st.multi.rows[firm].push({ barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, isBoth: d.firm === "Both", qty: {} });
     $("multi-barcode").value = "";
-    mcOpenPopup(st.multi.firm, d.designNo);
+    mcOpenPopup(firm, d.designNo, inScanner);
+    return true;
   } catch (e) {
     toast(e.message, "error");
+    return false;
   }
 }
-$("multi-add").onclick = () => mcAdd($("multi-barcode").value);
-$("multi-barcode").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); mcAdd(e.target.value); } };
+$("multi-add").onclick = () => mcAdd($("multi-barcode").value, false);
+$("multi-barcode").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); mcAdd(e.target.value, false); } };
 $("multi-camera").onclick = () => startScanner("multi").catch((e) => toast(e.message, "error"));
-function mcOpenPopup(firm, designNo) {
+function mcOpenPopup(firm, designNo, inScanner) {
   const row = (st.multi.rows[firm] || []).find((x) => x.designNo === designNo);
   if (!row) return;
   st.multi.popupDesign = { firm, designNo };
@@ -2663,7 +2697,24 @@ function mcOpenPopup(firm, designNo) {
     }).catch(() => {});
   }
   mcRenderPopupList();
-  openModal("multi-popup");
+  // The SAME sheet node mounts in the scanner overlay (scan) or its page modal
+  // (matrix tap) — the shared-component trap: two callers, one sheet, no duplicate ids.
+  const sheet = $("multi-sheet");
+  if (inScanner) { $("scan-sheet-mc").appendChild(sheet); $("scan-sheet-mc").classList.remove("hidden"); }
+  else { $("multi-popup").appendChild(sheet); openModal("multi-popup"); }
+}
+function mcSheetClose() {
+  // One close path wherever the sheet is mounted. From the scanner: hide, move the
+  // sheet home, resume decode. From the matrix: close the modal.
+  st.multi.popupDesign = null;
+  const parent = $("multi-sheet").parentElement;
+  if (parent && parent.id === "scan-sheet-mc") {
+    $("scan-sheet-mc").classList.add("hidden");
+    $("multi-popup").appendChild($("multi-sheet"));
+    if (st.scanPaused && st.scanner) { try { st.scanner.resume(); } catch {} st.scanPaused = false; scanResetIdle(); }
+  } else {
+    closeModal("multi-popup");
+  }
 }
 function mcRenderPopupList() {
   const pd = st.multi.popupDesign;
@@ -2759,8 +2810,7 @@ $("multi-popup-add").onclick = () => {
     const hasDel = row.del && Object.keys(row.del).some((id) => row.del[id]);
     if (!hasQty && !hasDel) rows.splice(rows.indexOf(row), 1);
   }
-  st.multi.popupDesign = null;
-  closeModal("multi-popup");
+  mcSheetClose(); // shared close: resumes decode when mounted in the scanner overlay
   mcRenderMatrix();
 };
 $("multi-popup-remove").onclick = () => {
@@ -2777,38 +2827,65 @@ $("multi-popup-remove").onclick = () => {
     st.multi.customers.forEach((c) => { if (mcExisting(c.id, pd.designNo) > 0) row.del[c.id] = true; });
     if (!Object.keys(row.del).length) rows.splice(rows.indexOf(row), 1);
   }
-  st.multi.popupDesign = null;
-  closeModal("multi-popup");
+  mcSheetClose(); // shared close: resumes decode when mounted in the scanner overlay
   mcRenderMatrix();
 };
+$("multi-sheet-close").onclick = () => mcSheetClose(); // ✕ = Skip: nothing committed, decode resumes
 function mcRenderMatrix() {
-  const rows = st.multi.rows[st.multi.firm] || [];
-  $("multi-empty").classList.toggle("hidden", rows.length > 0);
+  // Combined: every design from BOTH firms in one matrix, each tagged with its firm.
+  const flat = ["Maitri", "Niharika"].flatMap((firm) => (st.multi.rows[firm] || []).map((row) => ({ firm, row })));
+  $("multi-empty").classList.toggle("hidden", flat.length > 0);
   const wrap = $("multi-matrix");
-  if (!rows.length) { wrap.innerHTML = ""; mcUpdateSaveBtn(); return; }
+  if (!flat.length) { wrap.innerHTML = ""; mcUpdateSaveBtn(); mcRenderSubtotals(); return; }
   const head = `<tr><th class="mx-corner">Design</th>${st.multi.customers.map((c) => `<th class="mx-cust" style="background:${mcColor(c.colorIdx)}">${esc(c.companyName)}</th>`).join("")}</tr>`;
-  const body = rows.map((row) => {
+  const body = flat.map(({ firm, row }) => {
     const cells = st.multi.customers.map((c) => {
       const cur = mcExisting(c.id, row.designNo);
-      // A pending removal (only meaningful when they actually have the line).
       if (row.del && row.del[c.id] && cur > 0)
-        return `<td class="mx-cell mx-remove" data-mc-open="${esc(row.designNo)}" title="removing (was ${cur})">✕</td>`;
+        return `<td class="mx-cell mx-remove" data-mc-open="${esc(row.designNo)}" data-firm="${firm}" title="removing (was ${cur})">✕</td>`;
       const q = Number(row.qty[c.id] || 0);
-      // zero = nothing; same = already had this qty (won't be re-written);
-      // mx-changed = a real edit that will be saved.
       const cls = q === 0 ? "zero" : q === cur ? "same" : "mx-changed";
-      return `<td class="mx-cell ${cls}" data-mc-open="${esc(row.designNo)}" title="${cur ? "was " + cur : "new"}">${q || "–"}</td>`;
+      return `<td class="mx-cell ${cls}" data-mc-open="${esc(row.designNo)}" data-firm="${firm}" title="${cur ? "was " + cur : "new"}">${q || "–"}</td>`;
     }).join("");
-    return `<tr><th class="mx-design" data-mc-open="${esc(row.designNo)}"><b>${esc(row.designNo)}</b><span>${esc([row.category, row.style].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`)}</span></th>${cells}</tr>`;
+    const badge = row.isBoth
+      ? `<span class="firm-badge both"><button data-mc-firm="Maitri" data-dn="${esc(row.designNo)}" class="${firm === "Maitri" ? "on" : ""}" title="Maitri">M</button><button data-mc-firm="Niharika" data-dn="${esc(row.designNo)}" class="${firm === "Niharika" ? "on" : ""}" title="Niharika">N</button></span>`
+      : `<span class="firm-badge ${firm.toLowerCase()}">${firm === "Maitri" ? "M" : "N"}</span>`;
+    return `<tr><th class="mx-design" data-mc-open="${esc(row.designNo)}" data-firm="${firm}"><b>${esc(row.designNo)}</b> ${badge}<span>${esc([row.category, row.style].filter(Boolean).join(" · ") || `${row.pcsPerSet} pcs/set`)}</span></th>${cells}</tr>`;
   }).join("");
   wrap.innerHTML = `<table class="mc-matrix"><thead>${head}</thead><tbody>${body}</tbody></table>`;
   mcUpdateSaveBtn();
+  mcRenderSubtotals();
+}
+function mcRenderSubtotals() {
+  const el = $("multi-subtotals");
+  if (!el) return;
+  const per = { Maitri: { d: 0, s: 0 }, Niharika: { d: 0, s: 0 } };
+  ["Maitri", "Niharika"].forEach((firm) => (st.multi.rows[firm] || []).forEach((row) => {
+    const sets = st.multi.customers.reduce((a, c) => a + Number(row.qty[c.id] || 0), 0);
+    per[firm].d++; per[firm].s += sets;
+  }));
+  const tD = per.Maitri.d + per.Niharika.d, tS = per.Maitri.s + per.Niharika.s;
+  el.innerHTML =
+    `<span>Maitri · ${per.Maitri.d} design${per.Maitri.d === 1 ? "" : "s"} · ${per.Maitri.s} set${per.Maitri.s === 1 ? "" : "s"}</span>` +
+    `<span>Niharika · ${per.Niharika.d} design${per.Niharika.d === 1 ? "" : "s"} · ${per.Niharika.s} set${per.Niharika.s === 1 ? "" : "s"}</span>` +
+    `<span>Total · ${tD} design${tD === 1 ? "" : "s"} · ${tS} set${tS === 1 ? "" : "s"}</span>`;
 }
 $("multi-matrix").onclick = (e) => {
+  const flip = e.target.closest("[data-mc-firm]");
+  if (flip) { mcFlipFirm(flip.dataset.dn, flip.dataset.mcFirm); return; } // Both design: move firm
   const cell = e.target.closest("[data-mc-open]");
   if (!cell) return;
-  mcOpenPopup(st.multi.firm, cell.dataset.mcOpen); // editing a cell REOPENS the popup
+  mcOpenPopup(cell.dataset.firm, cell.dataset.mcOpen, false); // matrix tap → page modal, not the scanner
 };
+function mcFlipFirm(designNo, toFirm) {
+  const fromFirm = mcFirmOf(designNo);
+  if (!fromFirm || fromFirm === toFirm) return;
+  const arr = st.multi.rows[fromFirm], i = arr.findIndex((x) => x.designNo === designNo);
+  if (i < 0) return;
+  const [row] = arr.splice(i, 1);
+  st.multi.rows[toFirm].push(row); // move with qty/notes/del intact
+  mcRenderMatrix();
+}
 function mcTotals() {
   // Counts CHANGES only (qty>0 and different from the loaded current order, plus
   // pending removals of lines they actually have), so the summary and Save button
@@ -3073,28 +3150,29 @@ async function saleBatchAdd(text) {
   const firm = saleFirmFor(d);
   st.sale.deleted[firm].delete(d.designNo);
   const existing = st.sale.carts.Maitri.concat(st.sale.carts.Niharika).find((x) => x.designNo === d.designNo);
-  if (existing) { existing.qty = Math.min(9999, (Number(existing.qty) || 0) + 1); existing._dirty = true; renderSale(); return { designNo: d.designNo, action: "incremented" }; }
+  if (existing) { existing.qty = Math.min(9999, (Number(existing.qty) || 0) + 1); existing._dirty = true; renderSale(); return { designNo: d.designNo, action: "incremented", firm: saleIsBoth(d.designNo) ? saleFirmFor(d) : firm }; }
   st.sale.carts[firm].push({ barcode: d.barcode, designNo: d.designNo, imageUrl: d.imageUrl, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, note: "", qty: 1, _dirty: true, _serverExists: false });
   renderSale();
-  return { designNo: d.designNo, action: "added" };
+  return { designNo: d.designNo, action: "added", firm };
 }
 async function mcBatchAdd(text) {
   const d = await resolveEntry(text);
   if (!d) return null;
-  if (![st.multi.firm, "Both"].includes(d.firm)) throw Error(firmMismatch(d.designNo, d.firm, st.multi.firm));
-  const rows = st.multi.rows[st.multi.firm];
+  // Combined: route each design to its own firm (Both → Maitri, flip in the matrix).
+  const firm = mcFirmOf(d.designNo) || saleFirmFor(d);
+  const rows = st.multi.rows[firm];
   if (rows.find((x) => x.designNo === d.designNo)) {
     // Multi qty is inherently per-customer: a rescan is a NO-OP, not a bulk +1 across
     // everyone. Silently changing N customers' quantities on a stray second pass is
     // exactly the quiet data error the order-save arc closed.
     toast(`${d.designNo} already added for all ${st.multi.customers.length} — set quantities in the matrix`, "error");
-    return { designNo: d.designNo, action: "noop" };
+    return { designNo: d.designNo, action: "noop", firm };
   }
-  const row = { barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, qty: {} };
+  const row = { barcode: d.barcode, designNo: d.designNo, category: d.category, style: d.style, fabric: d.fabric, pcsPerSet: d.pcsPerSet, description: d.description, imageUrl: d.imageUrl, isBoth: d.firm === "Both", qty: {} };
   st.multi.customers.forEach((c) => { row.qty[c.id] = 1; });
   rows.push(row);
   mcRenderMatrix();
-  return { designNo: d.designNo, action: "added" };
+  return { designNo: d.designNo, action: "added", firm };
 }
 function scanUndo() {
   const b = st.scanBatch;
@@ -3266,8 +3344,8 @@ async function onScanned(target, text, res) {
     scanResetIdle(); // paused → clears the idle timer so it can't fire under the sheet
     if (target === "multi") {
       navigator.vibrate?.(70); beep(); // multi is unchanged in shape: decode feedback here
-      try { await mcAdd(text); } catch {}
-      if (!$("multi-popup").classList.contains("open")) scanResumeAfterSheet();
+      const opened = await mcAdd(text, true); // renders the per-customer sheet INSIDE the scanner
+      if (!opened) scanResumeAfterSheet();
     } else {
       // Single sale: the per-scan sheet. Beep/vibrate happens on SAVE (the commit).
       const opened = await saleOpenScanSheet(text);
@@ -3280,7 +3358,7 @@ async function onScanned(target, text, res) {
   try {
     const r = target === "multi" ? await mcBatchAdd(text) : await saleBatchAdd(text);
     if (r && r.action !== "noop") {
-      (st.scanBatch.undo ||= []).push({ target, designNo: r.designNo, action: r.action, firm: target === "multi" ? st.multi.firm : st.sale.firm });
+      (st.scanBatch.undo ||= []).push({ target, designNo: r.designNo, action: r.action, firm: r.firm });
       st.scanBatch.count++;
       st.scanBatch.last = r.designNo;
       scanUpdateBatchUI();
@@ -3308,7 +3386,7 @@ async function saleOpenScanSheet(raw) {
     const note = existing ? (existing.note || "") : "";
     $("ssp-note").value = note;
     $("ssp-note-count").textContent = `${note.length}/500`;
-    openModal("sale-scan-popup");
+    $("scan-sheet").classList.remove("hidden"); // slides up OVER the live camera — video never unmounts
     return true;
   } catch (e) {
     toast(e.message, "error");
@@ -3339,10 +3417,18 @@ $("ssp-save").onclick = () => {
   st.scanBatch = st.scanBatch || { count: 0, last: "", undo: [] };
   st.scanBatch.count++; st.scanBatch.last = s.designNo;
   scanUpdateExitBtn();
-  closeModal("sale-scan-popup"); // choke point resumes the camera — never resume on Save alone
+  scanSheetClose(); // shared close path resumes decode — never resume on the button alone
   renderSale();
   toast("Design added", "success");
 };
+$("ssp-skip").onclick = () => scanSheetClose(); // "Skip" adds nothing; never the word "Cancel"
+function scanSheetClose() {
+  // The one close path for the in-scanner single sheet. Add-to-order AND Skip both
+  // route here; every dismissal hides the sheet and resumes the still-mounted camera.
+  $("scan-sheet").classList.add("hidden");
+  st.sale.scanSheet = null;
+  if (st.scanPaused && st.scanner) { try { st.scanner.resume(); } catch {} st.scanPaused = false; scanResetIdle(); }
+}
 function afterLayout() {
   // Two rAF: the modal switched display:none→block this frame; the first frame
   // applies the style, the second lets layout settle so the reader has real size
@@ -5765,11 +5851,10 @@ function openModal(id) {
 }
 function closeModal(id) {
   $(id).classList.remove("open");
-  if (id === "sale-scan-popup") st.sale.scanSheet = null; // Save OR Cancel both land here
-  // One-by-one pauses the live camera while a per-scan sheet is up. Resume on EVERY
-  // close path (Save / Cancel / X / backdrop all route through here) — never on a
-  // single button. A missed resume leaves a live camera and a dead scanner.
-  if ((id === "multi-popup" || id === "sale-scan-popup") && st.scanPaused && st.scanner) {
+  // The in-scanner sheets (single #scan-sheet, multi #scan-sheet-mc) resume through
+  // their own close paths (scanSheetClose / mcSheetClose). This only covers the
+  // multi sheet dismissed from its page-modal home while a camera happens to be up.
+  if (id === "multi-popup" && st.scanPaused && st.scanner) {
     try { st.scanner.resume(); } catch {}
     st.scanPaused = false;
     scanResetIdle();
