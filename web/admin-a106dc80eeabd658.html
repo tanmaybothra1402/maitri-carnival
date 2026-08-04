@@ -55,11 +55,20 @@ nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(va
 .scan-title{flex:1;min-width:0;color:#fff;font-size:13px;font-weight:800;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .scan-btn{width:44px;height:44px;flex:0 0 auto;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
 .scan-btn.on{background:var(--orange);color:#fff}
-.scan-hint{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 62px);z-index:2;text-align:center;color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.7);padding:0 22px}
-.scan-wide-btn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);z-index:2;transform:translateX(-50%);min-height:44px;padding:10px 20px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.32)}
+.scan-hint{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 132px);z-index:2;text-align:center;color:#fff;font-size:12px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.7);padding:0 22px}
+.scan-modebar{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 60px);z-index:2;transform:translateX(-50%);display:flex;border-radius:999px;overflow:hidden;background:rgba(0,0,0,.5);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.scan-modebar.hidden{display:none}
+.scan-seg{border:0;background:transparent;color:#fff;font-size:12px;font-weight:850;padding:9px 17px;min-height:40px;cursor:pointer}
+.scan-seg.on{background:#fff;color:var(--deep)}
+.scan-mode-hint{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 106px);z-index:2;text-align:center;color:#ffd66b;font-size:11px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.75);padding:0 22px}
+.scan-mode-hint.hidden{display:none}
+.scan-exit{position:absolute;left:0;right:0;bottom:0;z-index:4;width:100%;border:0;border-top:1px solid rgba(255,255,255,.14);padding:15px 16px calc(15px + env(safe-area-inset-bottom));background:rgba(17,22,21,.93);color:#fff;font-size:15px;font-weight:850;cursor:pointer}
+.scan-exit.hidden{display:none}
+.scan-exit-count{font-weight:700;opacity:.82}
+.scan-wide-btn{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 86px);z-index:3;transform:translateX(-50%);min-height:44px;padding:10px 20px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.32)}
 .scan-wide-btn.on{background:var(--orange);color:#fff}
 .scan-mode-btn{width:auto;padding:0 13px;font-size:11px;font-weight:850}
-.scan-batch{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 74px);z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:11px;padding:8px 9px 8px 15px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12.5px;font-weight:800;white-space:nowrap}
+.scan-batch{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 140px);z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:11px;padding:8px 9px 8px 15px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12.5px;font-weight:800;white-space:nowrap}
 .scan-undo{border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--deep);font-size:11px;font-weight:850;padding:6px 13px;cursor:pointer}
 .scan-idle{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(11,15,14,.84);cursor:pointer}
 .scan-idle-card{color:#fff;font-size:17px;font-weight:850;text-align:center;line-height:1.55}
@@ -339,6 +348,13 @@ table.mc-matrix tbody tr:hover td{background:#F8FBFA}
 .mc-note-wrap{position:relative;margin-top:6px}
 .mc-note{width:100%;min-height:32px;max-height:90px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;line-height:1.35;resize:vertical;color:var(--ink)}
 .mc-note-count{position:absolute;right:7px;bottom:5px;font-size:8.5px;color:var(--muted);pointer-events:none}
+.ssp-qty-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding:9px 11px;border-radius:11px;background:var(--foam)}
+.ssp-qty-label{color:var(--slate);font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}
+.ssp-stepper{display:flex;align-items:center;gap:8px}
+.ssp-stepper button{width:44px;height:44px;flex:0 0 auto;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--teal-deep);font-size:20px;font-weight:850;cursor:pointer}
+.ssp-stepper input{width:68px;height:44px;text-align:center;font-size:17px;font-weight:850;border:1px solid var(--line);border-radius:10px}
+@keyframes savePulse{0%,100%{box-shadow:0 0 0 0 rgba(43,115,121,.45)}50%{box-shadow:0 0 0 7px rgba(43,115,121,0)}}
+#sale-save.attention,#multi-save.attention{animation:savePulse 1.5s ease-out infinite}
 .firm-badge{display:inline-flex;align-items:center;vertical-align:middle;margin-left:6px;padding:2px 7px;border-radius:999px;font-size:8.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
 .firm-badge.maitri{background:rgba(43,115,121,.14);color:var(--teal-deep)}
 .firm-badge.niharika{background:rgba(230,0,126,.12);color:#B0136A}
@@ -613,8 +629,17 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
 <div class="modal" id="previous-modal"><div class="sheet"><div class="sheet-head"><div><h2>Previous Orders</h2><p class="copy">Select an order to load it into Sale Order.</p></div><button class="close" data-close="previous-modal">✕</button></div><input id="previous-search" placeholder="Search customer"/><div class="list" id="previous-list"></div></div></div>
 <div class="modal" id="multi-popup"><div class="sheet"><div class="sheet-head"><img id="multi-popup-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="multi-popup-title">Design</h2><p class="copy" id="multi-popup-sub"></p></div><button class="close" data-close="multi-popup">✕</button></div><p class="copy mc-popup-hint">Set sets for each customer. Leave 0 to skip that customer.</p><div class="mc-popup-list" id="multi-popup-list"></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" id="multi-popup-remove">Remove design</button><button class="btn" id="multi-popup-add" style="flex:1">Done</button></div></div></div>
+<div class="modal" id="sale-scan-popup"><div class="sheet"><div class="sheet-head"><img id="ssp-thumb" class="mc-popup-thumb hidden" alt=""/><div><h2 id="ssp-title">Design</h2><p class="copy" id="ssp-sub"></p></div><button class="close" data-close="sale-scan-popup">✕</button></div><div class="ssp-qty-row"><span class="ssp-qty-label">Sets</span><div class="ssp-stepper"><button type="button" id="ssp-minus" aria-label="Fewer sets">−</button><input id="ssp-qty" type="number" min="1" max="9999" value="1" aria-label="Sets"><button type="button" id="ssp-plus" aria-label="More sets">+</button></div></div><div class="mc-note-wrap"><textarea class="mc-note" id="ssp-note" maxlength="500" rows="1" placeholder="Note (optional)" aria-label="Note"></textarea><span class="mc-note-count" id="ssp-note-count">0/500</span></div><div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary" data-close="sale-scan-popup" style="flex:1">Cancel</button><button class="btn" id="ssp-save" style="flex:1">Save</button></div></div></div>
 <div class="modal" id="multi-confirm"><div class="sheet"><div class="sheet-head"><div><h2 id="multi-confirm-title">Confirm order</h2><p class="copy" id="multi-confirm-sub"></p></div><button class="close" data-close="multi-confirm">✕</button></div><div class="mc-summary" id="multi-confirm-list"></div><button class="btn" id="multi-confirm-save" style="width:100%;margin-top:12px">Save all orders</button></div></div>
-<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-error hidden" id="scan-error"></div><div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><button class="scan-btn scan-mode-btn" id="scan-mode">Batch</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div><div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div><div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div><button class="scan-wide-btn" id="scan-wide">Wide barcode</button><div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
+<div class="scan-modal" id="scan-modal"><div class="scan-reader" id="scan-reader"></div><div class="scan-error hidden" id="scan-error"></div>
+<div class="scan-topbar"><button class="scan-btn" id="scan-close" aria-label="Close scanner">✕</button><span class="scan-title" id="scan-title">Scan a barcode</span><button class="scan-btn hidden" id="scan-torch" aria-label="Torch">🔦</button></div>
+<div class="scan-modebar" id="scan-mode"><button class="scan-seg" data-mode="popup" type="button">One by one</button><button class="scan-seg" data-mode="batch" type="button">Bulk upload</button></div>
+<div class="scan-mode-hint" id="scan-mode-hint">Adding many? Tap Bulk upload</div>
+<div class="scan-hint">Hold a sticker about 10 cm away, inside the box</div>
+<div class="scan-batch hidden" id="scan-batch"><span id="scan-batch-info">0 added</span><button class="scan-undo" id="scan-undo">Undo</button></div>
+<button class="scan-wide-btn" id="scan-wide">Wide barcode</button>
+<button class="scan-exit" id="scan-exit" type="button">Go to order<span class="scan-exit-count" id="scan-exit-count"></span> ›</button>
+<div class="scan-idle hidden" id="scan-idle"><div class="scan-idle-card">Scanner paused<br><span>Tap to resume</span></div></div></div>
 <div class="modal" id="product-create-modal"><div class="sheet"><div class="sheet-head"><div><h2>New product</h2><p class="copy">Add a design to the catalogue. A photo is optional — you can attach one later.</p></div><button class="close" data-close="product-create-modal">✕</button></div>
 <div class="grid2">
   <div><label>Design number</label><input id="pc-design" autocomplete="off"/><div class="pc-dup hidden" id="pc-dup"></div></div>
@@ -2150,6 +2175,8 @@ async function openSaleCustomer(c) {
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
   st.sale.reqIds = {}; // per-firm save request ids, generated up front + reused on retry
+  st.sale.scanSheet = null;
+  st.scanMode = "popup"; // every new sale order opens in one-by-one, whatever was last used
   $("sale-find-card").classList.add("hidden");
   $("sale-results").innerHTML = "";
   $("sale-builder").classList.remove("hidden");
@@ -2212,6 +2239,11 @@ function renderSale() {
   $("sale-cart").className = "sale-cart-list";
   const rows = ["Maitri", "Niharika"].flatMap((f) => st.sale.carts[f].map((it, i) => saleRowHtml(f, it, i)));
   $("sale-cart").innerHTML = rows.length ? rows.join("") : '<div class="sale-empty"><div class="sale-empty-icon">＋</div><b>No designs added yet</b><span>Scan or type a design number — each design lands under its own firm.</span></div>';
+  // Unsaved lines (e.g. just scanned in the camera) must demand a Save — closing the
+  // camera does NOT save. Save order is the only thing that commits.
+  const dirty = ["Maitri", "Niharika"].some((f) => st.sale.carts[f].some((it) => it._dirty));
+  const sb = $("sale-save");
+  if (sb) { sb.classList.toggle("attention", dirty); sb.textContent = dirty ? "Save order — unsaved" : "Save order"; }
 }
 $("sale-firms").onclick = (e) => {
   const b = e.target.closest("[data-firm]");
@@ -2517,6 +2549,7 @@ $("multi-selected").onclick = (e) => {
 $("multi-start").onclick = async () => {
   if (!st.multi.customers.length) return;
   st.multi.building = true;
+  st.scanMode = "popup"; // multi also opens in one-by-one every time
   st.multi.firm = "Maitri";
   st.multi.rows = { Maitri: [], Niharika: [] };
   st.multi.reqIds = {};
@@ -2990,12 +3023,10 @@ async function ensureScanner() {
 const SCAN_COOLDOWN_MS = 700;      // min gap before a DIFFERENT code is accepted
 const SCAN_SAME_LOCKOUT_MS = 2500; // a sticker sitting in frame stays locked out this long
 const SCAN_IDLE_MS = 90000;        // batch: release the camera after this with no successful decode
-function scanReadMode() {
-  // Namespaced key; read wrapped so Safari private mode (which throws) can't kill the scanner.
-  try { return localStorage.getItem("maitri.admin.scanMode") === "popup" ? "popup" : "batch"; }
-  catch { return "batch"; }
-}
-function scanWriteMode(m) { try { localStorage.setItem("maitri.admin.scanMode", m); } catch {} }
+// Mode is NOT persisted. A saved "bulk upload" from a previous customer is a hazard:
+// staff scan the next buyer and lines land at qty 1 with no prompt. Every order opens
+// in one-by-one (set at openSaleCustomer / multi-start); the toggle lives in memory
+// for the current order only.
 function scanAccept(code, now) {
   const g = st.scanGuard || (st.scanGuard = { lastCode: "", lastAt: 0, coolUntil: 0 });
   if (now < g.coolUntil) return false;                                            // global pace between accepts
@@ -3071,13 +3102,25 @@ function scanUpdateBatchUI() {
   if (show) $("scan-batch-info").textContent = `${b.count} added${b.last ? " · last: " + b.last : ""}`;
 }
 function scanSyncModeUI() {
-  $("scan-mode").textContent = st.scanMode === "batch" ? "Batch" : "One-shot";
-  $("scan-mode").classList.toggle("on", st.scanMode === "batch");
+  const batch = st.scanMode === "batch";
+  const bar = $("scan-mode");
+  if (bar) bar.querySelectorAll(".scan-seg").forEach((b) => b.classList.toggle("on", (b.dataset.mode === "batch") === batch));
+  const hint = $("scan-mode-hint");
+  if (hint) hint.classList.toggle("hidden", batch || st.scannerTarget === "map");
   scanUpdateBatchUI();
+  scanUpdateExitBtn();
+}
+function scanUpdateExitBtn() {
+  // The running count doubles as "your scans landed" reassurance, so staff don't
+  // have to leave the camera to check.
+  const n = (st.scanBatch && st.scanBatch.count) || 0;
+  const c = $("scan-exit-count");
+  if (c) c.textContent = n > 0 ? ` · ${n} added` : "";
 }
 function scanResetIdle() {
   if (st.scanIdleTimer) { clearTimeout(st.scanIdleTimer); st.scanIdleTimer = null; }
-  if (st.scanMode === "batch" && st.scanner) st.scanIdleTimer = setTimeout(scanIdlePause, SCAN_IDLE_MS);
+  // Idle auto-stop now applies to one-by-one too — it also stays open between scans.
+  if (st.scanner && !st.scanPaused) st.scanIdleTimer = setTimeout(scanIdlePause, SCAN_IDLE_MS);
 }
 async function scanIdlePause() {
   st.scanIdleTimer = null;
@@ -3177,35 +3220,43 @@ async function runScanner(target) {
   $("scan-torch").classList.toggle("hidden", !torchOk); // iOS Safari has no torch → button stays hidden
   $("scan-torch").classList.remove("on");
 }
+function scanResumeAfterSheet() {
+  // The sheet never opened (bad scan / firm mismatch) — un-pause so the camera is
+  // never left frozen with no sheet to resume it.
+  try { if (st.scanner) st.scanner.resume(); } catch {}
+  st.scanPaused = false;
+  scanResetIdle();
+}
 async function onScanned(target, text, res) {
+  if (st.scanPaused) return; // a sheet is up (or opening) — a decode already in flight must not stack a second sheet
   const now = Date.now();
   if (!scanAccept(text, now)) return; // dedupe (same-code lockout) + cooldown between accepts
   // If a 1D barcode decoded, use the wide box for the rest of the session (takes
   // effect on the next open). The manual toggle is the guaranteed recovery.
   const fmt = (res && res.result && res.result.format && res.result.format.formatName) || "";
   if (fmt && fmt !== "QR_CODE") st.scanBoxWide = true;
-  navigator.vibrate?.(70);
-  beep();
   scanResetIdle();
   // Barcode-mapping scan is always one-shot (a design is picked per barcode there).
-  if (target === "map") { $("map-barcode").value = text; renderBarcodeStatus(); stopScanner(); return; }
+  if (target === "map") { navigator.vibrate?.(70); beep(); $("map-barcode").value = text; renderBarcodeStatus(); stopScanner(); return; }
   if (st.scanMode === "popup") {
+    // ONE BY ONE: pause BEFORE the sheet renders. scanPaused is set before any await
+    // so the guard above drops a decode that was already in flight.
+    try { if (st.scanner) st.scanner.pause(true); } catch {}
+    st.scanPaused = true;
+    scanResetIdle(); // paused → clears the idle timer so it can't fire under the sheet
     if (target === "multi") {
-      try { if (st.scanner) { st.scanner.pause(true); st.scanPaused = true; } } catch {}
+      navigator.vibrate?.(70); beep(); // multi is unchanged in shape: decode feedback here
       try { await mcAdd(text); } catch {}
-      // If the popup did NOT open (e.g. firm mismatch just toasted), un-pause so the
-      // camera is never left frozen with no sheet to resume it.
-      if (!$("multi-popup").classList.contains("open")) {
-        try { if (st.scanner) st.scanner.resume(); } catch {}
-        st.scanPaused = false; scanResetIdle();
-      }
+      if (!$("multi-popup").classList.contains("open")) scanResumeAfterSheet();
     } else {
-      saleAdd(text);   // single-sale popup = the current one-shot behaviour
-      stopScanner();
+      // Single sale: the per-scan sheet. Beep/vibrate happens on SAVE (the commit).
+      const opened = await saleOpenScanSheet(text);
+      if (!opened) scanResumeAfterSheet();
     }
     return;
   }
-  // BATCH: add immediately and keep scanning.
+  // BULK UPLOAD: add immediately at qty 1 and keep scanning.
+  navigator.vibrate?.(70); beep();
   try {
     const r = target === "multi" ? await mcBatchAdd(text) : await saleBatchAdd(text);
     if (r && r.action !== "noop") {
@@ -3213,9 +3264,65 @@ async function onScanned(target, text, res) {
       st.scanBatch.count++;
       st.scanBatch.last = r.designNo;
       scanUpdateBatchUI();
+      scanUpdateExitBtn();
     }
   } catch (e) { toast(e.message, "error"); }
 }
+async function saleOpenScanSheet(raw) {
+  // One-by-one single sale: resolve the design and open the compact per-scan sheet.
+  // A rescan of a design already in the cart opens PRE-FILLED for editing — not an
+  // error, not a silent increment. Returns true if the sheet opened.
+  try {
+    const d = await resolveEntry(raw);
+    if (!d) return false;
+    const firm = saleFirmFor(d);
+    const existing = (st.sale.carts[firm] || []).find((x) => x.designNo === d.designNo);
+    st.sale.scanSheet = { firm, designNo: d.designNo, d };
+    $("ssp-title").textContent = d.designNo;
+    $("ssp-sub").textContent = [d.category, d.style, d.fabric].filter(Boolean).join(" · ") || `${d.pcsPerSet || 1} pcs/set`;
+    const thumb = $("ssp-thumb");
+    thumb.classList.add("hidden"); thumb.onerror = () => thumb.classList.add("hidden");
+    const img = (existing && existing.imageUrl) || d.imageUrl;
+    if (img) { thumb.src = ik(img, "w-160,q-70"); thumb.onload = () => thumb.classList.remove("hidden"); }
+    $("ssp-qty").value = existing ? existing.qty : 1;
+    const note = existing ? (existing.note || "") : "";
+    $("ssp-note").value = note;
+    $("ssp-note-count").textContent = `${note.length}/500`;
+    openModal("sale-scan-popup");
+    return true;
+  } catch (e) {
+    toast(e.message, "error");
+    return false;
+  }
+}
+function sspStep(delta) {
+  const el = $("ssp-qty");
+  el.value = Math.max(1, Math.min(9999, (Number(el.value) || 1) + delta));
+}
+$("ssp-minus").onclick = () => sspStep(-1);
+$("ssp-plus").onclick = () => sspStep(1);
+$("ssp-note").oninput = () => { $("ssp-note-count").textContent = `${$("ssp-note").value.length}/500`; };
+$("ssp-save").onclick = () => {
+  const s = st.sale.scanSheet;
+  if (!s) return;
+  const qty = Math.max(1, Math.min(9999, Number($("ssp-qty").value) || 1));
+  const note = $("ssp-note").value.slice(0, 500);
+  const cart = st.sale.carts[s.firm];
+  const line = cart.find((x) => x.designNo === s.designNo);
+  if (line) { line.qty = qty; line.note = note; line._dirty = true; }
+  else {
+    st.sale.deleted[s.firm].delete(s.designNo);
+    cart.push({ barcode: s.d.barcode, designNo: s.d.designNo, imageUrl: s.d.imageUrl, category: s.d.category, style: s.d.style, fabric: s.d.fabric, pcsPerSet: s.d.pcsPerSet, description: s.d.description, note, qty, _dirty: true, _serverExists: false });
+  }
+  st.sale.scanSheet = null;
+  navigator.vibrate?.(70); beep();
+  st.scanBatch = st.scanBatch || { count: 0, last: "", undo: [] };
+  st.scanBatch.count++; st.scanBatch.last = s.designNo;
+  scanUpdateExitBtn();
+  closeModal("sale-scan-popup"); // choke point resumes the camera — never resume on Save alone
+  renderSale();
+  toast("Design added", "success");
+};
 function afterLayout() {
   // Two rAF: the modal switched display:none→block this frame; the first frame
   // applies the style, the second lets layout settle so the reader has real size
@@ -3242,14 +3349,16 @@ async function startScanner(target) {
   await stopScanner();
   await ensureScanner();
   st.scannerTarget = target;
-  st.scanMode = st.scanMode || scanReadMode();
+  st.scanMode = st.scanMode || "popup"; // default one-by-one (order start resets it; never persisted)
   st.scanGuard = { lastCode: "", lastAt: 0, coolUntil: 0 };
   st.scanBatch = { count: 0, last: "", undo: [] };
   st.scanPaused = false;
   $("scan-wide").classList.toggle("on", !!st.scanBoxWide);
   $("scan-wide").textContent = st.scanBoxWide ? "Square (QR)" : "Wide barcode";
-  // Mode toggle + batch only apply to sale/multi, not the mapping scan.
-  $("scan-mode").classList.toggle("hidden", !(target === "sale" || target === "multi"));
+  // Mode toggle + batch + the "Go to order" exit only apply to sale/multi, not mapping.
+  const orderScan = target === "sale" || target === "multi";
+  $("scan-mode").classList.toggle("hidden", !orderScan);
+  $("scan-exit").classList.toggle("hidden", !orderScan);
   scanSyncModeUI();
   $("scan-error").classList.add("hidden"); $("scan-error").innerHTML = "";
   openModal("scan-modal");
@@ -3296,12 +3405,16 @@ $("scan-wide").onclick = async () => {
   $("scan-wide").textContent = st.scanBoxWide ? "Square (QR)" : "Wide barcode";
   try { await restartScanner(); } catch (e) { toast(e.message, "error"); }
 };
-$("scan-mode").onclick = () => {
-  st.scanMode = st.scanMode === "batch" ? "popup" : "batch";
-  scanWriteMode(st.scanMode);
+$("scan-mode").onclick = (e) => {
+  const seg = e.target.closest(".scan-seg");
+  if (!seg || seg.dataset.mode === st.scanMode) return;
+  st.scanMode = seg.dataset.mode; // in-memory only — not carried to the next order
   scanSyncModeUI();
   scanResetIdle();
 };
+// Primary exit — routes through the SAME stopScanner path as ✕, so there is never a
+// second teardown and the camera is always released.
+$("scan-exit").onclick = () => stopScanner();
 $("scan-undo").onclick = () => scanUndo();
 $("scan-idle").onclick = () => scanResumeFromIdle();
 // Prewarm the camera only after a real gesture inside the sale section, and only
@@ -5538,10 +5651,11 @@ function openModal(id) {
 }
 function closeModal(id) {
   $(id).classList.remove("open");
-  // Popup mode pauses the live camera while the qty sheet is up. Resume on EVERY
-  // close path (Done / Remove / X / backdrop all route through here) — never on a
+  if (id === "sale-scan-popup") st.sale.scanSheet = null; // Save OR Cancel both land here
+  // One-by-one pauses the live camera while a per-scan sheet is up. Resume on EVERY
+  // close path (Save / Cancel / X / backdrop all route through here) — never on a
   // single button. A missed resume leaves a live camera and a dead scanner.
-  if (id === "multi-popup" && st.scanPaused && st.scanner) {
+  if ((id === "multi-popup" || id === "sale-scan-popup") && st.scanPaused && st.scanner) {
     try { st.scanner.resume(); } catch {}
     st.scanPaused = false;
     scanResetIdle();
