@@ -21,7 +21,15 @@ const PDFDocument = require("pdfkit");
 
 // ── Config ────────────────────────────────────────────────────────────────
 const CODE_PREFIX = "MC";   // Maitri Carnival. MT/EK are already mapped — keep this distinct.
-const TOTAL = 1000;
+// The block to emit. START is the ONLY line to change for the next block; COUNT is
+// its size. The printed run was START=1, COUNT=1000 (MC-0001..MC-1000); this block is
+// START=1001, COUNT=500 (MC-1001..MC-1500). NEVER start at or below the highest number
+// already printed — MC-0907..MC-1000 are unused stock, so reprinting <1001 would put
+// two identical stickers on two garments.
+const START = 1001;
+const COUNT = 500;
+const FIRST = START, LAST = START + COUNT - 1;
+const RANGE = `${CODE_PREFIX}${FIRST}-${CODE_PREFIX}${LAST}`;   // e.g. MC1001-MC1500 — drives the output filenames
 const codeFor = (n) => `${CODE_PREFIX}-${String(n).padStart(4, "0")}`;
 
 // Karwa Chauth palette
@@ -102,16 +110,16 @@ function drawTag(doc, ox, oy, qrBuf, code) {
 
 (async () => {
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const codes = Array.from({ length: TOTAL }, (_, i) => codeFor(i + 1));
-  const perPage = COLS * ROWS, pages = Math.ceil(TOTAL / perPage);
-  console.log(`A3 ${COLS}x${ROWS} = ${perPage}/page · tag ${(TAG_W / 2.834645669).toFixed(0)}x${(TAG_H / 2.834645669).toFixed(0)}mm · QR ${(QR_SIZE / 2.834645669).toFixed(1)}mm · ${TOTAL} codes -> ${pages} pages`);
+  const codes = Array.from({ length: COUNT }, (_, i) => codeFor(i + START));
+  const perPage = COLS * ROWS, pages = Math.ceil(COUNT / perPage);
+  console.log(`A3 ${COLS}x${ROWS} = ${perPage}/page · tag ${(TAG_W / 2.834645669).toFixed(0)}x${(TAG_H / 2.834645669).toFixed(0)}mm · QR ${(QR_SIZE / 2.834645669).toFixed(1)}mm · ${COUNT} codes ${codes[0]}..${codes[codes.length - 1]} -> ${pages} pages`);
 
-  process.stdout.write(`Rendering ${TOTAL} QR codes… `);
+  process.stdout.write(`Rendering ${COUNT} QR codes… `);
   const pngs = [];
   for (const c of codes) pngs.push(await qrPng(c));
   console.log("done");
 
-  const outFile = path.join(OUT_DIR, "Maitri-Carnival-QR-A3.pdf");
+  const outFile = path.join(OUT_DIR, `Maitri-Carnival-QR-${RANGE}-A3.pdf`);
   const doc = new PDFDocument({ size: [PAGE_W, PAGE_H], margin: 0, autoFirstPage: false });
   doc.pipe(fs.createWriteStream(outFile));
 
@@ -133,7 +141,10 @@ function drawTag(doc, ox, oy, qrBuf, code) {
   await new Promise((r) => doc.on("end", r));
 
   const csv = ["barcode,designNo"].concat(codes.map((c) => `${c},`));
-  fs.writeFileSync(path.join(OUT_DIR, "barcode-list.csv"), csv.join("\n") + "\n");
+  // Range-named to match the PDF, so a new block never clobbers a prior block's list
+  // (nor the original barcode-list.csv). Rename to barcode-list.csv when bulk-importing.
+  const csvFile = path.join(OUT_DIR, `Maitri-Carnival-QR-${RANGE}.csv`);
+  fs.writeFileSync(csvFile, csv.join("\n") + "\n");
   console.log(`  → ${path.basename(outFile)} (${pages} pages)`);
-  console.log(`  → barcode-list.csv (${TOTAL} codes, designNo blank — fill in to bulk-import)`);
+  console.log(`  → ${path.basename(csvFile)} (${COUNT} codes, designNo blank — fill in to bulk-import)`);
 })();
