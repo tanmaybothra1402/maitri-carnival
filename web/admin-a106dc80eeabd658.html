@@ -510,6 +510,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
   <button class="btn small hidden" id="product-new" style="margin-bottom:10px">＋ New product</button>
   <input id="product-search" placeholder="Search design, category, style or fabric"/>
   <div class="catalogue-tools"><button class="chip" id="pm-check-images" type="button">Check all images</button><button class="chip pm-missing-chip hidden" id="pm-missing-toggle" type="button">⚠ <span id="pm-missing-count">0</span> missing</button></div>
+  <div class="mc-warn hidden" id="pm-truncate-warn"></div>
   <div class="catalogue-groups" id="product-list"></div>
 </div></section>
 <section class="subpanel hidden" id="products-grid"><div class="card">
@@ -3870,6 +3871,24 @@ async function loadProducts(force = false) {
   }
   $("dl-design").innerHTML = st.designs.filter((d) => d.active).map((d) => `<option value="${esc(d.designNo)}">`).join("");
   renderProducts();
+  // Silent-truncation guard: the cached catalogue must equal the server's exact count.
+  // A mismatch means designs are missing from search, manual entry and the dup check.
+  admin("countDesigns").then((r) => {
+    const total = (r && Number(r.total)) || 0;
+    st.designTruncated = total > 0 && st.designs.length < total ? total : 0;
+    renderCatalogueWarn();
+  }).catch(() => {});
+}
+function renderCatalogueWarn() {
+  const el = $("pm-truncate-warn");
+  if (!el) return;
+  if (st.designTruncated) {
+    el.textContent = `⚠ Catalogue incomplete — showing ${st.designs.length} of ${st.designTruncated} designs. The missing ones are absent from search, typing/manual entry and the duplicate check. Reload the page; if this warning stays, the catalogue fetch is truncating — report it.`;
+    el.classList.remove("hidden");
+  } else {
+    el.classList.add("hidden");
+    el.textContent = "";
+  }
 }
 // Category/style/fabric reuse the Mapping search's substring typeahead
 // (taSubstringMatches + the .map-suggest dropdown) rather than <datalist>, whose

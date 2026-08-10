@@ -216,6 +216,7 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   // catalogue. Staff-only (admin-api checks app_metadata.role) — never `authenticated`,
   // so this does not widen master-image exposure to customers.
   listDesigns: ["products.view", "products.mapping", "dashboard.view"],
+  countDesigns: ["products.view", "products.mapping", "dashboard.view"],
   listMappings: ["products.mapping"],
   mapBarcode: ["products.mapping"],
   mapBatch: ["products.mapping"],
@@ -268,12 +269,25 @@ function requireActionPermission(context: StaffContext, action: string) {
 }
 
 async function listDesigns(db: SupabaseClient) {
-  const { data, error } = await db
-    .from("designs")
-    .select("design_no,firm,image_url,category,style,fabric,pcs_per_set,color,description,active,sync_version,updated_at")
-    .order("design_no", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((row) => ({
+  // PostgREST caps a select at 1000 rows. The catalogue passed 1000, so a single
+  // fetch SILENTLY truncated the tail (designs invisible to Product Master, manual
+  // entry and the dup guard). Page through with .range() until a short page — do NOT
+  // raise a server max-rows setting, that just moves the cliff.
+  const cols = "design_no,firm,image_url,category,style,fabric,pcs_per_set,color,description,active,sync_version,updated_at";
+  const PAGE = 1000;
+  const all: Record<string, unknown>[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db
+      .from("designs")
+      .select(cols)
+      .order("design_no", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    const rows = data ?? [];
+    all.push(...rows);
+    if (rows.length < PAGE) break;
+  }
+  return all.map((row: any) => ({
     designNo: row.design_no,
     firm: row.firm,
     imageUrl: row.image_url ?? "",
@@ -368,6 +382,14 @@ Deno.serve(async (request: Request) => {
 
         if (action === "listDesigns") {
       return jsonResponse(request, { ok: true, data: await listDesigns(db) });
+    }
+
+    if (action === "countDesigns") {
+      // Cheap exact count so the client can detect silent truncation: if the cached
+      // row count ever differs from this, the catalogue is incomplete — warn loudly.
+      const { count, error } = await db.from("designs").select("design_no", { count: "exact", head: true });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: { total: Number(count) || 0 } });
     }
 
     if (action === "listMappings") {
