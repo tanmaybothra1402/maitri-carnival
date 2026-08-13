@@ -4756,6 +4756,7 @@ function renderMapBatch() {
           (r, i) =>
             `<div class="map-batch-row"><div><b>${esc(r.barcode)}</b><span>${esc(r.designNo)}</span></div><button class="map-batch-remove" data-remove="${i}" aria-label="Remove ${esc(r.barcode)}">✕</button></div>`,
         )
+        .reverse() // latest queued on top; data-remove keeps the real array index
         .join("")
     : '<div class="empty">Nothing queued. Scan a barcode and pick a design.</div>';
 }
