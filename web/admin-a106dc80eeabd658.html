@@ -124,15 +124,14 @@ table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px
 .dp-card{cursor:default}
 .dp-total{color:var(--teal-deep);font-size:12px;font-weight:850;text-align:right;white-space:nowrap;line-height:1.35;font-variant-numeric:tabular-nums}
 .dp-buyers{margin-top:10px;display:grid;gap:6px}
-.dp-buyer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 9px;border:1px solid var(--border);border-radius:9px;background:var(--foam)}
-.dp-buyer-main{min-width:0;display:flex;flex-direction:column;gap:1px}
-.dp-buyer-main b{font-size:11.5px;color:var(--deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dp-buyer-main span{font-size:9.5px;color:var(--muted);font-weight:600}
-.dp-buyer-right{flex:0 0 auto;display:flex;align-items:center;gap:8px}
-.dp-buyer-sets{font-size:11px;font-weight:850;color:var(--teal-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
-.dp-dispatch{padding:5px 11px;font-size:10.5px}
-.dp-actions{margin-top:9px}
-.dp-actions .dp-all{width:100%}
+.dp-toggle{display:flex;align-items:flex-start;gap:11px;width:100%;padding:0;border:0;background:none;text-align:left;cursor:pointer}
+.dp-chevron{margin-left:auto;flex:0 0 auto;align-self:center;color:var(--muted);font-size:15px;line-height:1}
+.dp-buyer-line{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:#fff}
+.dp-undo{margin-top:6px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
+.dp-undoing{background:#FFF8F8}
+.dp-undoing .dispatch-line-body>b{text-decoration:line-through}
+.dp-confirm-bar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);z-index:20;margin-top:12px}
+.dp-confirm-bar:disabled{opacity:.55}
 .dispatch-card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px}
 .firm-pill{padding:3px 8px;border-radius:999px;font-size:9px;font-weight:850;letter-spacing:.03em}
 .firm-pill.maitri{background:#EAE9F5;color:#2E2A6B}
@@ -563,6 +562,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
   </div>
 </div>
 <div class="list" id="dispatch-list"></div>
+<button class="btn dispatch-save-btn dp-confirm-bar hidden" id="dp-confirm" disabled>Confirm dispatch</button>
 </main>
 
 <div class="modal" id="dispatch-modal"><div class="sheet dispatch-sheet">
@@ -4299,8 +4299,20 @@ async function loadDispatch() {
       st.dispatch.rows = orders;
       st.dispatch.product = aggregateDispatchByDesign(orders, lines);
       renderDispatchProduct();
+      // Design images join from st.designs (service-role listDesigns — NOT lookup_barcode,
+      // which returns none; C1). Load once, then re-aggregate before any edits are made.
+      if (!(st.designs || []).length) {
+        admin("listDesigns").then((d) => {
+          if (Array.isArray(d) && st.dispatch.mode === "product") {
+            st.designs = d; st.cache.designsAt = Date.now();
+            st.dispatch.product = aggregateDispatchByDesign(orders, lines);
+            renderDispatchProduct();
+          }
+        }).catch(() => {}); // dispatch-only staff can't load it → clean placeholder, no crash
+      }
     } else {
       st.dispatch.rows = res || [];
+      $("dp-confirm").classList.add("hidden"); // by-order has its own Save; hide the by-product bar
       renderDispatchList();
     }
   } catch (e) {
@@ -4308,73 +4320,125 @@ async function loadDispatch() {
   }
 }
 function aggregateDispatchByDesign(orders, lines) {
-  // Roll design lines up across every order into a pick-list: for each design, how
-  // many sets/pieces still need to ship, and which buyers still need them.
+  // Group order lines by design. Each buyer carries ordered / already-dispatched /
+  // remaining, plus per-buyer EDIT STATE (now = sets to dispatch this action, default
+  // remaining; undo = mark the line for removal). Nothing is written from here — the
+  // Confirm dispatch button builds the same payload shape by-order sends and calls the
+  // same saveDispatch path. Image comes from st.designs (the service-role listDesigns
+  // path — never lookup_barcode, which returns no image; guardrail C1).
   const byId = new Map((orders || []).map((o) => [o.orderId, o]));
   const map = new Map();
   (lines || []).forEach((l) => {
-    const remainSets = Math.max(0, (Number(l.orderedSets) || 0) - (Number(l.dispatchedSets) || 0));
-    if (remainSets <= 0) return; // nothing left to ship for this line
+    const ordered = Number(l.orderedSets) || 0;
+    if (ordered <= 0) return;
+    const already = Math.max(0, Number(l.dispatchedSets) || 0);
+    const remaining = Math.max(0, ordered - already);
     let g = map.get(l.designNo);
-    if (!g) { g = { designNo: l.designNo, sets: 0, pieces: 0, buyers: [] }; map.set(l.designNo, g); }
-    g.sets += remainSets;
-    g.pieces += remainSets * (Number(l.pcsPerSet) || 0);
+    if (!g) {
+      g = { designNo: l.designNo, imageUrl: ((st.designs || []).find((x) => x.designNo === l.designNo) || {}).imageUrl || "", remaining: 0, buyers: [], _open: false };
+      map.set(l.designNo, g);
+    }
+    g.remaining += remaining;
     const o = byId.get(l.orderId) || {};
     g.buyers.push({
       orderId: l.orderId,
       company: o.companyName || o.contactName || "Unnamed party",
       city: [o.city, o.state].filter(Boolean).join(", "),
       firm: o.firm || "",
-      sets: remainSets,                        // remaining to ship (what a Dispatch completes)
-      ordered: Number(l.orderedSets) || 0,     // absolute target: saveDispatch sets dispatched = ordered
+      ordered, already, // display; server payload = already + now (absolute), or 0 on undo
+      pcsPerSet: Number(l.pcsPerSet) || 1,
+      now: remaining, // sets to dispatch this action — default the remaining, editable, never auto-submitted
+      undo: false,
     });
   });
   return [...map.values()]
-    .map((g) => { g.buyers.sort((a, b) => b.sets - a.sets); return g; })
-    .sort((a, b) => b.sets - a.sets || b.pieces - a.pieces); // most left to ship first
+    .map((g) => { g.buyers.sort((a, b) => (b.ordered - b.already) - (a.ordered - a.already)); return g; })
+    .sort((a, b) => b.remaining - a.remaining); // most left to ship first
 }
+function dpRemaining(b) { return Math.max(0, (Number(b.ordered) || 0) - (Number(b.already) || 0)); }
 function renderDispatchProduct() {
   const rows = st.dispatch.product || [];
   const writable = has("dispatch.write");
   $("dispatch-list").innerHTML = rows.length
     ? rows.map((d, di) => {
-        const buyers = d.buyers
-          .map((b, bi) => `<div class="dp-buyer"><span class="dp-buyer-main"><b>${esc(b.company)}</b>${b.city ? `<span>${esc(b.city)}</span>` : ""}</span><span class="dp-buyer-right"><span class="dp-buyer-sets">${b.sets} sets</span>${writable ? `<button class="btn small dp-dispatch" data-di="${di}" data-bi="${bi}">Dispatch</button>` : ""}</span></div>`)
-          .join("");
-        const allBtn = writable && d.buyers.length > 1
-          ? `<div class="dp-actions"><button class="btn small secondary dp-all" data-di="${di}">Dispatch all ${d.buyers.length} buyers</button></div>`
+        const buyers = d._open
+          ? d.buyers.map((b, bi) => {
+              const rem = dpRemaining(b);
+              const checked = !b.undo && rem > 0 && Number(b.now) >= rem;
+              const disabled = !writable || b.undo || rem <= 0;
+              const undoBtn = writable && b.already > 0
+                ? `<button class="dp-undo" data-di="${di}" data-bi="${bi}">${b.undo ? "Keep dispatched" : "Undo dispatch (remove)"}</button>`
+                : "";
+              return `<div class="dp-buyer-line${b.undo ? " dp-undoing" : ""}">
+                <div class="dispatch-line-body"><b>${esc(b.company)}</b><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${undoBtn}</div>
+                <div class="dispatch-qty">
+                  <input class="dispatch-check" type="checkbox" data-di="${di}" data-bi="${bi}" data-dp-check ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} aria-label="Dispatch all remaining ${esc(d.designNo)} for ${esc(b.company)}"/>
+                  <input class="dispatch-sets" type="number" min="0" max="${rem}" value="${b.undo ? 0 : Number(b.now) || 0}" data-di="${di}" data-bi="${bi}" data-dp-now ${disabled ? "disabled" : ""} aria-label="Sets to dispatch now for ${esc(b.company)}"/>
+                  <span class="dispatch-ordered">of ${rem}</span>
+                </div>
+              </div>`;
+            }).join("")
           : "";
-        return `<div class="dispatch-card dp-card"><div class="dispatch-card-top"><div><b>${esc(d.designNo)}</b><div class="dispatch-card-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} waiting</div></div><span class="dp-total">${d.sets} sets<br>${d.pieces} pcs</span></div>${allBtn}<div class="dp-buyers">${buyers}</div></div>`;
+        return `<div class="dispatch-card dp-row${d._open ? " dp-open" : ""}">
+          <button class="dp-toggle" data-dp-toggle="${di}" type="button" aria-expanded="${d._open}">
+            ${d.imageUrl ? `<img class="dispatch-thumb" src="${esc(ik(d.imageUrl, "w-160,h-210,c-at_max,q-70"))}" alt="${esc(d.designNo)}" loading="lazy"/>` : '<div class="dispatch-thumb"></div>'}
+            <div class="dispatch-line-body"><b>${esc(d.designNo)}</b><div class="dispatch-line-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} · ${d.remaining} set${d.remaining === 1 ? "" : "s"} remaining</div></div>
+            <span class="dp-chevron">${d._open ? "▾" : "▸"}</span>
+          </button>
+          ${d._open ? `<div class="dp-buyers">${buyers}</div>` : ""}
+        </div>`;
       }).join("")
-    : '<div class="empty">Nothing left to ship for these filters.</div>';
+    : '<div class="empty">Nothing to ship for these filters.</div>';
+  // Confirm bar: shown in product mode for writable staff; disabled until there is
+  // something pending. Writes only fire from its own handler — never on expand/edit.
+  const pend = dpPending();
+  const btn = $("dp-confirm");
+  btn.classList.toggle("hidden", !(writable && rows.length));
+  btn.disabled = pend.length === 0;
+  btn.textContent = pend.length ? `Confirm dispatch · ${pend.length} line${pend.length === 1 ? "" : "s"}` : "Confirm dispatch";
 }
-async function dispatchProductBuyer(di, bi, btn) {
-  const d = st.dispatch.product?.[di], bu = d?.buyers?.[bi];
-  if (!bu) return;
-  if (btn) { btn.disabled = true; btn.textContent = "Dispatching…"; }
-  try {
-    // Merge-safe: admin_save_dispatch only touches the design(s) sent, so completing
-    // one buyer's line never disturbs the rest of that order's dispatch state.
-    await admin("saveDispatch", { orderId: bu.orderId, note: "Dispatched from product view", lines: [{ designNo: d.designNo, dispatchedSets: bu.ordered }] });
-    toast(`Dispatched ${d.designNo} to ${bu.company}`, "success");
-    await loadDispatch();
-  } catch (e) {
-    toast(e.message, "error");
-    if (btn) { btn.disabled = false; btn.textContent = "Dispatch"; }
-  }
+function dpPending() {
+  // Every buyer edit that will actually change the server: a positive "now" (dispatch
+  // already+now), or an explicit undo of a line that has dispatched sets (→ 0 = delete).
+  const out = [];
+  (st.dispatch.product || []).forEach((d) => d.buyers.forEach((b) => {
+    if (b.undo && b.already > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: 0, summary: `remove ${b.already} dispatched` });
+    else if (!b.undo && Number(b.now) > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: (Number(b.already) || 0) + Number(b.now), summary: `${b.now} set${Number(b.now) === 1 ? "" : "s"}` });
+  }));
+  return out;
 }
-async function dispatchProductAll(di) {
-  const d = st.dispatch.product?.[di];
-  if (!d || !d.buyers.length) return;
-  if (!confirm(`Dispatch “${d.designNo}” to all ${d.buyers.length} waiting buyers (${d.sets} sets)? This locks those lines from customer edits.`)) return;
+function dpSetNow(di, bi, val) {
+  const b = st.dispatch.product?.[di]?.buyers?.[bi];
+  if (!b) return;
+  const rem = dpRemaining(b);
+  b.now = val === "all" ? rem : Math.max(0, Math.min(rem, Number(val) || 0)); // reject above remaining the moment it is typed
+  if (Number(b.now) > 0) b.undo = false;
+  renderDispatchProduct();
+}
+$("dp-confirm").onclick = async () => {
+  const pend = dpPending();
+  if (!pend.length) { toast("Set a quantity (or Undo) first — nothing to dispatch yet", "error"); return; }
+  // Requirement 4: an explicit summary of exactly what will be written before the write.
+  const summary = "Confirm dispatch:\n\n" +
+    pend.map((p) => `• ${p.company} · ${p.designNo} · ${p.summary}`).join("\n") +
+    "\n\nThis locks those lines from customer edits. Proceed?";
+  if (!confirm(summary)) return;
+  // Group by order → ONE saveDispatch per order, same path + payload shape as by-order.
+  // admin_save_dispatch is merge-safe (only the designs sent are touched) and validates
+  // dispatchedSets against ordered; dispatchedSets:0 removes the line (the undo path).
+  const byOrder = {};
+  pend.forEach((p) => (byOrder[p.orderId] ||= []).push({ designNo: p.designNo, dispatchedSets: p.dispatchedSets }));
+  const btn = $("dp-confirm"), old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Dispatching…";
   let okN = 0; const fails = [];
-  for (const bu of d.buyers) {
-    try { await admin("saveDispatch", { orderId: bu.orderId, note: "Dispatched from product view", lines: [{ designNo: d.designNo, dispatchedSets: bu.ordered }] }); okN++; }
-    catch (e) { fails.push(`${bu.company}: ${e.message}`); }
+  for (const [orderId, lines] of Object.entries(byOrder)) {
+    try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", lines }); okN++; }
+    catch (e) { fails.push(mcFriendlyError ? mcFriendlyError(e.message) : e.message); }
   }
-  await loadDispatch();
-  toast(fails.length ? `${okN} dispatched · ${fails.length} failed` : `Dispatched “${d.designNo}” to ${okN} buyers`, fails.length ? "error" : "success");
-}
+  btn.textContent = old;
+  await loadDispatch(); // re-fetch → fresh remaining/dispatched, edit state reset
+  toast(fails.length ? `${okN} order${okN === 1 ? "" : "s"} saved · ${fails.length} failed: ${fails[0]}` : `Dispatch saved across ${okN} order${okN === 1 ? "" : "s"}`, fails.length ? "error" : "success");
+};
 
 function renderDispatchList() {
   const rows = st.dispatch.rows || [];
@@ -4429,12 +4493,23 @@ $("dispatch-mode-chips").onclick = (e) => {
 };
 
 $("dispatch-list").onclick = (e) => {
-  const dp = e.target.closest(".dp-dispatch");
-  if (dp) { dispatchProductBuyer(Number(dp.dataset.di), Number(dp.dataset.bi), dp); return; }
-  const all = e.target.closest(".dp-all");
-  if (all) { dispatchProductAll(Number(all.dataset.di)); return; }
+  // By-product: expand a design to its buyers, or toggle a per-buyer undo. NEVER writes.
+  const tog = e.target.closest("[data-dp-toggle]");
+  if (tog) { const d = st.dispatch.product?.[Number(tog.dataset.dpToggle)]; if (d) { d._open = !d._open; renderDispatchProduct(); } return; }
+  const undo = e.target.closest(".dp-undo");
+  if (undo) { const b = st.dispatch.product?.[Number(undo.dataset.di)]?.buyers?.[Number(undo.dataset.bi)]; if (b) { b.undo = !b.undo; if (b.undo) b.now = 0; renderDispatchProduct(); } return; }
+  // By-order: open the per-order detail.
   const b = e.target.closest("[data-order]");
   if (b && st.dispatch.mode !== "product") openDispatch(b.dataset.order);
+};
+// By-product buyer edits: checkbox = dispatch all remaining, number = sets to dispatch
+// now (clamped to remaining at input). Local state only — no write until Confirm.
+$("dispatch-list").onchange = (e) => {
+  if (st.dispatch.mode !== "product") return;
+  const chk = e.target.closest("[data-dp-check]");
+  if (chk) { dpSetNow(Number(chk.dataset.di), Number(chk.dataset.bi), chk.checked ? "all" : 0); return; }
+  const num = e.target.closest("[data-dp-now]");
+  if (num) { dpSetNow(Number(num.dataset.di), Number(num.dataset.bi), num.value); return; }
 };
 
 async function openDispatch(orderId) {
