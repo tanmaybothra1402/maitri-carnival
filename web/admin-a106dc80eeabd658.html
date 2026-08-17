@@ -127,7 +127,9 @@ table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px
 .dp-toggle{display:flex;align-items:flex-start;gap:11px;width:100%;padding:0;border:0;background:none;text-align:left;cursor:pointer}
 .dp-chevron{margin-left:auto;flex:0 0 auto;align-self:center;color:var(--muted);font-size:15px;line-height:1}
 .dp-buyer-line{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:11px;background:#fff}
-.dp-undo{margin-top:6px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
+.dp-undo{display:block;margin-top:6px;padding:0;border:0;background:none;color:var(--error);font-size:10px;font-weight:800;cursor:pointer;text-align:left}
+.dp-cancel{display:inline-block;margin-top:6px;margin-right:10px;padding:0;border:0;background:none;color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;text-align:left;text-decoration:underline}
+.dp-warn{margin-top:5px;color:var(--error);font-size:10px;font-weight:800}
 .dp-undoing{background:#FFF8F8}
 .dp-undoing .dispatch-line-body>b{text-decoration:line-through}
 .dp-confirm-bar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);z-index:20;margin-top:12px}
@@ -4345,10 +4347,12 @@ function aggregateDispatchByDesign(orders, lines) {
       company: o.companyName || o.contactName || "Unnamed party",
       city: [o.city, o.state].filter(Boolean).join(", "),
       firm: o.firm || "",
-      ordered, already, // display; server payload = already + now (absolute), or 0 on undo
+      orderUpdatedAt: o.updatedAt || "", // for the destructive-removal confirmation date
+      ordered, already,
       pcsPerSet: Number(l.pcsPerSet) || 1,
-      now: remaining, // sets to dispatch this action — default the remaining, editable, never auto-submitted
-      undo: false,
+      now: remaining, // sets to dispatch this action — default remaining; payload = already + now
+      remove: false,  // DESTRUCTIVE: removes an already-dispatched line (→ dispatchedSets 0). Confirmed separately.
+      warn: "",       // inline "Only N remaining." feedback when an entry is clamped
     });
   });
   return [...map.values()]
@@ -4364,16 +4368,20 @@ function renderDispatchProduct() {
         const buyers = d._open
           ? d.buyers.map((b, bi) => {
               const rem = dpRemaining(b);
-              const checked = !b.undo && rem > 0 && Number(b.now) >= rem;
-              const disabled = !writable || b.undo || rem <= 0;
-              const undoBtn = writable && b.already > 0
-                ? `<button class="dp-undo" data-di="${di}" data-bi="${bi}">${b.undo ? "Keep dispatched" : "Undo dispatch (remove)"}</button>`
-                : "";
-              return `<div class="dp-buyer-line${b.undo ? " dp-undoing" : ""}">
-                <div class="dispatch-line-body"><b>${esc(b.company)}</b><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${undoBtn}</div>
+              const checked = !b.remove && rem > 0 && Number(b.now) >= rem;
+              const disabled = !writable || b.remove || rem <= 0;
+              // Non-destructive: cancel a pending increment → now 0 → payload stays `already`.
+              const undoBtn = writable && !b.remove && Number(b.now) > 0
+                ? `<button class="dp-cancel" data-dp-cancel data-di="${di}" data-bi="${bi}">Undo</button>` : "";
+              // DESTRUCTIVE: remove an already-dispatched line (→ 0). Confirmed with qty + date.
+              const removeBtn = writable && b.already > 0
+                ? `<button class="dp-undo" data-dp-remove data-di="${di}" data-bi="${bi}">${b.remove ? "Keep the dispatch" : `Remove ${b.already} dispatched`}</button>` : "";
+              const warn = b.warn ? `<div class="dp-warn">${esc(b.warn)}</div>` : "";
+              return `<div class="dp-buyer-line${b.remove ? " dp-undoing" : ""}">
+                <div class="dispatch-line-body"><b>${esc(b.company)}</b><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${warn}${undoBtn}${removeBtn}</div>
                 <div class="dispatch-qty">
                   <input class="dispatch-check" type="checkbox" data-di="${di}" data-bi="${bi}" data-dp-check ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} aria-label="Dispatch all remaining ${esc(d.designNo)} for ${esc(b.company)}"/>
-                  <input class="dispatch-sets" type="number" min="0" max="${rem}" value="${b.undo ? 0 : Number(b.now) || 0}" data-di="${di}" data-bi="${bi}" data-dp-now ${disabled ? "disabled" : ""} aria-label="Sets to dispatch now for ${esc(b.company)}"/>
+                  <input class="dispatch-sets" type="number" min="0" max="${rem}" value="${b.remove ? 0 : Number(b.now) || 0}" data-di="${di}" data-bi="${bi}" data-dp-now ${disabled ? "disabled" : ""} aria-label="Sets to dispatch now for ${esc(b.company)}"/>
                   <span class="dispatch-ordered">of ${rem}</span>
                 </div>
               </div>`;
@@ -4397,13 +4405,15 @@ function renderDispatchProduct() {
   btn.disabled = pend.length === 0;
   btn.textContent = pend.length ? `Confirm dispatch · ${pend.length} line${pend.length === 1 ? "" : "s"}` : "Confirm dispatch";
 }
+// The absolute dispatchedSets that will be sent for a buyer. A pending increment adds
+// to what is already dispatched (never 0 — cancelling it just leaves `already`). ONLY the
+// explicit, confirmed Remove sends 0, which the RPC treats as deleting the line.
+function dpBuyerSets(b) { return b.remove ? 0 : (Number(b.already) || 0) + (Number(b.now) || 0); }
 function dpPending() {
-  // Every buyer edit that will actually change the server: a positive "now" (dispatch
-  // already+now), or an explicit undo of a line that has dispatched sets (→ 0 = delete).
   const out = [];
   (st.dispatch.product || []).forEach((d) => d.buyers.forEach((b) => {
-    if (b.undo && b.already > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: 0, summary: `remove ${b.already} dispatched` });
-    else if (!b.undo && Number(b.now) > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: (Number(b.already) || 0) + Number(b.now), summary: `${b.now} set${Number(b.now) === 1 ? "" : "s"}` });
+    if (b.remove && b.already > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: 0, summary: `REMOVE ${b.already} already dispatched` });
+    else if (!b.remove && Number(b.now) > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: dpBuyerSets(b), summary: `${b.now} set${Number(b.now) === 1 ? "" : "s"}` });
   }));
   return out;
 }
@@ -4411,8 +4421,10 @@ function dpSetNow(di, bi, val) {
   const b = st.dispatch.product?.[di]?.buyers?.[bi];
   if (!b) return;
   const rem = dpRemaining(b);
-  b.now = val === "all" ? rem : Math.max(0, Math.min(rem, Number(val) || 0)); // reject above remaining the moment it is typed
-  if (Number(b.now) > 0) b.undo = false;
+  const raw = val === "all" ? rem : (Number(val) || 0);
+  b.warn = raw > rem ? `Only ${rem} remaining.` : ""; // D3: visible feedback, not a silent rewrite
+  b.now = Math.max(0, Math.min(rem, raw));            // keep the clamp — the server still enforces
+  if (Number(b.now) > 0) b.remove = false;            // dispatching cancels a pending removal
   renderDispatchProduct();
 }
 $("dp-confirm").onclick = async () => {
@@ -4493,11 +4505,24 @@ $("dispatch-mode-chips").onclick = (e) => {
 };
 
 $("dispatch-list").onclick = (e) => {
-  // By-product: expand a design to its buyers, or toggle a per-buyer undo. NEVER writes.
+  // By-product: expand, cancel a pending increment, or the confirmed destructive remove.
+  // None of these write — the write happens only from the Confirm dispatch handler.
   const tog = e.target.closest("[data-dp-toggle]");
   if (tog) { const d = st.dispatch.product?.[Number(tog.dataset.dpToggle)]; if (d) { d._open = !d._open; renderDispatchProduct(); } return; }
-  const undo = e.target.closest(".dp-undo");
-  if (undo) { const b = st.dispatch.product?.[Number(undo.dataset.di)]?.buyers?.[Number(undo.dataset.bi)]; if (b) { b.undo = !b.undo; if (b.undo) b.now = 0; renderDispatchProduct(); } return; }
+  const cancel = e.target.closest("[data-dp-cancel]"); // Undo a pending increment → now 0 (payload stays `already`, never 0)
+  if (cancel) { dpSetNow(Number(cancel.dataset.di), Number(cancel.dataset.bi), 0); return; }
+  const rm = e.target.closest("[data-dp-remove]");
+  if (rm) {
+    const b = st.dispatch.product?.[Number(rm.dataset.di)]?.buyers?.[Number(rm.dataset.bi)];
+    if (!b) return;
+    if (b.remove) { b.remove = false; renderDispatchProduct(); return; } // un-arm, no confirmation needed
+    // Destructive: reverses a REAL shipment and re-opens the line. Name quantity + date.
+    const when = b.orderUpdatedAt ? fmt(b.orderUpdatedAt) : "an earlier date";
+    if (!confirm(`This will REMOVE ${b.already} set${b.already === 1 ? "" : "s"} already dispatched (${when}) for ${b.company}. It reverses a real shipment and re-opens the line for the customer. Continue?`)) return;
+    b.remove = true; b.now = 0; b.warn = "";
+    renderDispatchProduct();
+    return;
+  }
   // By-order: open the per-order detail.
   const b = e.target.closest("[data-order]");
   if (b && st.dispatch.mode !== "product") openDispatch(b.dataset.order);
