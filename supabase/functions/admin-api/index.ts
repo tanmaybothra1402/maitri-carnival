@@ -66,6 +66,9 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "products.create": true,
   "dispatch.view": true,
   "dispatch.write": true,
+  "crm.view": true,
+  "crm.write": true,
+  "crm.assign": true,
   "admin.slots": true,
   "admin.bookings": true,
   "admin.staff": true,
@@ -78,6 +81,9 @@ const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
   products: { "products.view": true, "products.edit": true, "products.mapping": true },
   dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
+  // A CRM caller: screens buyers (view + write). Never crm.assign — assigning a
+  // buyer to a salesperson is manager/admin only.
+  crm: { "crm.view": true, "crm.write": true },
   manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions", "products.create"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
@@ -104,11 +110,16 @@ const GROUPS: Record<string, string[]> = {
   // sale.pdf is included so a dispatch-only packer can print a packing sheet
   // without being granted any Sales rights.
   dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
+  // The CRM module grants a caller view + write. crm.assign is intentionally NOT
+  // here — it is admin-tier (see the admin group), so ticking CRM never lets a
+  // salesperson reassign buyers.
+  crm: ["crm.view", "crm.write"],
   dashboard: ["dashboard.view", "dashboard.export"],
   // products.create is an admin-tier capability (creating a product can overwrite
   // catalogue data), granted alongside admin.settings — never via the Products
   // module. It tracks admin.settings everywhere: here, the presets, and the backfill.
-  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions", "products.create"],
+  // crm.assign rides with admin for the same reason: assigning buyers is manager/admin.
+  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions", "products.create", "crm.assign"],
 };
 
 function expandGroups(value: unknown): Record<string, boolean> {
@@ -131,6 +142,7 @@ function collapseGroups(permissions: Record<string, boolean>): Record<string, bo
     sales: Boolean(permissions["sale.view"]),
     products: Boolean(permissions["products.view"]),
     dispatch: Boolean(permissions["dispatch.view"]),
+    crm: Boolean(permissions["crm.view"]),
     dashboard: Boolean(permissions["dashboard.view"]),
     admin: Boolean(
       permissions["admin.staff"] ||
@@ -247,6 +259,18 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   listDispatch: ["dispatch.view"],
   getDispatch: ["dispatch.view"],
   saveDispatch: ["dispatch.write"],
+  // CRM. view lists/reads; write logs calls, sets buyer type / status, edits
+  // references; assign (manager/admin) reassigns a buyer to a salesperson. Every
+  // action is listed — an action absent from this map has alternatives.length 0
+  // and passes UNGATED (guardrail A3).
+  crmListCustomers: ["crm.view"],
+  crmCustomerDetail: ["crm.view"],
+  crmSetBuyerType: ["crm.write"],
+  crmSetStatus: ["crm.write"],
+  crmLogCall: ["crm.write"],
+  crmAddReference: ["crm.write"],
+  crmDeleteReference: ["crm.write"],
+  crmAssign: ["crm.assign"],
   createStaff: ["admin.staff"],
   listStaff: ["admin.staff"],
   updateStaff: ["admin.staff"],
@@ -974,9 +998,9 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions, preset);
-      const allowedSections = ["reception","dashboard","sale","products","dispatch","admin"];
+      const allowedSections = ["reception","dashboard","sale","products","dispatch","crm","admin"];
       const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
-      const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", dispatch:"dispatch.view", admin:"admin.slots" };
+      const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", dispatch:"dispatch.view", crm:"crm.view", admin:"admin.slots" };
       if (!permissions[modulePermission[defaultSection]] && defaultSection !== "admin") throw new Error("Default section must be permitted");
       if (defaultSection === "admin" && !Object.keys(permissions).some((key) => key.startsWith("admin.") && permissions[key])) throw new Error("Default section must be permitted");
       const password = clean(body.password) || generatePassword();
@@ -1028,7 +1052,7 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions,preset);
-      const defaultSection = ["reception","dashboard","sale","products","dispatch","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
+      const defaultSection = ["reception","dashboard","sale","products","dispatch","crm","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
       if (body.staffName !== undefined) row.staff_name = clean(body.staffName);
       if (body.active !== undefined) row.active = Boolean(body.active);
@@ -1223,6 +1247,101 @@ Deno.serve(async (request: Request) => {
       });
       if (dErr) throw dErr;
       return jsonResponse(request, { ok: true, data: { result: data, detail } });
+    }
+
+    // ── CRM ────────────────────────────────────────────────────────────────
+    // Every action is in ACTION_PERMISSIONS above; the gate runs before we get
+    // here. Writes pass admin.id as the actor so customer_crm_log/calls attribute
+    // correctly. Assignable staff = anyone who can see CRM (crm.view holders) —
+    // returned here so the assign picker works without admin.staff.
+    if (action === "crmListCustomers") {
+      const filters = body.filters && typeof body.filters === "object" && !Array.isArray(body.filters) ? body.filters : {};
+      const { data, error } = await db.rpc("crm_list_customers", { p_filters: filters });
+      if (error) throw error;
+      const { data: staffRows, error: sErr } = await db
+        .from("staff_profiles")
+        .select("auth_user_id,staff_name,permissions,active")
+        .order("staff_name", { ascending: true });
+      if (sErr) throw sErr;
+      const staff = (staffRows ?? [])
+        .filter((r: any) => r.active !== false && r.permissions && r.permissions["crm.view"])
+        .map((r: any) => ({ id: r.auth_user_id, name: r.staff_name }));
+      return jsonResponse(request, { ok: true, data: { customers: data ?? [], staff } });
+    }
+
+    if (action === "crmCustomerDetail") {
+      const customerId = clean(body.customerId);
+      if (!customerId) throw new Error("CUSTOMER_ID_REQUIRED");
+      const { data, error } = await db.rpc("crm_customer_detail", { p_customer_id: customerId });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetBuyerType") {
+      const { data, error } = await db.rpc("crm_set_buyer_type", {
+        p_customer_id: clean(body.customerId),
+        p_buyer_type: clean(body.buyerType) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetStatus") {
+      const { data, error } = await db.rpc("crm_set_status", {
+        p_customer_id: clean(body.customerId),
+        p_status: clean(body.status),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmAssign") {
+      const { data, error } = await db.rpc("crm_assign", {
+        p_customer_id: clean(body.customerId),
+        p_assigned_to: clean(body.assignedTo) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmLogCall") {
+      const rawAmount = body.tokenAmount;
+      const tokenAmount = rawAmount === "" || rawAmount === null || rawAmount === undefined ? null : Number(rawAmount);
+      if (tokenAmount !== null && !Number.isFinite(tokenAmount)) throw new Error("INVALID_TOKEN_AMOUNT");
+      const { data, error } = await db.rpc("crm_log_call", {
+        p_customer_id: clean(body.customerId),
+        p_outcome: clean(body.outcome),
+        p_notes: clean(body.notes),
+        p_status_after: clean(body.statusAfter) || null,
+        p_has_reference: Boolean(body.hasReference),
+        p_token_agreed: Boolean(body.tokenAgreed),
+        p_token_amount: tokenAmount,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmAddReference") {
+      const { data, error } = await db.rpc("crm_add_reference", {
+        p_customer_id: clean(body.customerId),
+        p_reference_text: clean(body.referenceText),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmDeleteReference") {
+      const { data, error } = await db.rpc("crm_delete_reference", {
+        p_reference_id: clean(body.referenceId),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
     }
 
     if (action === "getCustomerOrders") {

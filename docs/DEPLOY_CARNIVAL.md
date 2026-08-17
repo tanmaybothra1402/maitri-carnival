@@ -75,6 +75,17 @@ alone** — they carry live barcodes/orders, one carries a dispatch line, and
 dispatch_lines — so `noncanonical_active` is 12, not 0, by design. Those 12 need
 a human dedup decision. Canonical-collision groups are now **0**.
 
+`202608010015` + `202608010016` (2026-08-17) add the **CRM module** (buyer
+screening before first billing). 015 is the schema/RPCs/permissions; 016 is the
+customer column/table privacy lockdown (must ship together). This checkpoint ALSO
+redeploys `admin-api` (new nav/permission wiring + 8 CRM actions) and the admin
+HTML (CRM screen + reception flag banner). Deploy order: **both migrations, then
+`npx supabase functions deploy admin-api --no-verify-jwt`, then the HTML.** The new
+`crm` permission module (crm.view/write/assign) was backfilled to administrators
+only — grant other staff crm.* through Admin → Team. Rejected buyers show a red
+"Flagged — question before allowing entry" banner at reception; the check-in button
+stays enabled (flag, not gate).
+
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
 | Migration | What it does |

@@ -408,6 +408,55 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .pc-preview{margin-top:10px;display:flex;align-items:center;gap:10px}
 .pc-preview img{width:72px;height:96px;object-fit:cover;border-radius:8px;background:#eef2f0}
 .pc-preview span{font-size:11px;color:var(--muted)}
+/* Reception flag banner — flag, not gate. */
+.entry-flag{margin:4px 0 6px;padding:7px 10px;border-radius:9px;background:#FEE2E2;border:1px solid #FCA5A5;color:#991B1B;font-size:11px;font-weight:800}
+/* CRM */
+.crm-head{margin-bottom:12px}
+.crm-filters{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.crm-chip-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.crm-chip-row .chip{flex:0 0 auto;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted)}
+.crm-chip-row .chip.active{background:var(--deep);color:#fff;border-color:var(--deep)}
+.crm-mine{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--slate)}
+.crm-mine input{width:17px;height:17px}
+.crm-count{margin-bottom:8px;color:var(--muted);font-size:11px;font-weight:800}
+.crm-list{display:grid;gap:8px}
+.crm-loading{padding:26px;text-align:center;color:var(--muted);font-size:12px}
+.crm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;text-align:left}
+.crm-row:active{transform:scale(.995);background:var(--foam)}
+.crm-row b{display:block;color:var(--deep);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crm-row p{margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.45}
+.crm-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.crm-b{display:inline-flex;align-items:center;min-height:20px;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:800}
+.crm-b.pending{background:#FFF3D9;color:#8A5A09}.crm-b.on_hold{background:#E5E7EB;color:#374151}
+.crm-b.agreed{background:#DCFCE7;color:#166534}.crm-b.rejected{background:#FEE2E2;color:#991B1B}
+.crm-b.new{background:var(--foam);color:var(--deep)}.crm-b.old{background:#EDE9FE;color:#5B21B6}
+.crm-b.dupe{background:#FEF3C7;color:#92400E}.crm-b.assigned{background:#E0F2FE;color:#075985}
+.crm-row-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;color:var(--muted);font-size:9px;white-space:nowrap}
+.crm-dupe-hint{margin-bottom:12px;padding:9px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11px;font-weight:700}
+.crm-field{margin-top:14px}
+.crm-field>label{display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--slate);letter-spacing:.03em;text-transform:uppercase}
+.crm-seg{display:flex;gap:6px;flex-wrap:wrap}
+.crm-seg button{min-height:38px;padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--slate);font-size:12px;font-weight:800;cursor:pointer}
+.crm-seg button.active{background:var(--deep);color:#fff;border-color:var(--deep)}
+.crm-seg button.active.rejected{background:var(--error);border-color:var(--error)}
+.crm-seg button.active.agreed{background:#166534;border-color:#166534}
+.crm-hint{margin-top:5px;font-size:10px;color:var(--muted)}
+.crm-check{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--body)}
+.crm-check input{width:18px;height:18px;flex:0 0 auto}
+.crm-token-amt{margin-top:8px}
+.crm-token-amt input:disabled{background:#EEF2F0;color:#9AA0A6}
+.crm-calls{display:grid;gap:7px;margin-top:8px}
+.crm-call{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#F8FBFA}
+.crm-call b{font-size:11px;color:var(--ink)}
+.crm-call span{display:block;margin-top:2px;color:var(--muted);font-size:10px}
+.crm-call p{margin-top:4px;font-size:11px;color:var(--body);line-height:1.45}
+.crm-refs{display:grid;gap:6px;margin-top:8px}
+.crm-ref{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:12px}
+.crm-ref button{border:0;background:none;color:var(--error);font-weight:800;cursor:pointer;font-size:11px}
+.crm-addcall{margin-top:10px;padding:12px;border:1px dashed var(--teal);border-radius:12px;background:var(--foam)}
+.crm-addcall select,.crm-addcall textarea,.crm-addcall input{width:100%;margin-top:6px}
+.crm-addrow{display:flex;gap:8px;margin-top:8px}
+.crm-addrow input{flex:1}
 </style>
 </head>
 <body>
@@ -588,6 +637,36 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 
 <div class="lightbox" id="dispatch-lightbox"><button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button><img alt="" id="lightbox-img"/><span class="lightbox-caption" id="lightbox-caption"></span></div>
 
+<main class="page" id="page-crm">
+  <div class="crm-head"><div><span class="section-kicker">Buyer screening</span><h1>CRM</h1><p class="copy">Screen new buyers before their first billing — assign a caller, log the call, record references, set an outcome. Rejected buyers are flagged at the gate, never blocked.</p></div></div>
+  <div class="mc-warn hidden" id="crm-dupe-warn"></div>
+  <div class="crm-filters">
+    <input id="crm-search" placeholder="Search company, contact, phone or city"/>
+    <div class="crm-chip-row" id="crm-buyer-filter">
+      <button class="chip active" type="button" data-buyer="">All</button>
+      <button class="chip" type="button" data-buyer="unscreened">Unscreened</button>
+      <button class="chip" type="button" data-buyer="new">New buyer</button>
+      <button class="chip" type="button" data-buyer="old">Old buyer</button>
+    </div>
+    <div class="crm-chip-row" id="crm-status-filter">
+      <button class="chip active" type="button" data-status="">Any status</button>
+      <button class="chip" type="button" data-status="pending">Pending</button>
+      <button class="chip" type="button" data-status="on_hold">On hold</button>
+      <button class="chip" type="button" data-status="agreed">Agreed</button>
+      <button class="chip" type="button" data-status="rejected">Rejected</button>
+    </div>
+    <label class="crm-mine"><input type="checkbox" id="crm-mine"/> Only customers assigned to me</label>
+  </div>
+  <div class="crm-count" id="crm-count"></div>
+  <div class="crm-list" id="crm-list"><div class="crm-loading">Loading…</div></div>
+</main>
+
+<div class="modal" id="crm-detail-modal"><div class="sheet">
+  <div class="sheet-head"><div><h2 id="crm-d-title">Customer</h2><p class="copy" id="crm-d-sub"></p></div><button class="close" data-close="crm-detail-modal">✕</button></div>
+  <div class="crm-dupe-hint hidden" id="crm-d-dupe"></div>
+  <div id="crm-d-body"><div class="crm-loading">Loading…</div></div>
+</div></div>
+
 <main class="page" id="page-admin">
 <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button><button data-sub="exhibitions">Exhibitions</button></div>
 <section class="subpanel" id="admin-slots"><div class="card slot-manager-card">
@@ -650,7 +729,8 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <button class="nav-item center" data-section="sale" id="nav-sale" style="grid-column:3"><span class="fab"><svg viewbox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"></path></svg></span>Sale Order</button>
 <button class="nav-item" data-section="products" id="nav-products" style="grid-column:4"><svg viewbox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><path d="M7 7h.01"></path></svg>Products</button>
 <button class="nav-item" data-section="dispatch" id="nav-dispatch" style="grid-column:5"><svg viewbox="0 0 24 24"><path d="M16 3h-3v10h3V3zM21 8l-3-2v7l3-2V8z"></path><path d="M3 7h8v10H3zM3 17l4 4h10"></path></svg>Dispatch</button>
-<button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:6"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
+<button class="nav-item" data-section="crm" id="nav-crm" style="grid-column:6"><svg viewbox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>CRM</button>
+<button class="nav-item" data-section="admin" id="nav-admin" style="grid-column:7"><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20h-3v-.09A1.7 1.7 0 0 0 10.68 18.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.55-1.03H5v-3h.47A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88L6.62 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.71 4.73V4h3v.73a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03H21v3h-.05A1.7 1.7 0 0 0 19.4 15z"></path></svg>Admin</button>
 </nav>
 <div class="modal" id="entry-edit-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="entry-edit-title">Visitor details</h2><p class="copy" id="entry-edit-sub"></p></div><button class="close" data-close="entry-edit-modal">✕</button></div><div class="entry-edit-summary" id="entry-edit-summary"></div><label>Visit slot</label><select id="entry-edit-slot"><option value="">No visit slot</option></select><div class="grid2"><div><label>People in group</label><input id="entry-edit-party" min="1" max="99" type="number" value="1"/></div><div><label>Visit note <span class="optional">optional</span></label><input id="entry-edit-note" maxlength="120"/></div></div><button class="btn" id="entry-edit-save" style="width:100%;margin-top:14px">Save changes</button><div class="entry-edit-actions"><button class="btn secondary" id="entry-edit-active">Pause visitor</button><button class="btn secondary" id="entry-edit-entry">Check in</button></div></div></div>
 <div class="modal" id="order-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="order-modal-title">Order</h2><p class="copy" id="order-modal-sub"></p></div><button class="close" data-close="order-modal">✕</button></div><div id="order-modal-body"></div><div class="row" id="order-modal-actions" style="margin-top:12px"></div></div></div>
@@ -900,6 +980,8 @@ function moduleAllowed(s) {
           ? has("products.view") || has("products.edit") || has("products.mapping")
           : s === "dispatch"
             ? has("dispatch.view") || has("dispatch.write")
+            : s === "crm"
+            ? has("crm.view")
             : Object.keys(st.me?.permissions || {}).some(
               (k) => k.startsWith("admin.") && st.me.permissions[k],
             );
@@ -949,7 +1031,7 @@ function setLogged(on) {
       .forEach((p) => p.id !== "login-screen" && p.classList.remove("active"));
 }
 function setupNavigation() {
-  const navSections = ["reception", "dashboard", "sale", "products", "dispatch", "admin"];
+  const navSections = ["reception", "dashboard", "sale", "products", "dispatch", "crm", "admin"];
   navSections.forEach((s) =>
     $("nav-" + s).classList.toggle("hidden", !moduleAllowed(s)),
   );
@@ -990,7 +1072,7 @@ function setupNavigation() {
   go(
     moduleAllowed(st.me.defaultSection)
       ? st.me.defaultSection
-      : ["sale", "reception", "dashboard", "products", "dispatch", "admin"].find(
+      : ["sale", "reception", "dashboard", "products", "dispatch", "crm", "admin"].find(
           moduleAllowed,
         ) || "sale",
   );
@@ -1029,6 +1111,7 @@ function go(section) {
   }
   if (section === "products") loadProductsModule();
   if (section === "dispatch") loadDispatch();
+  if (section === "crm") loadCrm();
   if (section === "admin") loadAdminModule();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1149,6 +1232,7 @@ function entryCard(c, completed = false) {
   return `<article class="entry-card ${!completed && slot.key === "current" ? "current" : ""}">
     <div class="entry-card-main">
       <div class="entry-card-title"><b>${esc(c.companyName)}</b></div>
+      ${c.crmStatus === "rejected" ? '<div class="entry-flag">⚠ Flagged — question before allowing entry</div>' : ""}
       <div class="entry-tag-row">${slotTags}${!c.active ? '<span class="entry-tag paused">Paused</span>' : ""}</div>
       <div class="entry-primary">${esc(contactLine || "Contact not added")}</div>
       <div class="entry-secondary">${esc(context || "No location or agent details")}</div>
@@ -4284,6 +4368,150 @@ function firmPill(firm) {
   const f = String(firm || "");
   return `<span class="firm-pill ${f.toLowerCase()}">${esc(f)}</span>`;
 }
+
+// ── CRM (buyer screening) ──────────────────────────────────────────────────
+st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", mine: false }, currentId: null, detail: null, _t: null };
+const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
+const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
+function crmB(cls, t) { return `<span class="crm-b ${esc(cls)}">${esc(t)}</span>`; }
+
+async function loadCrm() {
+  $("crm-list").innerHTML = '<div class="crm-loading">Loading…</div>';
+  try {
+    const f = st.crm.filters;
+    const data = await admin("crmListCustomers", { filters: { search: f.search, buyerType: f.buyerType, status: f.status } });
+    st.crm.customers = data.customers || [];
+    st.crm.staff = data.staff || [];
+    renderCrmList();
+  } catch (e) { $("crm-list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function crmFilteredRows() {
+  let rows = st.crm.customers.slice();
+  if (st.crm.filters.mine) rows = rows.filter((c) => c.assignedTo && c.assignedTo === st.me?.id);
+  return rows;
+}
+function renderCrmList() {
+  const rows = crmFilteredRows();
+  const dupes = rows.filter((c) => c.dupName && c.dupPhone).length;
+  const warn = $("crm-dupe-warn");
+  if (dupes) { warn.classList.remove("hidden"); warn.textContent = `⚠ ${dupes} customer${dupes === 1 ? "" : "s"} here match another active customer on BOTH name and phone — likely duplicates. Review before screening; never merge automatically.`; }
+  else warn.classList.add("hidden");
+  $("crm-count").textContent = `${rows.length} customer${rows.length === 1 ? "" : "s"}${st.crm.filters.mine ? " (assigned to me)" : ""}`;
+  if (!rows.length) { $("crm-list").innerHTML = '<div class="empty">No customers match these filters.</div>'; return; }
+  $("crm-list").innerHTML = rows.map((c) => {
+    const badges = [crmB(c.crmStatus, CRM_STATUS[c.crmStatus] || c.crmStatus)];
+    badges.push(c.buyerType ? crmB(c.buyerType, c.buyerType === "new" ? "New buyer" : "Old buyer") : crmB("on_hold", "Unscreened"));
+    if (c.assignedName) badges.push(crmB("assigned", "→ " + c.assignedName));
+    if (c.dupName && c.dupPhone) badges.push(crmB("dupe", "Possible duplicate"));
+    else if (c.dupName || c.dupPhone) badges.push(crmB("dupe", c.dupName ? "Dup name" : "Dup phone"));
+    const loc = [c.city, c.state].filter(Boolean).join(", ");
+    return `<button class="crm-row" type="button" data-crm-open="${esc(c.id)}">
+      <div><b>${esc(c.companyName || "Unnamed")}</b>
+      <p>${esc([c.contactName, c.phone ? ("+" + c.phone) : "", loc].filter(Boolean).join(" · ") || "No contact details")}</p>
+      <div class="crm-badges">${badges.join("")}</div></div>
+      <div class="crm-row-right"><span>${c.callCount || 0} call${Number(c.callCount) === 1 ? "" : "s"}</span>${c.referenceCount ? `<span>${c.referenceCount} ref</span>` : ""}${c.lastCallAt ? `<span>${esc(fmt(c.lastCallAt))}</span>` : ""}</div>
+    </button>`;
+  }).join("");
+}
+
+async function openCrmDetail(id) {
+  st.crm.currentId = id;
+  const c = st.crm.customers.find((x) => x.id === id) || {};
+  $("crm-d-title").textContent = c.companyName || "Customer";
+  $("crm-d-sub").textContent = [c.contactName, c.phone ? ("+" + c.phone) : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
+  const dup = $("crm-d-dupe");
+  if (c.dupName || c.dupPhone) { dup.classList.remove("hidden"); dup.textContent = `Possible duplicate — shares ${[c.dupName ? "company name" : "", c.dupPhone ? "phone" : ""].filter(Boolean).join(" and ")} with another active customer. Verify before screening; never merge here.`; }
+  else dup.classList.add("hidden");
+  $("crm-d-body").innerHTML = '<div class="crm-loading">Loading…</div>';
+  openModal("crm-detail-modal");
+  try { st.crm.detail = await admin("crmCustomerDetail", { customerId: id }); renderCrmDetail(); }
+  catch (e) { $("crm-d-body").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function crmSeg(name, current, opts) {
+  return `<div class="crm-seg" data-crm-seg="${name}">` + opts.map(([v, label]) => `<button type="button" class="${current === v ? ("active " + v) : ""}" data-val="${esc(v)}">${esc(label)}</button>`).join("") + `</div>`;
+}
+function renderCrmDetail() {
+  const d = st.crm.detail; if (!d) return;
+  const canAssign = has("crm.assign");
+  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}"${d.assignedTo === s.id ? " selected" : ""}>${esc(s.name)}</option>`)).join("");
+  const calls = (d.calls || []).map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
+  const refs = (d.references || []).map((r) => `<div class="crm-ref"><span>${esc(r.text)}</span><button type="button" data-crm-delref="${esc(r.id)}">Remove</button></div>`).join("") || '<div class="crm-hint">No references recorded.</div>';
+  $("crm-d-body").innerHTML = `
+    <div class="crm-field"><label>Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</label>
+      ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["old", "Old buyer"]])}
+      <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div></div>
+    <div class="crm-field"><label>Outcome / status</label>
+      ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
+      ${d.crmStatus === "rejected" ? '<div class="crm-hint">Rejected buyers are flagged at reception — never blocked.</div>' : ""}</div>
+    <div class="crm-field"><label>Assigned salesperson</label>
+      <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
+      ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>
+    <div class="crm-field"><label>References</label>
+      <div class="crm-refs">${refs}</div>
+      <div class="crm-addrow"><input id="crm-d-refinput" maxlength="2000" placeholder="Add a reference (name, firm, phone…)"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div></div>
+    <div class="crm-field"><label>Call log</label>
+      <div class="crm-calls">${calls}</div>
+      <div class="crm-addcall">
+        <label style="text-transform:none;font-weight:800;color:var(--deep)">Log a call</label>
+        <select id="crm-c-outcome">${Object.entries(CRM_OUTCOME).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+        <textarea id="crm-c-notes" rows="2" maxlength="4000" placeholder="Notes — what the buyer said…"></textarea>
+        <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
+        <label class="crm-check" style="margin-top:8px"><input type="checkbox" id="crm-c-hasref" ${d.hasReference ? "checked" : ""}/> Buyer gave references</label>
+        <label class="crm-check" style="margin-top:8px"><input type="checkbox" id="crm-c-token" ${d.tokenAgreed ? "checked" : ""}/> Token amount agreed</label>
+        <div class="crm-token-amt"><input id="crm-c-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div>
+        <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>
+      </div></div>`;
+}
+async function crmRefresh() {
+  st.crm.detail = await admin("crmCustomerDetail", { customerId: st.crm.currentId });
+  renderCrmDetail();
+  loadCrm();
+}
+async function crmDo(fn, msg) { try { await fn(); await crmRefresh(); toast(msg, "success"); } catch (e) { toast(e.message, "error"); } }
+async function crmSaveCall() {
+  const tokenAgreed = $("crm-c-token").checked;
+  const amountRaw = $("crm-c-amount").value.trim();
+  // Validate at input time: amount only when agreed, and never negative.
+  if (tokenAgreed && amountRaw !== "" && !(Number(amountRaw) >= 0)) { toast("Enter a valid token amount", "error"); return; }
+  const btn = $("crm-c-save");
+  try {
+    btn.disabled = true;
+    await admin("crmLogCall", {
+      customerId: st.crm.currentId,
+      outcome: $("crm-c-outcome").value,
+      notes: $("crm-c-notes").value.trim(),
+      statusAfter: $("crm-c-status").value || "",
+      hasReference: $("crm-c-hasref").checked,
+      tokenAgreed,
+      tokenAmount: tokenAgreed ? amountRaw : "",
+    });
+    await crmRefresh();
+    toast("Call logged", "success");
+  } catch (e) { toast(e.message, "error"); if ($("crm-c-save")) $("crm-c-save").disabled = false; }
+}
+$("crm-search").oninput = () => { st.crm.filters.search = $("crm-search").value.trim(); clearTimeout(st.crm._t); st.crm._t = setTimeout(loadCrm, 250); };
+$("crm-buyer-filter").onclick = (e) => { const b = e.target.closest("[data-buyer]"); if (!b) return; st.crm.filters.buyerType = b.dataset.buyer; $("crm-buyer-filter").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b)); loadCrm(); };
+$("crm-status-filter").onclick = (e) => { const b = e.target.closest("[data-status]"); if (!b) return; st.crm.filters.status = b.dataset.status; $("crm-status-filter").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b)); loadCrm(); };
+$("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
+$("crm-list").onclick = (e) => { const b = e.target.closest("[data-crm-open]"); if (b) openCrmDetail(b.dataset.crmOpen); };
+$("crm-detail-modal").addEventListener("click", async (e) => {
+  const seg = e.target.closest("[data-crm-seg] [data-val]");
+  if (seg) { const kind = seg.closest("[data-crm-seg]").dataset.crmSeg; const val = seg.dataset.val;
+    if (kind === "buyerType") await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved");
+    else if (kind === "status") await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val }), "Status saved");
+    return; }
+  const delref = e.target.closest("[data-crm-delref]");
+  if (delref) { await crmDo(() => admin("crmDeleteReference", { referenceId: delref.dataset.crmDelref }), "Reference removed"); return; }
+  if (e.target.id === "crm-d-refadd") { const v = $("crm-d-refinput").value.trim(); if (!v) { toast("Enter a reference", "error"); return; } await crmDo(() => admin("crmAddReference", { customerId: st.crm.currentId, referenceText: v }), "Reference added"); return; }
+  if (e.target.id === "crm-c-save") { await crmSaveCall(); return; }
+});
+$("crm-detail-modal").addEventListener("change", async (e) => {
+  if (e.target.id === "crm-d-assign") { await crmDo(() => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: e.target.value || "" }), "Assignment updated"); return; }
+  if (e.target.id === "crm-c-token") { $("crm-c-amount").disabled = !e.target.checked; if (!e.target.checked) $("crm-c-amount").value = ""; return; }
+});
+$("crm-detail-modal").addEventListener("input", (e) => {
+  if (e.target.id === "crm-c-amount" && e.target.value !== "" && Number(e.target.value) < 0) e.target.value = "";
+});
 
 async function loadDispatch() {
   if (!has("dispatch.view")) return;
