@@ -86,6 +86,19 @@ only — grant other staff crm.* through Admin → Team. Rejected buyers show a 
 "Flagged — question before allowing entry" banner at reception; the check-in button
 stays enabled (flag, not gate).
 
+`202608010017` (2026-08-17) moves the 8 CRM fields **off** `customers` into a 1:1
+`public.customer_crm` table (RLS on, no policies, no grants to authenticated/anon).
+This kills the column-grant fragility: with no CRM columns on `customers`, table-wide
+SELECT is restored to `authenticated` and `select *` is safe again. **UPDATE stays
+column-scoped to the 6 profile fields** (`company_name, contact_name, city, state,
+agent, gstin`) — never restored table-wide, so a buyer can't write
+`active`/`checked_in_at`/`edit_deadline`/`exhibition_id`. One atomic migration:
+create table → backfill (asserted 1075 = 1075 before the drop) → rewrite the 6 CRM
+RPCs + `admin_directory` to LEFT JOIN `customer_crm` with `coalesce(crm_status,
+'pending')` and upsert-on-write → drop the 8 columns → restore SELECT. **Migration
+only — no Edge or HTML change** (RPC signatures + JSON shapes unchanged). The
+`user.html` explicit-column select from the hotfix is kept as defense in depth.
+
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
 | Migration | What it does |
