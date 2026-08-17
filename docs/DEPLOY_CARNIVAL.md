@@ -46,8 +46,22 @@ npx supabase db push
 The latest migration is:
 
 ```text
-supabase/migrations/202608010009_lock_down_exhibitions_grants.sql
+supabase/migrations/202608010013_fix_malformed_barcodes.sql
 ```
+
+`202608010013` (2026-08-17) repairs four active `barcode_mappings` rows that could
+never match a printed sticker — a **data-only** migration (no functions, no grants,
+no HTML). It is idempotent (guarded `is distinct from` / `not exists`, re-runnable):
+- `MC- 0941` (embedded space) → **deactivated** (a clean `MC-0941` already maps the
+  same design NRK-8900; renaming would collide).
+- `MC- 0954` (embedded space) → **renamed** to `MC-0954` (no clean row existed).
+- `MC-0837` → **deactivated** (its target design MR-8842 is inactive).
+- `MC-01` → **left untouched on purpose** (not a 4-digit sticker; intended value
+  unknown — do not guess or delete).
+
+Post-apply invariants (all returned 0 rows on 2026-08-17): no active mapping has
+whitespace in its barcode; none fails `^[A-Z]{2}-[0-9]{4}$` except the intentional
+`MC-01`; none points at an inactive design.
 
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
