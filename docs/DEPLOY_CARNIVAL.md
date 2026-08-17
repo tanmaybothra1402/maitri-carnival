@@ -63,6 +63,18 @@ Post-apply invariants (all returned 0 rows on 2026-08-17): no active mapping has
 whitespace in its barcode; none fails `^[A-Z]{2}-[0-9]{4}$` except the intentional
 `MC-01`; none points at an inactive design.
 
+`202608010014` (2026-08-17) normalises malformed **design numbers** toward
+`XX - NNNN` / `XX - NNNN (B)`. Data-only, idempotent, no functions/grants/HTML.
+It touches only the **9 inert** rows (0 active barcodes / 0 order_items / 0
+dispatch_lines): deactivates 4 malformed members whose canonical twin already
+exists (`MR - 4281 B`, `MR -  4349`, `MR -  4396`, `NRK -8531`) and renames 5
+inert orphans (`MR - 3574 B`→`(B)`, `MR - 4374 ( B )`→`(B)`, `MU  - 0312`,
+`NRK -8876`, `NRk - 8890`). **12 non-inert malformed rows are deliberately left
+alone** — they carry live barcodes/orders, one carries a dispatch line, and
+`design_no` renames cascade to order_items/barcode_mappings but **not**
+dispatch_lines — so `noncanonical_active` is 12, not 0, by design. Those 12 need
+a human dedup decision. Canonical-collision groups are now **0**.
+
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
 | Migration | What it does |
