@@ -4347,7 +4347,7 @@ function aggregateDispatchByDesign(orders, lines) {
       company: o.companyName || o.contactName || "Unnamed party",
       city: [o.city, o.state].filter(Boolean).join(", "),
       firm: o.firm || "",
-      orderUpdatedAt: o.updatedAt || "", // for the destructive-removal confirmation date
+      dispatchedAt: l.dispatchedAt || "", // real per-line ship date for the destructive-removal confirmation (NOT o.updatedAt, which later dispatches/edits bump)
       ordered, already,
       pcsPerSet: Number(l.pcsPerSet) || 1,
       now: remaining, // sets to dispatch this action — default remaining; payload = already + now
@@ -4360,6 +4360,16 @@ function aggregateDispatchByDesign(orders, lines) {
     .sort((a, b) => b.remaining - a.remaining); // most left to ship first
 }
 function dpRemaining(b) { return Math.max(0, (Number(b.ordered) || 0) - (Number(b.already) || 0)); }
+// Plain floor-readable ship date ("15 Aug 2026") in the operator's local timezone.
+// Returns "" for a missing/unparseable timestamp — the caller then omits the date
+// rather than inventing a fallback (A4 requirement 3).
+function dpShipDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()];
+  return `${d.getDate()} ${mon} ${d.getFullYear()}`;
+}
 function renderDispatchProduct() {
   const rows = st.dispatch.product || [];
   const writable = has("dispatch.write");
@@ -4516,9 +4526,17 @@ $("dispatch-list").onclick = (e) => {
     const b = st.dispatch.product?.[Number(rm.dataset.di)]?.buyers?.[Number(rm.dataset.bi)];
     if (!b) return;
     if (b.remove) { b.remove = false; renderDispatchProduct(); return; } // un-arm, no confirmation needed
-    // Destructive: reverses a REAL shipment and re-opens the line. Name quantity + date.
-    const when = b.orderUpdatedAt ? fmt(b.orderUpdatedAt) : "an earlier date";
-    if (!confirm(`This will REMOVE ${b.already} set${b.already === 1 ? "" : "s"} already dispatched (${when}) for ${b.company}. It reverses a real shipment and re-opens the line for the customer. Continue?`)) return;
+    // Destructive: reverses a REAL shipment and re-opens the line. Name quantity + design
+    // + buyer always; name the DATE only when we have the line's real dispatched_at.
+    // Never substitute a fallback date — a plausible-but-wrong date is worse than none.
+    const d = st.dispatch.product?.[Number(rm.dataset.di)];
+    const day = dpShipDate(b.dispatchedAt);
+    const qty = `${b.already} set${b.already === 1 ? "" : "s"}`;
+    const design = d?.designNo ? ` of ${d.designNo}` : "";
+    const msg = day
+      ? `This will REMOVE ${qty}${design} already dispatched on ${day} for ${b.company}. It reverses a real shipment and re-opens the line for the customer. Continue?`
+      : `This will REMOVE ${qty}${design} already dispatched for ${b.company}. It reverses a real shipment and re-opens the line for the customer. Continue?`;
+    if (!confirm(msg)) return;
     b.remove = true; b.now = 0; b.warn = "";
     renderDispatchProduct();
     return;

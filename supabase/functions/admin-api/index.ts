@@ -1168,20 +1168,28 @@ Deno.serve(async (request: Request) => {
       if (orderIds.length) {
         const [{ data: items, error: iErr }, { data: dls, error: dErr }] = await Promise.all([
           db.from("order_items").select("order_id,design_no,qty,pcs_per_set_snapshot").in("order_id", orderIds),
-          db.from("dispatch_lines").select("order_id,design_no,dispatched_sets").in("order_id", orderIds),
+          db.from("dispatch_lines").select("order_id,design_no,dispatched_sets,dispatched_at").in("order_id", orderIds),
         ]);
         if (iErr) throw iErr;
         if (dErr) throw dErr;
         const k = (oid: string, dn: string) => oid + " " + dn;
-        const dispatched = new Map<string, number>();
-        (dls ?? []).forEach((d: any) => dispatched.set(k(d.order_id, d.design_no), Number(d.dispatched_sets) || 0));
-        lines = (items ?? []).map((it: any) => ({
-          orderId: it.order_id,
-          designNo: it.design_no,
-          orderedSets: Number(it.qty) || 0,
-          dispatchedSets: dispatched.get(k(it.order_id, it.design_no)) || 0,
-          pcsPerSet: Number(it.pcs_per_set_snapshot) || 0,
-        }));
+        // Keep the per-line dispatch timestamp alongside the set count. The removal
+        // confirmation must name the date THIS line was actually shipped — not the
+        // order's updated_at, which recompute_dispatch_status()/_write_order bump on
+        // every later dispatch or edit and would show a plausible-but-wrong date.
+        const dispatched = new Map<string, { sets: number; at: string | null }>();
+        (dls ?? []).forEach((d: any) => dispatched.set(k(d.order_id, d.design_no), { sets: Number(d.dispatched_sets) || 0, at: d.dispatched_at ?? null }));
+        lines = (items ?? []).map((it: any) => {
+          const dl = dispatched.get(k(it.order_id, it.design_no));
+          return {
+            orderId: it.order_id,
+            designNo: it.design_no,
+            orderedSets: Number(it.qty) || 0,
+            dispatchedSets: dl?.sets || 0,
+            dispatchedAt: dl?.at ?? null,
+            pcsPerSet: Number(it.pcs_per_set_snapshot) || 0,
+          };
+        });
       }
       return jsonResponse(request, { ok: true, data: { orders, lines } });
     }
