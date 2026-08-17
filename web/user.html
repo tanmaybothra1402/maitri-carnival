@@ -1720,11 +1720,15 @@ $("save-account").onclick = async () => {
       agent: $("acc-agent").value.trim(),
       gstin: $("acc-gstin").value.trim().toUpperCase(),
     };
+    // Explicit column list, NOT .select() (=select=*). The authenticated role no
+    // longer has table-wide SELECT on customers (CRM columns are grant-scoped away,
+    // migration 016), so select=* fails 42501 as a whole. These are exactly the 16
+    // pre-CRM columns the app reads — never the CRM fields.
     const { data, error } = await sb
       .from("customers")
       .update(patch)
       .eq("id", state.profile.id)
-      .select()
+      .select("id,phone_e164,company_name,contact_name,city,state,gstin,active,created_at,updated_at,checked_in_at,checked_in_by,ordering_started_at,edit_deadline,agent,exhibition_id")
       .single();
     if (error) throw error;
     state.profile = data;
