@@ -113,6 +113,16 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010021` (2026-08-17) — permission-coherence fix. `crm.assign` moved from
+the Admin group to the CRM module (admin-api GROUPS.crm + PRESET_PERMISSIONS.crm +
+staff_permission_defaults 'crm' preset + a **new CRM checkbox in the staff editor**
+— the CRM module was missing from Admin → Team entirely, so editing any staff
+wiped crm.view/write). All three CRM keys now move together. admin-api
+createStaff/updateStaff gained a server-side coherence guard that drops crm.assign
+when crm.view is false. Seed-only migration — no live staff change. (Flagged:
+`products.create` has the same admin-tier cross-grant shape; left as-is pending a
+decision.) Redeploys admin-api + HTML.
+
 `202608010020` (2026-08-17) — customer tier (A/B/C, NULL=unranked) on
 `customer_crm` (NOT customers — kept behind the buyer-invisible wall). New
 `crm_set_tier` / `crm_bulk_set_tier`; six readers extended to return tier

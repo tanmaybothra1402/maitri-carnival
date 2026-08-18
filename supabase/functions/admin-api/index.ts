@@ -81,9 +81,10 @@ const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   reception: { "reception.view": true, "reception.checkin": true, "reception.register": true, "reception.password_reset": true, "reception.customer_control": true, "admin.bookings": true },
   products: { "products.view": true, "products.edit": true, "products.mapping": true },
   dispatch: { "dispatch.view": true, "dispatch.write": true, "sale.pdf": true },
-  // A CRM caller: screens buyers (view + write). Never crm.assign — assigning a
-  // buyer to a salesperson is manager/admin only.
-  crm: { "crm.view": true, "crm.write": true },
+  // The three CRM keys always move together. crm.assign is a write action INSIDE
+  // the CRM module — it must not ride on an unrelated group (that produced
+  // assign-without-view when Admin was edited). See GROUPS.crm.
+  crm: { "crm.view": true, "crm.write": true, "crm.assign": true },
   manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions", "products.create"].includes(key))),
   administrator: { ...ALL_PERMISSIONS },
   custom: {},
@@ -110,16 +111,16 @@ const GROUPS: Record<string, string[]> = {
   // sale.pdf is included so a dispatch-only packer can print a packing sheet
   // without being granted any Sales rights.
   dispatch: ["dispatch.view", "dispatch.write", "sale.pdf"],
-  // The CRM module grants a caller view + write. crm.assign is intentionally NOT
-  // here — it is admin-tier (see the admin group), so ticking CRM never lets a
-  // salesperson reassign buyers.
-  crm: ["crm.view", "crm.write"],
+  // All three CRM keys are granted by the CRM checkbox together. crm.assign USED to
+  // ride on the admin group; that let editing Admin toggle it independently of
+  // crm.view and produced an incoherent assign-without-view state — it now lives
+  // here with view + write.
+  crm: ["crm.view", "crm.write", "crm.assign"],
   dashboard: ["dashboard.view", "dashboard.export"],
   // products.create is an admin-tier capability (creating a product can overwrite
   // catalogue data), granted alongside admin.settings — never via the Products
   // module. It tracks admin.settings everywhere: here, the presets, and the backfill.
-  // crm.assign rides with admin for the same reason: assigning buyers is manager/admin.
-  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions", "products.create", "crm.assign"],
+  admin: ["admin.slots", "admin.staff", "admin.settings", "admin.bookings", "admin.exhibitions", "products.create"],
 };
 
 function expandGroups(value: unknown): Record<string, boolean> {
@@ -151,6 +152,15 @@ function collapseGroups(permissions: Record<string, boolean>): Record<string, bo
       permissions["admin.exhibitions"]
     ),
   };
+}
+
+// Server-side coherence guard, mutates in place. A staff member must never hold
+// crm.assign (a CRM write action) without crm.view — that "can act but can't see"
+// state is exactly the bug that shipped. Enforced here, at the write path, because
+// the UI is not the only writer. Drop the orphaned action rather than silently
+// granting read access nobody selected.
+function enforcePermissionCoherence(permissions: Record<string, boolean>): void {
+  if (permissions["crm.assign"] && !permissions["crm.view"]) permissions["crm.assign"] = false;
 }
 
 type StaffContext = {
@@ -1004,6 +1014,7 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions, preset);
+      enforcePermissionCoherence(permissions);
       const allowedSections = ["reception","dashboard","sale","products","dispatch","crm","admin"];
       const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const modulePermission: Record<string,string> = { reception:"reception.view", dashboard:"dashboard.view", sale:"sale.view", products:"products.view", dispatch:"dispatch.view", crm:"crm.view", admin:"admin.slots" };
@@ -1058,6 +1069,7 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions,preset);
+      enforcePermissionCoherence(permissions);
       const defaultSection = ["reception","dashboard","sale","products","dispatch","crm","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
       if (body.staffName !== undefined) row.staff_name = clean(body.staffName);
