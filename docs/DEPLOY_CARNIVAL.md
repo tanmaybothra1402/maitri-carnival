@@ -113,6 +113,27 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010025` (2026-08-18) — CRM filters fail OPEN. An unrecognised filter value
+used to empty the list (buyerType/status/tier/assigned → 0 rows) or throw
+(withOrders/callbacksDue → 22P02) — staff read a blank CRM as "data gone"
+(guardrail D1). The four enums normalise to NULL when unrecognised (existing
+"is null → no filter" branches apply); the two booleans use a non-throwing truthy
+test; sort was already safe. Also adds an `assignedTo` param that filters to one
+salesperson in SQL before the LIMIT — the "assigned to me" toggle moved onto it
+(it used to filter the fetched 500-row page client-side, hiding a salesperson's
+own buyers that sorted past row 500). HTML-only + this migration; Edge unchanged.
+Ledger reconciled from a 14-digit MCP stamp to this 12-digit number (UPDATE
+preserving statements). No customer-facing change.
+
+`202608010024` (2026-08-18) — CRM list `assigned` filter (all / assigned /
+unassigned), applied in SQL before the LIMIT (the RPC had no assignee filter;
+client-side after a 500-row page would drop assigned customers). Three-state chip
+in the Filters sheet (not a page row). Edge passes filters through untouched — no
+redeploy. Ledger reconciled from a 14-digit MCP stamp to 12-digit as above.
+Also shipped in the same commit: home-screen icons for both apps (apple-touch-icon
+180×180 opaque, per-app manifest.json), served same-origin from `web/assets/icons/`
+— distinct teal EKUM (admin) vs white Maitri (customer) tiles.
+
 `202608010023` (2026-08-18) — `crm.bulk` key gates the three mass-edit actions
 (`crm_bulk_assign` / `crm_bulk_set_buyer_type` / `crm_bulk_set_tier`). admin-api:
 `crm.bulk` in ALL_PERMISSIONS but **excluded from GROUPS.crm and from the
