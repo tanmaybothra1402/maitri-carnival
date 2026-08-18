@@ -69,6 +69,12 @@ const ALL_PERMISSIONS: Record<string, boolean> = {
   "crm.view": true,
   "crm.write": true,
   "crm.assign": true,
+  // Mass CRM edits (bulk reassign / retype / retier). A separate high-blast-radius
+  // key held by only a couple of accounts — NOT part of the CRM module group, and
+  // deliberately excluded from the manager/administrator presets so it is never
+  // granted broadly. Must be listed here so normalizePermissions preserves it on
+  // read (a key absent from ALL_PERMISSIONS is silently stripped).
+  "crm.bulk": true,
   "admin.slots": true,
   "admin.bookings": true,
   "admin.staff": true,
@@ -85,8 +91,11 @@ const PRESET_PERMISSIONS: Record<string, Record<string, boolean>> = {
   // the CRM module — it must not ride on an unrelated group (that produced
   // assign-without-view when Admin was edited). See GROUPS.crm.
   crm: { "crm.view": true, "crm.write": true, "crm.assign": true },
-  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions", "products.create"].includes(key))),
-  administrator: { ...ALL_PERMISSIONS },
+  // crm.bulk is intentionally NOT in any preset (not even administrator). It is a
+  // rare, high-blast-radius capability granted to a named handful of accounts only
+  // (see migration 202608010023). Presets must not hand it out en masse.
+  manager: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => !["admin.staff", "admin.settings", "admin.exhibitions", "products.create", "crm.bulk"].includes(key))),
+  administrator: Object.fromEntries(Object.entries(ALL_PERMISSIONS).filter(([key]) => key !== "crm.bulk")),
   custom: {},
 };
 
@@ -161,6 +170,9 @@ function collapseGroups(permissions: Record<string, boolean>): Record<string, bo
 // granting read access nobody selected.
 function enforcePermissionCoherence(permissions: Record<string, boolean>): void {
   if (permissions["crm.assign"] && !permissions["crm.view"]) permissions["crm.assign"] = false;
+  // crm.bulk operates on the CRM list — holding it without crm.view is the same
+  // "can act but can't see" incoherence. Drop it rather than silently widening read.
+  if (permissions["crm.bulk"] && !permissions["crm.view"]) permissions["crm.bulk"] = false;
 }
 
 type StaffContext = {
@@ -223,7 +235,10 @@ async function loadStaffContext(db: SupabaseClient, user: any): Promise<StaffCon
       staffId: clean(user.email).split("@")[0] || "admin",
       staffName: clean(user.user_metadata?.name) || clean(user.email).split("@")[0] || "Administrator",
       preset: "administrator",
-      permissions: { ...ALL_PERMISSIONS },
+      // Break-glass legacy admin (role=admin, no staff_profiles row) gets every
+      // capability EXCEPT crm.bulk — that stays confined to the two named accounts
+      // so "nobody else" holds it. A root operator can still self-grant via SQL.
+      permissions: { ...ALL_PERMISSIONS, "crm.bulk": false },
       groups: collapseGroups({ ...ALL_PERMISSIONS }),
       defaultSection: "dashboard",
       active: true,
@@ -277,13 +292,17 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   crmCustomerDetail: ["crm.view"],
   crmSetBuyerType: ["crm.write"],
   crmSetTier: ["crm.write"],
-  crmBulkSetTier: ["crm.write"],
   crmSetStatus: ["crm.write"],
   crmSetReferenceFlag: ["crm.write"],
   crmSetToken: ["crm.write"],
-  crmBulkSetBuyerType: ["crm.write"],
   crmLogCall: ["crm.write"],
-  crmBulkAssign: ["crm.assign"],
+  // The three mass-edit actions require crm.bulk — a stray "select all shown" can
+  // rewrite hundreds of records, so this is gated tighter than per-customer writes.
+  // Enforced here (server), not just by hiding the UI: a crm.write salesperson
+  // crafting the request directly is rejected.
+  crmBulkSetTier: ["crm.bulk"],
+  crmBulkSetBuyerType: ["crm.bulk"],
+  crmBulkAssign: ["crm.bulk"],
   crmAddReference: ["crm.write"],
   crmDeleteReference: ["crm.write"],
   crmAssign: ["crm.assign"],
@@ -1014,6 +1033,11 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions, preset);
+      // crm.bulk is a sub-toggle inside the CRM module, NOT part of GROUPS.crm — so
+      // ticking the CRM checkbox never auto-grants it (that would hand bulk to every
+      // salesperson at the first edit). It rides in on its own boolean, applied
+      // before the coherence guard drops any bulk-without-view.
+      if (typeof body.crmBulk === "boolean") permissions["crm.bulk"] = body.crmBulk;
       enforcePermissionCoherence(permissions);
       const allowedSections = ["reception","dashboard","sale","products","dispatch","crm","admin"];
       const defaultSection = allowedSections.includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
@@ -1069,6 +1093,10 @@ Deno.serve(async (request: Request) => {
       const permissions = body.groups && typeof body.groups === "object" && !Array.isArray(body.groups)
         ? expandGroups(body.groups)
         : normalizePermissions(body.permissions,preset);
+      // crm.bulk sub-toggle (see createStaff) — carried on its own boolean so the
+      // CRM module checkbox never grants it, and preserved across edits because the
+      // editor sends the current state back.
+      if (typeof body.crmBulk === "boolean") permissions["crm.bulk"] = body.crmBulk;
       enforcePermissionCoherence(permissions);
       const defaultSection = ["reception","dashboard","sale","products","dispatch","crm","admin"].includes(clean(body.defaultSection)) ? clean(body.defaultSection) : "sale";
       const row: Record<string,unknown> = { preset, permissions, default_section: defaultSection };
@@ -1157,34 +1185,24 @@ Deno.serve(async (request: Request) => {
       const statusFilter = clean(body.dispatchStatus);
       const ex = await resolveExhibition(db, body);
 
-      let query = db.from("orders")
-        .select(
-          "id,customer_id,firm,status,dispatch_status,total_designs,total_sets,total_pieces,updated_at," +
-          "customers(company_name,contact_name,phone_e164,city,state,agent,customer_crm(tier))",
-        )
-        .eq("exhibition_id", ex.id)
-        .gt("total_designs", 0)
-        .order("updated_at", { ascending: false })
-        .limit(300);
-
-      if (firm === "Maitri" || firm === "Niharika") query = query.eq("firm", firm);
-      if (["Pending", "Partial", "Completed"].includes(statusFilter)) {
-        query = query.eq("dispatch_status", statusFilter);
-      }
-      if (q) {
-        const { data: customers, error: cErr } = await db.from("customers")
-          .select("id")
-          .or(`company_name.ilike.%${q}%,contact_name.ilike.%${q}%,phone_e164.ilike.%${q}%`)
-          .limit(300);
-        if (cErr) throw cErr;
-        const ids = (customers ?? []).map((row) => row.id);
-        if (!ids.length) return jsonResponse(request, { ok: true, data: [] });
-        query = query.in("customer_id", ids);
-      }
-
-      const { data, error } = await query;
+      // Ordering is tier-first (A→B→C→unranked) with updated_at desc as the
+      // tiebreak, done in SQL BEFORE the row cap. There are 486 dispatchable
+      // orders against a 300 cap, so a post-limit sort would silently drop A-tier
+      // orders that fall past row 300 — and a PostgREST query can neither express
+      // the tier rank nor order the parent by the nested customer_crm. Hence the
+      // admin_dispatch_orders RPC. The search now joins in SQL (no separate
+      // <=300-row customer id lookup, so it is no longer capped).
+      const { data: rows, error } = await db.rpc("admin_dispatch_orders", {
+        p_filters: {
+          exhibitionId: ex.id,
+          firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
+          dispatchStatus: ["Pending", "Partial", "Completed"].includes(statusFilter) ? statusFilter : null,
+          search: q || null,
+          limit: 300,
+        },
+      });
       if (error) throw error;
-      const orders = (data ?? []).map((o: any) => ({
+      const orders = ((rows as any[]) ?? []).map((o: any) => ({
         orderId: o.id,
         customerId: o.customer_id,
         firm: o.firm,
@@ -1194,15 +1212,13 @@ Deno.serve(async (request: Request) => {
         sets: Number(o.total_sets) || 0,
         pieces: Number(o.total_pieces) || 0,
         updatedAt: o.updated_at,
-        companyName: o.customers?.company_name ?? "",
-        contactName: o.customers?.contact_name ?? "",
-        phone: o.customers?.phone_e164 ?? "",
-        city: o.customers?.city ?? "",
-        state: o.customers?.state ?? "",
-        agent: o.customers?.agent ?? "",
-        // customer_crm is 1:1 (PK = customer_id); PostgREST may embed it as an
-        // object or a single-element array — handle both.
-        tier: (Array.isArray(o.customers?.customer_crm) ? o.customers?.customer_crm[0]?.tier : o.customers?.customer_crm?.tier) ?? null,
+        companyName: o.company_name ?? "",
+        contactName: o.contact_name ?? "",
+        phone: o.phone_e164 ?? "",
+        city: o.city ?? "",
+        state: o.state ?? "",
+        agent: o.agent ?? "",
+        tier: o.tier ?? null,
       }));
       // By-order view (default): unchanged bare array.
       if (!body.withLines) return jsonResponse(request, { ok: true, data: orders });

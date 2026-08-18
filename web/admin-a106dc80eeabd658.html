@@ -292,6 +292,8 @@ nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));backgroun
 .pm-image-progress{color:var(--teal-deep);font-size:11px;font-weight:800;min-height:14px}
 /* Team */
 .module-toggle-list{display:grid;gap:8px;margin-top:16px}.module-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff;text-transform:none;letter-spacing:0;cursor:pointer}.module-toggle:hover{background:#F8FBFA}.module-toggle span{display:block;min-width:0}.module-toggle b{display:block;color:var(--ink);font-size:13px}.module-toggle small{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:500;line-height:1.4}.module-toggle input{width:42px;height:24px;flex:0 0 auto;appearance:none;border:0;border-radius:var(--r-pill);background:#CBD5D1;cursor:pointer;position:relative;transition:background 120ms var(--ease)}.module-toggle input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:var(--sh-1);transition:transform 120ms var(--ease)}.module-toggle input:checked{background:var(--teal-deep)}.module-toggle input:checked::after{transform:translateX(18px)}.module-toggle input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}.compact-toggle{margin-top:12px}.team-module-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.team-member-row{text-align:left;width:100%}
+/* CRM bulk sub-toggle — nested under the CRM module, granted separately from it */
+.module-subtoggle{margin-left:22px;border-left:3px solid var(--teal)}.module-subtoggle b{font-size:12px}.module-subtoggle.is-disabled{opacity:.45}.module-subtoggle input:disabled{cursor:not-allowed}
 /* Slots */
 .slot-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.slot-add-btn{margin-top:12px}.slot-day{margin-top:16px}.slot-day-title{color:var(--ink);font-size:13px;font-weight:800}.slot-card{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.slot-card-main b{color:var(--ink)}.slot-capacity{color:var(--muted);font-size:11px}.slot-status-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 /* Dashboard */
@@ -453,6 +455,8 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-selectall input{width:17px;height:17px;flex:0 0 auto}
 .crm-sort-label{align-self:center;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
 .crm-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+/* staff without crm.bulk see no select checkbox — row drops to two columns */
+.crm-row.no-bulk{grid-template-columns:minmax(0,1fr) auto}
 .crm-row.sel{border-color:var(--deep);background:var(--foam)}
 .crm-rowcheck{width:19px;height:19px;flex:0 0 auto;align-self:start;margin-top:2px}
 .crm-row-open{min-width:0;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit}
@@ -725,7 +729,7 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
   <div class="mc-warn hidden" id="crm-dupe-warn"></div>
   <div class="crm-listhead">
     <span class="crm-count" id="crm-count"></span>
-    <label class="crm-selectall"><input type="checkbox" id="crm-selectall"/> <span>Select all</span></label>
+    <label class="crm-selectall" id="crm-selectall-wrap"><input type="checkbox" id="crm-selectall"/> <span>Select all</span></label>
   </div>
   <div class="crm-bulkbar hidden" id="crm-bulkbar"></div>
   <div class="crm-list" id="crm-list"><div class="crm-loading">Loading…</div></div>
@@ -795,13 +799,15 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <div><label>Team member name</label><input id="staff-fullname"/></div>
     <div><label>Team ID</label><input id="staff-id" placeholder="sales01"/></div>
     <div><label>Password <span class="optional">blank = generated</span></label><input id="staff-pass"/></div>
-    <div><label>Default section</label><select id="staff-default"><option value="reception">Reception</option><option value="sale" selected>Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select></div>
+    <div><label>Default section</label><select id="staff-default"><option value="reception">Reception</option><option value="sale" selected>Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="crm">CRM</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select></div>
   </div>
   <div class="module-toggle-list" aria-label="Team access modules">
     <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="staff-group-reception" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="staff-group-sales" type="checkbox" checked/></label>
     <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="staff-group-products" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Dispatch</b><small>Confirm what physically ships and lock those lines</small></span><input id="staff-group-dispatch" type="checkbox"/></label>
+    <label class="module-toggle"><span><b>CRM</b><small>Screen buyers — calls, references, tier, status and assignment</small></span><input id="staff-group-crm" type="checkbox"/></label>
+    <label class="module-toggle module-subtoggle" id="staff-crmbulk-wrap"><span><b>↳ Bulk edits</b><small>Mass reassign / set buyer type / set tier from the list. High blast radius — grant to a couple of people only</small></span><input id="staff-crmbulk" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="staff-group-dashboard" type="checkbox"/></label>
     <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="staff-group-admin" type="checkbox"/></label>
   </div>
@@ -884,12 +890,14 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 <div class="modal" id="drill-modal"><div class="sheet"><div class="sheet-head"><div><h2 id="drill-title">Details</h2><p class="copy" id="drill-sub"></p></div><button class="close" data-close="drill-modal">✕</button></div><div id="drill-body"></div><button class="btn" id="drill-apply" style="width:100%;margin-top:12px">Apply as filter</button></div></div>
 <div class="modal" id="staff-modal"><div class="sheet"><div class="sheet-handle" aria-hidden="true"></div><div class="sheet-head"><div><h2 id="staff-modal-title">Team Member</h2><p class="copy" id="staff-modal-sub"></p></div><button class="close icon-button" data-close="staff-modal" aria-label="Close">✕</button></div>
 <label>Team member name</label><input id="edit-staff-name"/>
-<label>Default section</label><select id="edit-staff-default"><option value="reception">Reception</option><option value="sale">Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select>
+<label>Default section</label><select id="edit-staff-default"><option value="reception">Reception</option><option value="sale">Sale Order</option><option value="products">Products</option><option value="dispatch">Dispatch</option><option value="crm">CRM</option><option value="dashboard">Dashboard</option><option value="admin">Admin</option></select>
 <div class="module-toggle-list" aria-label="Edit team access modules">
   <label class="module-toggle"><span><b>Reception</b><small>Visitors, registration and account support</small></span><input id="edit-group-reception" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Sales</b><small>Create orders and review previous orders</small></span><input id="edit-group-sales" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Products</b><small>Product master and barcode mapping</small></span><input id="edit-group-products" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Dispatch</b><small>Confirm what physically ships and lock those lines</small></span><input id="edit-group-dispatch" type="checkbox"/></label>
+  <label class="module-toggle"><span><b>CRM</b><small>Screen buyers — calls, references, tier, status and assignment</small></span><input id="edit-group-crm" type="checkbox"/></label>
+  <label class="module-toggle module-subtoggle" id="edit-crmbulk-wrap"><span><b>↳ Bulk edits</b><small>Mass reassign / set buyer type / set tier from the list. High blast radius — grant to a couple of people only</small></span><input id="edit-crmbulk" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Dashboard</b><small>Analytics and exports</small></span><input id="edit-group-dashboard" type="checkbox"/></label>
   <label class="module-toggle"><span><b>Admin</b><small>Slots, Team and system settings</small></span><input id="edit-group-admin" type="checkbox"/></label>
 </div>
@@ -4526,6 +4534,12 @@ function crmScopeLabel() {
 function renderCrmList() {
   crmUpdateFilterBadge();
   const rows = crmFilteredRows();
+  // Classification from the list (select-all, bulk bar, per-row New/Regular and
+  // A/B/C) is restricted to crm.bulk holders — a stray tap here can reclassify at
+  // scale. Everyone with crm.write still edits one customer at a time from the card.
+  const canBulk = has("crm.bulk");
+  const sa = $("crm-selectall-wrap");
+  if (sa) sa.classList.toggle("hidden", !canBulk);
   const dupes = rows.filter((c) => c.dupName && c.dupPhone).length;
   const warn = $("crm-dupe-warn");
   if (dupes) { warn.classList.remove("hidden"); warn.textContent = `⚠ ${dupes} customer${dupes === 1 ? "" : "s"} here match another active customer on BOTH name and phone — likely duplicates. Review before screening; never merge automatically.`; }
@@ -4545,15 +4559,15 @@ function renderCrmList() {
     const loc = [c.city, c.state].filter(Boolean).join(", ");
     const meta = [`${c.callCount || 0} call${Number(c.callCount) === 1 ? "" : "s"}`, `${c.orderLineCount || 0} line${Number(c.orderLineCount) === 1 ? "" : "s"}`];
     const when = c.followupDue ? `<span class="crm-followup-badge">Callback ${esc(fmt(c.followupAt))}</span>` : (c.lastCallAt ? `<span>${esc(fmt(c.lastCallAt))}</span>` : "");
-    return `<div class="crm-row ${sel ? "sel" : ""}">
-      <input type="checkbox" class="crm-rowcheck" data-crm-check="${esc(c.id)}" ${sel ? "checked" : ""} aria-label="Select"/>
+    return `<div class="crm-row ${canBulk ? "" : "no-bulk"} ${sel ? "sel" : ""}">
+      ${canBulk ? `<input type="checkbox" class="crm-rowcheck" data-crm-check="${esc(c.id)}" ${sel ? "checked" : ""} aria-label="Select"/>` : ""}
       <div style="min-width:0">
         <div class="crm-row-open" role="button" tabindex="0" data-crm-open="${esc(c.id)}">
           <div class="crm-rowtitle"><b>${esc(c.companyName || "Unnamed")}</b>${tierBadge(c.tier)}</div>
           <p>${esc([c.contactName, c.phone ? ("+" + c.phone) : "", loc].filter(Boolean).join(" · ") || "No contact details")}</p>
           <div class="crm-badges">${badges.join("")}</div>
         </div>
-        <div class="crm-inline-type">
+        ${canBulk ? `<div class="crm-inline-type">
           <button type="button" data-crm-type="new" data-id="${esc(c.id)}" class="${c.buyerType === "new" ? "active new" : ""}">New</button>
           <button type="button" data-crm-type="regular" data-id="${esc(c.id)}" class="${c.buyerType === "regular" ? "active regular" : ""}">Regular</button>
         </div>
@@ -4561,7 +4575,7 @@ function renderCrmList() {
           <button type="button" data-crm-tier="A" data-id="${esc(c.id)}" class="${c.tier === "A" ? "active" : ""}">A</button>
           <button type="button" data-crm-tier="B" data-id="${esc(c.id)}" class="${c.tier === "B" ? "active" : ""}">B</button>
           <button type="button" data-crm-tier="C" data-id="${esc(c.id)}" class="${c.tier === "C" ? "active" : ""}">C</button>
-        </div>
+        </div>` : ""}
       </div>
       <div class="crm-row-right"><span>${meta.join(" · ")}</span>${when}</div>
     </div>`;
@@ -4571,7 +4585,9 @@ function renderCrmList() {
 function renderCrmBulkBar() {
   const bar = $("crm-bulkbar");
   const n = st.crm.sel.size;
-  if (!n) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  // No crm.bulk → no bulk bar, ever (defence in depth; the selection controls that
+  // feed it are not rendered either).
+  if (!has("crm.bulk") || !n) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   const canAssign = has("crm.assign");
   const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}${s.hasCrm === false ? " — no CRM access" : ""}</option>`)).join("");
   bar.classList.remove("hidden");
@@ -4661,6 +4677,9 @@ function renderCrmDetail() {
       <div class="crm-sub">Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</div>
       ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["regular", "Regular buyer"]])}
       <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div>
+      <div class="crm-sub">Tier</div>
+      ${crmSeg("tier", d.tier || "", [["", "Unranked"], ["A", "A"], ["B", "B"], ["C", "C"]])}
+      <div class="crm-hint">Ranking sorts this buyer to the top of every staff list. Tap the active tier again to clear.</div>
       <div class="crm-sub">References</div>
       <label class="crm-check"><input type="checkbox" id="crm-d-hasref" ${d.hasReference ? "checked" : ""}/> <span>Buyer has references</span></label>
       <div id="crm-d-inlinerefwrap" class="crm-addrow ${d.hasReference ? "" : "hidden"}" style="margin-top:8px"><input id="crm-d-refinput" maxlength="2000" placeholder="Add a reference (name, firm, phone…)"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div>
@@ -4724,16 +4743,21 @@ function crmUpdateFilterBadge() {
   const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 $("crm-selectall").onchange = () => {
+  if (!has("crm.bulk")) return;
   const rows = crmFilteredRows();
   if ($("crm-selectall").checked) rows.forEach((c) => st.crm.sel.add(c.id));
   else rows.forEach((c) => st.crm.sel.delete(c.id));
   renderCrmList();
 };
 $("crm-list").onclick = async (e) => {
+  // Selection + inline classification are crm.bulk-only (controls aren't rendered
+  // otherwise; this is the belt-and-braces guard). Opening the card stays open to all.
+  const bulkUi = has("crm.bulk");
   const chk = e.target.closest("[data-crm-check]");
-  if (chk) { const id = chk.dataset.crmCheck; if (chk.checked) st.crm.sel.add(id); else st.crm.sel.delete(id); renderCrmList(); return; }
+  if (chk) { if (!bulkUi) return; const id = chk.dataset.crmCheck; if (chk.checked) st.crm.sel.add(id); else st.crm.sel.delete(id); renderCrmList(); return; }
   const typeBtn = e.target.closest("[data-crm-type]");
   if (typeBtn) {
+    if (!bulkUi) return;
     const id = typeBtn.dataset.id, cur = st.crm.customers.find((c) => c.id === id);
     const val = (cur && cur.buyerType === typeBtn.dataset.crmType) ? "" : typeBtn.dataset.crmType; // click active again = clear
     try { await admin("crmSetBuyerType", { customerId: id, buyerType: val }); if (cur) cur.buyerType = val || null; renderCrmList(); toast("Buyer type saved", "success"); }
@@ -4742,6 +4766,7 @@ $("crm-list").onclick = async (e) => {
   }
   const tierBtn = e.target.closest("[data-crm-tier]");
   if (tierBtn) {
+    if (!bulkUi) return;
     const id = tierBtn.dataset.id, cur = st.crm.customers.find((c) => c.id === id);
     const val = (cur && cur.tier === tierBtn.dataset.crmTier) ? "" : tierBtn.dataset.crmTier; // tap active tier to clear
     try { await admin("crmSetTier", { customerId: id, tier: val }); if (cur) cur.tier = val || null; renderCrmList(); toast("Tier saved", "success"); }
@@ -4796,6 +4821,7 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   if (seg) {
     const kind = seg.closest("[data-crm-seg]").dataset.crmSeg, val = seg.dataset.val;
     if (kind === "buyerType") { await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved"); return; }
+    if (kind === "tier") { await crmDo(() => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }), "Tier saved"); return; }
     if (kind === "status") {
       if (val === "rejected") {
         // Do not write yet — reveal the reason field and require it (input-time).
@@ -5981,6 +6007,18 @@ function writeGroups(prefix, groups = {}) {
     if (input) input.checked = Boolean(groups[key]);
   });
 }
+// crm.bulk is a sub-toggle nested under the CRM module: it is only meaningful when
+// CRM view is granted. Disable + clear it while CRM is unticked so it can never be
+// sent true without view (the server enforces the same coherence).
+function syncCrmBulk(prefix) {
+  const bulk = $(prefix === "staff" ? "staff-crmbulk" : "edit-crmbulk");
+  if (!bulk) return;
+  const moduleOn = Boolean($(`${prefix}-group-crm`)?.checked);
+  bulk.disabled = !moduleOn;
+  if (!moduleOn) bulk.checked = false;
+  const wrap = $(prefix === "staff" ? "staff-crmbulk-wrap" : "edit-crmbulk-wrap");
+  if (wrap) wrap.classList.toggle("is-disabled", !moduleOn);
+}
 function groupChips(groups = {}) {
   const enabled = GROUP_KEYS.filter((key) => groups[key]);
   return enabled.length
@@ -6006,6 +6044,7 @@ $("staff-create").onclick = async () => {
       password: $("staff-pass").value,
       defaultSection: $("staff-default").value,
       groups,
+      crmBulk: Boolean($("staff-crmbulk")?.checked),
     });
     $("staff-result").innerHTML =
       `<div class="cred">Team ID: <b>${esc(d.staffId)}</b><br>Password: <b>${esc(d.password)}</b><br><small>Share these details privately with the team member.</small></div>`;
@@ -6039,6 +6078,10 @@ function openStaff(id) {
   $("edit-staff-default").value = s.defaultSection;
   $("edit-staff-active").checked = s.active;
   writeGroups("edit", s.groups || {});
+  // crm.bulk is a per-permission sub-toggle (not a module group) — read it straight
+  // from the stored permission map so editing preserves it for the accounts that hold it.
+  if ($("edit-crmbulk")) $("edit-crmbulk").checked = Boolean(s.permissions && s.permissions["crm.bulk"]);
+  syncCrmBulk("edit");
   openModal("staff-modal");
 }
 $("edit-staff-default").onchange = () => ensureDefaultGroup("edit", "edit-staff-default");
@@ -6051,6 +6094,7 @@ $("edit-staff-save").onclick = async () => {
       defaultSection: $("edit-staff-default").value,
       active: $("edit-staff-active").checked,
       groups: readGroups("edit"),
+      crmBulk: Boolean($("edit-crmbulk")?.checked),
     });
     closeModal("staff-modal");
     await loadStaff();
@@ -6705,8 +6749,8 @@ resumeAdminSession();
 
 /* Default section auto-follows the first ticked module (create + edit). */
 (function () {
-  var ORDER = ["reception", "sales", "products", "dispatch", "dashboard", "admin"];
-  var SECTION = { reception: "reception", sales: "sale", products: "products", dispatch: "dispatch", dashboard: "dashboard", admin: "admin" };
+  var ORDER = ["reception", "sales", "products", "dispatch", "crm", "dashboard", "admin"];
+  var SECTION = { reception: "reception", sales: "sale", products: "products", dispatch: "dispatch", crm: "crm", dashboard: "dashboard", admin: "admin" };
   function firstChecked(prefix) {
     for (var i = 0; i < ORDER.length; i++) {
       var el = document.getElementById(prefix + "-group-" + ORDER[i]);
@@ -6723,10 +6767,11 @@ resumeAdminSession();
   }
   ORDER.forEach(function (k) {
     var c = document.getElementById("staff-group-" + k);
-    if (c) c.addEventListener("change", function () { sync("staff", "staff-default", "staff-create"); });
+    if (c) c.addEventListener("change", function () { sync("staff", "staff-default", "staff-create"); if (k === "crm") syncCrmBulk("staff"); });
     var e = document.getElementById("edit-group-" + k);
-    if (e) e.addEventListener("change", function () { sync("edit", "edit-staff-default", "edit-staff-save"); });
+    if (e) e.addEventListener("change", function () { sync("edit", "edit-staff-default", "edit-staff-save"); if (k === "crm") syncCrmBulk("edit"); });
   });
+  syncCrmBulk("staff"); syncCrmBulk("edit"); // initial: bulk sub-toggle off+disabled until CRM is ticked
 })();
 
 </script>
