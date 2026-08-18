@@ -441,8 +441,30 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-seg button.active.rejected{background:var(--error);border-color:var(--error)}
 .crm-seg button.active.agreed{background:#166534;border-color:#166534}
 .crm-hint{margin-top:5px;font-size:10px;color:var(--muted)}
-.crm-check{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--body)}
-.crm-check input{width:18px;height:18px;flex:0 0 auto}
+/* Override the global uppercase/letter-spacing/margin on <label> (D5) so the
+   checkbox label sits beside the box, wraps inside the container, and is
+   vertically centred in normal sentence case. Verified at 390px. */
+.crm-check{display:flex;align-items:center;gap:10px;margin:0;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:700;color:var(--body);text-transform:none;letter-spacing:normal;line-height:1.35}
+.crm-check input[type=checkbox]{width:19px;height:19px;flex:0 0 auto;margin:0}
+.crm-check>span{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere}
+/* CRM list-row controls + bulk */
+.crm-listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.crm-selectall{display:flex;align-items:center;gap:8px;margin:0;font-size:11px;font-weight:700;color:var(--slate);text-transform:none;letter-spacing:normal}
+.crm-selectall input{width:17px;height:17px;flex:0 0 auto}
+.crm-sort-label{align-self:center;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+.crm-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.crm-row.sel{border-color:var(--deep);background:var(--foam)}
+.crm-rowcheck{width:19px;height:19px;flex:0 0 auto;align-self:start;margin-top:2px}
+.crm-row-open{min-width:0;text-align:left;background:none;border:0;padding:0;cursor:pointer;color:inherit}
+.crm-inline-type{display:flex;gap:5px;margin-top:7px}
+.crm-inline-type button{min-height:28px;padding:3px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--slate);font-size:10px;font-weight:800;cursor:pointer}
+.crm-inline-type button.active.new{background:var(--deep);color:#fff;border-color:var(--deep)}
+.crm-inline-type button.active.old{background:#5B21B6;color:#fff;border-color:#5B21B6}
+.crm-bulkbar{position:sticky;top:64px;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;border:1px solid var(--deep);border-radius:12px;background:var(--foam);box-shadow:0 5px 16px rgba(34,94,99,.1)}
+.crm-bulkbar b{color:var(--deep);font-size:12px}
+.crm-bulkbar select{height:40px;flex:1 1 160px;min-width:0}
+.crm-bulkbar .btn{min-height:40px}
+.crm-followup-badge{color:#B91C1C;font-weight:800}
 .crm-token-amt{margin-top:8px}
 .crm-token-amt input:disabled{background:#EEF2F0;color:#9AA0A6}
 .crm-calls{display:grid;gap:7px;margin-top:8px}
@@ -655,9 +677,24 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
       <button class="chip" type="button" data-status="agreed">Agreed</button>
       <button class="chip" type="button" data-status="rejected">Rejected</button>
     </div>
-    <label class="crm-mine"><input type="checkbox" id="crm-mine"/> Only customers assigned to me</label>
+    <div class="crm-chip-row" id="crm-scope-filter">
+      <button class="chip active" type="button" data-scope="orders">With orders</button>
+      <button class="chip" type="button" data-scope="all">All customers</button>
+      <button class="chip" type="button" data-scope="callbacks">Callbacks due</button>
+    </div>
+    <div class="crm-chip-row" id="crm-sort">
+      <span class="crm-sort-label">Sort</span>
+      <button class="chip active" type="button" data-sort="recent">Newest</button>
+      <button class="chip" type="button" data-sort="queue">Call queue</button>
+      <button class="chip" type="button" data-sort="callback">Callback date</button>
+    </div>
+    <label class="crm-mine"><input type="checkbox" id="crm-mine"/> <span>Only customers assigned to me</span></label>
   </div>
-  <div class="crm-count" id="crm-count"></div>
+  <div class="crm-listhead">
+    <span class="crm-count" id="crm-count"></span>
+    <label class="crm-selectall"><input type="checkbox" id="crm-selectall"/> <span>Select all shown</span></label>
+  </div>
+  <div class="crm-bulkbar hidden" id="crm-bulkbar"></div>
   <div class="crm-list" id="crm-list"><div class="crm-loading">Loading…</div></div>
 </main>
 
@@ -4370,18 +4407,31 @@ function firmPill(firm) {
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", mine: false }, currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
+// Status a call may set — a rejection needs a reason, so it is NOT offered here
+// (the server also guards this). Rejection is done from the customer status control.
+const CRM_CALL_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed" };
 function crmB(cls, t) { return `<span class="crm-b ${esc(cls)}">${esc(t)}</span>`; }
 
 async function loadCrm() {
   $("crm-list").innerHTML = '<div class="crm-loading">Loading…</div>';
   try {
     const f = st.crm.filters;
-    const data = await admin("crmListCustomers", { filters: { search: f.search, buyerType: f.buyerType, status: f.status } });
+    const data = await admin("crmListCustomers", {
+      filters: {
+        search: f.search, buyerType: f.buyerType, status: f.status,
+        withOrders: f.scope === "orders",
+        callbacksDue: f.scope === "callbacks",
+        sort: f.sort,
+      },
+    });
     st.crm.customers = data.customers || [];
     st.crm.staff = data.staff || [];
+    // Drop any selected id that is no longer in the list.
+    const present = new Set(st.crm.customers.map((c) => c.id));
+    st.crm.sel.forEach((id) => { if (!present.has(id)) st.crm.sel.delete(id); });
     renderCrmList();
   } catch (e) { $("crm-list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
@@ -4390,28 +4440,60 @@ function crmFilteredRows() {
   if (st.crm.filters.mine) rows = rows.filter((c) => c.assignedTo && c.assignedTo === st.me?.id);
   return rows;
 }
+function crmScopeLabel() {
+  return { orders: "with orders", all: "all customers", callbacks: "callbacks due" }[st.crm.filters.scope] || "";
+}
 function renderCrmList() {
   const rows = crmFilteredRows();
   const dupes = rows.filter((c) => c.dupName && c.dupPhone).length;
   const warn = $("crm-dupe-warn");
   if (dupes) { warn.classList.remove("hidden"); warn.textContent = `⚠ ${dupes} customer${dupes === 1 ? "" : "s"} here match another active customer on BOTH name and phone — likely duplicates. Review before screening; never merge automatically.`; }
   else warn.classList.add("hidden");
-  $("crm-count").textContent = `${rows.length} customer${rows.length === 1 ? "" : "s"}${st.crm.filters.mine ? " (assigned to me)" : ""}`;
-  if (!rows.length) { $("crm-list").innerHTML = '<div class="empty">No customers match these filters.</div>'; return; }
+  // Always name the active filter so nobody thinks this is the whole database.
+  $("crm-count").textContent = `${rows.length} customer${rows.length === 1 ? "" : "s"} — ${crmScopeLabel()}${st.crm.filters.mine ? ", assigned to me" : ""}`;
+  const shown = new Set(rows.map((c) => c.id));
+  $("crm-selectall").checked = rows.length > 0 && rows.every((c) => st.crm.sel.has(c.id));
+  if (!rows.length) { $("crm-list").innerHTML = '<div class="empty">No customers match these filters.</div>'; renderCrmBulkBar(); return; }
   $("crm-list").innerHTML = rows.map((c) => {
+    const sel = st.crm.sel.has(c.id);
     const badges = [crmB(c.crmStatus, CRM_STATUS[c.crmStatus] || c.crmStatus)];
     badges.push(c.buyerType ? crmB(c.buyerType, c.buyerType === "new" ? "New buyer" : "Old buyer") : crmB("on_hold", "Unscreened"));
     if (c.assignedName) badges.push(crmB("assigned", "→ " + c.assignedName));
     if (c.dupName && c.dupPhone) badges.push(crmB("dupe", "Possible duplicate"));
     else if (c.dupName || c.dupPhone) badges.push(crmB("dupe", c.dupName ? "Dup name" : "Dup phone"));
     const loc = [c.city, c.state].filter(Boolean).join(", ");
-    return `<button class="crm-row" type="button" data-crm-open="${esc(c.id)}">
-      <div><b>${esc(c.companyName || "Unnamed")}</b>
-      <p>${esc([c.contactName, c.phone ? ("+" + c.phone) : "", loc].filter(Boolean).join(" · ") || "No contact details")}</p>
-      <div class="crm-badges">${badges.join("")}</div></div>
-      <div class="crm-row-right"><span>${c.callCount || 0} call${Number(c.callCount) === 1 ? "" : "s"}</span>${c.referenceCount ? `<span>${c.referenceCount} ref</span>` : ""}${c.lastCallAt ? `<span>${esc(fmt(c.lastCallAt))}</span>` : ""}</div>
-    </button>`;
+    const meta = [`${c.callCount || 0} call${Number(c.callCount) === 1 ? "" : "s"}`, `${c.orderLineCount || 0} line${Number(c.orderLineCount) === 1 ? "" : "s"}`];
+    const when = c.followupDue ? `<span class="crm-followup-badge">Callback ${esc(fmt(c.followupAt))}</span>` : (c.lastCallAt ? `<span>${esc(fmt(c.lastCallAt))}</span>` : "");
+    return `<div class="crm-row ${sel ? "sel" : ""}">
+      <input type="checkbox" class="crm-rowcheck" data-crm-check="${esc(c.id)}" ${sel ? "checked" : ""} aria-label="Select"/>
+      <div style="min-width:0">
+        <div class="crm-row-open" role="button" tabindex="0" data-crm-open="${esc(c.id)}">
+          <b>${esc(c.companyName || "Unnamed")}</b>
+          <p>${esc([c.contactName, c.phone ? ("+" + c.phone) : "", loc].filter(Boolean).join(" · ") || "No contact details")}</p>
+          <div class="crm-badges">${badges.join("")}</div>
+        </div>
+        <div class="crm-inline-type">
+          <button type="button" data-crm-type="new" data-id="${esc(c.id)}" class="${c.buyerType === "new" ? "active new" : ""}">New</button>
+          <button type="button" data-crm-type="old" data-id="${esc(c.id)}" class="${c.buyerType === "old" ? "active old" : ""}">Old</button>
+        </div>
+      </div>
+      <div class="crm-row-right"><span>${meta.join(" · ")}</span>${when}</div>
+    </div>`;
   }).join("");
+  renderCrmBulkBar();
+}
+function renderCrmBulkBar() {
+  const bar = $("crm-bulkbar");
+  const n = st.crm.sel.size;
+  if (!n) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
+  const canAssign = has("crm.assign");
+  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`)).join("");
+  bar.classList.remove("hidden");
+  bar.innerHTML = `<b>${n} selected</b>
+    ${canAssign ? `<select id="crm-bulk-assignee">${staffOpts}</select><button class="btn small" type="button" data-crm-bulk="assign">Assign</button>` : ""}
+    <button class="btn small secondary" type="button" data-crm-bulk="new">Set New</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="old">Set Old</button>
+    <button class="btn small ghost" type="button" data-crm-bulk="clear">Clear</button>`;
 }
 
 async function openCrmDetail(id) {
@@ -4434,31 +4516,38 @@ function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
   const canAssign = has("crm.assign");
   const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}"${d.assignedTo === s.id ? " selected" : ""}>${esc(s.name)}</option>`)).join("");
-  const calls = (d.calls || []).map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
+  const calls = (d.calls || []).map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}${cl.followupAt ? ` · <span class="crm-followup-badge">callback ${esc(fmt(cl.followupAt))}</span>` : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
   const refs = (d.references || []).map((r) => `<div class="crm-ref"><span>${esc(r.text)}</span><button type="button" data-crm-delref="${esc(r.id)}">Remove</button></div>`).join("") || '<div class="crm-hint">No references recorded.</div>';
+  const rejected = d.crmStatus === "rejected";
   $("crm-d-body").innerHTML = `
     <div class="crm-field"><label>Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</label>
       ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["old", "Old buyer"]])}
       <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div></div>
     <div class="crm-field"><label>Outcome / status</label>
       ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
-      ${d.crmStatus === "rejected" ? '<div class="crm-hint">Rejected buyers are flagged at reception — never blocked.</div>' : ""}</div>
+      <div id="crm-d-reasonwrap" class="${rejected ? "" : "hidden"}" style="margin-top:8px">
+        <textarea id="crm-d-reason" rows="2" maxlength="2000" placeholder="Reason for rejection (required) — reception shows this">${esc(d.statusReason || "")}</textarea>
+        <button class="btn small" type="button" id="crm-d-savereject" style="margin-top:6px" ${d.statusReason ? "" : "disabled"}>Save rejection</button>
+        <div class="crm-hint">Rejected buyers are flagged at reception — never blocked. Reception sees this reason.</div>
+      </div></div>
     <div class="crm-field"><label>Assigned salesperson</label>
       <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
       ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>
+    <div class="crm-field"><label>Buyer attributes</label>
+      <label class="crm-check"><input type="checkbox" id="crm-d-hasref" ${d.hasReference ? "checked" : ""}/> <span>Buyer has references</span></label>
+      <div id="crm-d-inlinerefwrap" class="crm-addrow ${d.hasReference ? "" : "hidden"}" style="margin-top:8px"><input id="crm-d-refinput" maxlength="2000" placeholder="Add a reference (name, firm, phone…)"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div>
+      <label class="crm-check" style="margin-top:8px"><input type="checkbox" id="crm-d-token" ${d.tokenAgreed ? "checked" : ""}/> <span>Token amount agreed</span></label>
+      <div class="crm-token-amt"><input id="crm-d-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div></div>
     <div class="crm-field"><label>References</label>
-      <div class="crm-refs">${refs}</div>
-      <div class="crm-addrow"><input id="crm-d-refinput" maxlength="2000" placeholder="Add a reference (name, firm, phone…)"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div></div>
+      <div class="crm-refs">${refs}</div></div>
     <div class="crm-field"><label>Call log</label>
       <div class="crm-calls">${calls}</div>
       <div class="crm-addcall">
         <label style="text-transform:none;font-weight:800;color:var(--deep)">Log a call</label>
         <select id="crm-c-outcome">${Object.entries(CRM_OUTCOME).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
         <textarea id="crm-c-notes" rows="2" maxlength="4000" placeholder="Notes — what the buyer said…"></textarea>
-        <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
-        <label class="crm-check" style="margin-top:8px"><input type="checkbox" id="crm-c-hasref" ${d.hasReference ? "checked" : ""}/> Buyer gave references</label>
-        <label class="crm-check" style="margin-top:8px"><input type="checkbox" id="crm-c-token" ${d.tokenAgreed ? "checked" : ""}/> Token amount agreed</label>
-        <div class="crm-token-amt"><input id="crm-c-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div>
+        <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_CALL_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
+        <div id="crm-c-followwrap" class="hidden" style="margin-top:8px"><label style="text-transform:none;font-weight:700;color:var(--slate)">Call back on (required)</label><input id="crm-c-followup" type="datetime-local"/></div>
         <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>
       </div></div>`;
 }
@@ -4469,37 +4558,99 @@ async function crmRefresh() {
 }
 async function crmDo(fn, msg) { try { await fn(); await crmRefresh(); toast(msg, "success"); } catch (e) { toast(e.message, "error"); } }
 async function crmSaveCall() {
-  const tokenAgreed = $("crm-c-token").checked;
-  const amountRaw = $("crm-c-amount").value.trim();
-  // Validate at input time: amount only when agreed, and never negative.
-  if (tokenAgreed && amountRaw !== "" && !(Number(amountRaw) >= 0)) { toast("Enter a valid token amount", "error"); return; }
+  const outcome = $("crm-c-outcome").value;
+  const followupRaw = $("crm-c-followup").value;
+  // Validate at input time: a callback must carry a date.
+  if (outcome === "callback" && !followupRaw) { toast("Pick a call-back date", "error"); return; }
   const btn = $("crm-c-save");
   try {
     btn.disabled = true;
     await admin("crmLogCall", {
       customerId: st.crm.currentId,
-      outcome: $("crm-c-outcome").value,
+      outcome,
       notes: $("crm-c-notes").value.trim(),
       statusAfter: $("crm-c-status").value || "",
-      hasReference: $("crm-c-hasref").checked,
-      tokenAgreed,
-      tokenAmount: tokenAgreed ? amountRaw : "",
+      followupAt: followupRaw ? new Date(followupRaw).toISOString() : "",
     });
     await crmRefresh();
     toast("Call logged", "success");
   } catch (e) { toast(e.message, "error"); if ($("crm-c-save")) $("crm-c-save").disabled = false; }
 }
+// ── list interactions ──
 $("crm-search").oninput = () => { st.crm.filters.search = $("crm-search").value.trim(); clearTimeout(st.crm._t); st.crm._t = setTimeout(loadCrm, 250); };
-$("crm-buyer-filter").onclick = (e) => { const b = e.target.closest("[data-buyer]"); if (!b) return; st.crm.filters.buyerType = b.dataset.buyer; $("crm-buyer-filter").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b)); loadCrm(); };
-$("crm-status-filter").onclick = (e) => { const b = e.target.closest("[data-status]"); if (!b) return; st.crm.filters.status = b.dataset.status; $("crm-status-filter").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b)); loadCrm(); };
+function crmChipPick(container, key, dataAttr) {
+  $(container).onclick = (e) => { const b = e.target.closest(`[${dataAttr}]`); if (!b) return; st.crm.filters[key] = b.getAttribute(dataAttr); $(container).querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b)); loadCrm(); };
+}
+crmChipPick("crm-buyer-filter", "buyerType", "data-buyer");
+crmChipPick("crm-status-filter", "status", "data-status");
+crmChipPick("crm-scope-filter", "scope", "data-scope");
+crmChipPick("crm-sort", "sort", "data-sort");
 $("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
-$("crm-list").onclick = (e) => { const b = e.target.closest("[data-crm-open]"); if (b) openCrmDetail(b.dataset.crmOpen); };
+$("crm-selectall").onchange = () => {
+  const rows = crmFilteredRows();
+  if ($("crm-selectall").checked) rows.forEach((c) => st.crm.sel.add(c.id));
+  else rows.forEach((c) => st.crm.sel.delete(c.id));
+  renderCrmList();
+};
+$("crm-list").onclick = async (e) => {
+  const chk = e.target.closest("[data-crm-check]");
+  if (chk) { const id = chk.dataset.crmCheck; if (chk.checked) st.crm.sel.add(id); else st.crm.sel.delete(id); renderCrmList(); return; }
+  const typeBtn = e.target.closest("[data-crm-type]");
+  if (typeBtn) {
+    const id = typeBtn.dataset.id, cur = st.crm.customers.find((c) => c.id === id);
+    const val = (cur && cur.buyerType === typeBtn.dataset.crmType) ? "" : typeBtn.dataset.crmType; // click active again = clear
+    try { await admin("crmSetBuyerType", { customerId: id, buyerType: val }); if (cur) cur.buyerType = val || null; renderCrmList(); toast("Buyer type saved", "success"); }
+    catch (err) { toast(err.message, "error"); }
+    return;
+  }
+  const open = e.target.closest("[data-crm-open]");
+  if (open) openCrmDetail(open.dataset.crmOpen);
+};
+$("crm-bulkbar").onclick = async (e) => {
+  const b = e.target.closest("[data-crm-bulk]"); if (!b) return;
+  const ids = [...st.crm.sel];
+  const act = b.dataset.crmBulk;
+  if (act === "clear") { st.crm.sel.clear(); renderCrmList(); return; }
+  if (act === "assign") {
+    const sel = $("crm-bulk-assignee"), assignedTo = sel.value;
+    const name = assignedTo ? (sel.options[sel.selectedIndex].text) : "Unassigned";
+    if (!confirm(`Assign ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${name}?`)) return;
+    try { await admin("crmBulkAssign", { customerIds: ids, assignedTo }); st.crm.sel.clear(); await loadCrm(); toast(`Assigned ${ids.length} to ${name}`, "success"); }
+    catch (err) { toast(err.message, "error"); }
+    return;
+  }
+  if (act === "new" || act === "old") {
+    if (!confirm(`Set ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${act === "new" ? "New" : "Old"} buyer?`)) return;
+    try { await admin("crmBulkSetBuyerType", { customerIds: ids, buyerType: act }); st.crm.sel.clear(); await loadCrm(); toast(`Set ${ids.length} to ${act === "new" ? "New" : "Old"}`, "success"); }
+    catch (err) { toast(err.message, "error"); }
+    return;
+  }
+};
+// ── detail interactions ──
 $("crm-detail-modal").addEventListener("click", async (e) => {
   const seg = e.target.closest("[data-crm-seg] [data-val]");
-  if (seg) { const kind = seg.closest("[data-crm-seg]").dataset.crmSeg; const val = seg.dataset.val;
-    if (kind === "buyerType") await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved");
-    else if (kind === "status") await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val }), "Status saved");
-    return; }
+  if (seg) {
+    const kind = seg.closest("[data-crm-seg]").dataset.crmSeg, val = seg.dataset.val;
+    if (kind === "buyerType") { await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved"); return; }
+    if (kind === "status") {
+      if (val === "rejected") {
+        // Do not write yet — reveal the reason field and require it (input-time).
+        seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg));
+        $("crm-d-reasonwrap").classList.remove("hidden");
+        $("crm-d-savereject").disabled = !$("crm-d-reason").value.trim();
+        $("crm-d-reason").focus();
+      } else {
+        await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }), "Status saved");
+      }
+      return;
+    }
+  }
+  if (e.target.id === "crm-d-savereject") {
+    const reason = $("crm-d-reason").value.trim();
+    if (!reason) { toast("A rejection needs a reason", "error"); return; }
+    await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: "rejected", reason }), "Rejection saved");
+    return;
+  }
   const delref = e.target.closest("[data-crm-delref]");
   if (delref) { await crmDo(() => admin("crmDeleteReference", { referenceId: delref.dataset.crmDelref }), "Reference removed"); return; }
   if (e.target.id === "crm-d-refadd") { const v = $("crm-d-refinput").value.trim(); if (!v) { toast("Enter a reference", "error"); return; } await crmDo(() => admin("crmAddReference", { customerId: st.crm.currentId, referenceText: v }), "Reference added"); return; }
@@ -4507,10 +4658,31 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
 });
 $("crm-detail-modal").addEventListener("change", async (e) => {
   if (e.target.id === "crm-d-assign") { await crmDo(() => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: e.target.value || "" }), "Assignment updated"); return; }
-  if (e.target.id === "crm-c-token") { $("crm-c-amount").disabled = !e.target.checked; if (!e.target.checked) $("crm-c-amount").value = ""; return; }
+  if (e.target.id === "crm-d-hasref") {
+    const on = e.target.checked;
+    $("crm-d-inlinerefwrap").classList.toggle("hidden", !on); // reveal inline input on check, hide on uncheck (saved refs untouched)
+    await crmDo(() => admin("crmSetReferenceFlag", { customerId: st.crm.currentId, hasReference: on }), "Reference flag saved");
+    return;
+  }
+  if (e.target.id === "crm-d-token") {
+    const on = e.target.checked;
+    $("crm-d-amount").disabled = !on;
+    if (!on) $("crm-d-amount").value = "";
+    await crmDo(() => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: on, tokenAmount: on ? $("crm-d-amount").value.trim() : "" }), "Token saved");
+    return;
+  }
+  if (e.target.id === "crm-d-amount") {
+    if (!$("crm-d-token").checked) return;
+    const raw = e.target.value.trim();
+    if (raw !== "" && !(Number(raw) >= 0)) { toast("Enter a valid token amount", "error"); return; }
+    await crmDo(() => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: true, tokenAmount: raw }), "Token amount saved");
+    return;
+  }
+  if (e.target.id === "crm-c-outcome") { $("crm-c-followwrap").classList.toggle("hidden", e.target.value !== "callback"); return; }
 });
 $("crm-detail-modal").addEventListener("input", (e) => {
-  if (e.target.id === "crm-c-amount" && e.target.value !== "" && Number(e.target.value) < 0) e.target.value = "";
+  if (e.target.id === "crm-d-amount" && e.target.value !== "" && Number(e.target.value) < 0) e.target.value = "";
+  if (e.target.id === "crm-d-reason" && $("crm-d-savereject")) $("crm-d-savereject").disabled = !e.target.value.trim();
 });
 
 async function loadDispatch() {

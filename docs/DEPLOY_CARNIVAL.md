@@ -99,6 +99,20 @@ RPCs + `admin_directory` to LEFT JOIN `customer_crm` with `coalesce(crm_status,
 only — no Edge or HTML change** (RPC signatures + JSON shapes unchanged). The
 `user.html` explicit-column select from the hotfix is kept as defense in depth.
 
+`202608010018` (2026-08-17) — CRM refinements. Token/reference become standalone
+customer attributes (`crm_set_reference_flag`, `crm_set_token`) — removed from
+`crm_log_call` (**signature change**, drop-then-recreate). `crm_set_status` gains a
+required-when-rejected reason (**signature change**); `customer_crm.status_reason`
+added and surfaced in the reception flag banner (reason + who + when).
+`customer_calls.followup_at` added; `crm_log_call` requires it when
+outcome='callback'. New `crm_bulk_assign` / `crm_bulk_set_buyer_type` (one txn, one
+log row per customer). `crm_list_customers` returns call_count / last_call_at /
+order_line_count and supports withOrders + callbacksDue filters and a queue sort;
+the CRM list defaults to **customers with orders**. This checkpoint redeploys
+`admin-api` (4 new actions + changed crmLogCall/crmSetStatus) and the admin HTML
+(list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
+labels). No customer-facing change.
+
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
 | Migration | What it does |

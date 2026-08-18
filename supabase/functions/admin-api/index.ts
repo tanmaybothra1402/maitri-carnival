@@ -267,7 +267,11 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   crmCustomerDetail: ["crm.view"],
   crmSetBuyerType: ["crm.write"],
   crmSetStatus: ["crm.write"],
+  crmSetReferenceFlag: ["crm.write"],
+  crmSetToken: ["crm.write"],
+  crmBulkSetBuyerType: ["crm.write"],
   crmLogCall: ["crm.write"],
+  crmBulkAssign: ["crm.assign"],
   crmAddReference: ["crm.write"],
   crmDeleteReference: ["crm.write"],
   crmAssign: ["crm.assign"],
@@ -1291,6 +1295,31 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("crm_set_status", {
         p_customer_id: clean(body.customerId),
         p_status: clean(body.status),
+        p_reason: clean(body.reason) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetReferenceFlag") {
+      const { data, error } = await db.rpc("crm_set_reference_flag", {
+        p_customer_id: clean(body.customerId),
+        p_has_reference: Boolean(body.hasReference),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetToken") {
+      const rawAmount = body.tokenAmount;
+      const tokenAmount = rawAmount === "" || rawAmount === null || rawAmount === undefined ? null : Number(rawAmount);
+      if (tokenAmount !== null && !Number.isFinite(tokenAmount)) throw new Error("INVALID_TOKEN_AMOUNT");
+      const { data, error } = await db.rpc("crm_set_token", {
+        p_customer_id: clean(body.customerId),
+        p_token_agreed: Boolean(body.tokenAgreed),
+        p_token_amount: tokenAmount,
         p_actor: admin.id,
       });
       if (error) throw error;
@@ -1307,18 +1336,38 @@ Deno.serve(async (request: Request) => {
       return jsonResponse(request, { ok: true, data });
     }
 
+    if (action === "crmBulkAssign") {
+      const ids = Array.isArray(body.customerIds) ? body.customerIds.map((x: unknown) => clean(x)).filter(Boolean) : [];
+      if (!ids.length) throw new Error("NO_CUSTOMERS");
+      const { data, error } = await db.rpc("crm_bulk_assign", {
+        p_customer_ids: ids,
+        p_assigned_to: clean(body.assignedTo) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmBulkSetBuyerType") {
+      const ids = Array.isArray(body.customerIds) ? body.customerIds.map((x: unknown) => clean(x)).filter(Boolean) : [];
+      if (!ids.length) throw new Error("NO_CUSTOMERS");
+      const { data, error } = await db.rpc("crm_bulk_set_buyer_type", {
+        p_customer_ids: ids,
+        p_buyer_type: clean(body.buyerType) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
     if (action === "crmLogCall") {
-      const rawAmount = body.tokenAmount;
-      const tokenAmount = rawAmount === "" || rawAmount === null || rawAmount === undefined ? null : Number(rawAmount);
-      if (tokenAmount !== null && !Number.isFinite(tokenAmount)) throw new Error("INVALID_TOKEN_AMOUNT");
+      const followupAt = clean(body.followupAt) || null;
       const { data, error } = await db.rpc("crm_log_call", {
         p_customer_id: clean(body.customerId),
         p_outcome: clean(body.outcome),
         p_notes: clean(body.notes),
         p_status_after: clean(body.statusAfter) || null,
-        p_has_reference: Boolean(body.hasReference),
-        p_token_agreed: Boolean(body.tokenAgreed),
-        p_token_amount: tokenAmount,
+        p_followup_at: followupAt,
         p_actor: admin.id,
       });
       if (error) throw error;
