@@ -4525,6 +4525,10 @@ async function loadCrm() {
       filters: {
         search: f.search, buyerType: f.buyerType, status: f.status, tier: f.tier,
         assigned: f.assigned,
+        // "Assigned to me" filters server-side (before the LIMIT). Filtering the
+        // fetched page client-side dropped a salesperson's own buyers that sorted
+        // past row 500 — an incomplete list of their own customers.
+        assignedTo: f.mine ? (st.me?.id || "") : "",
         withOrders: f.scope === "orders",
         callbacksDue: f.scope === "callbacks",
         sort: f.sort,
@@ -4539,9 +4543,10 @@ async function loadCrm() {
   } catch (e) { $("crm-list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
 function crmFilteredRows() {
-  let rows = st.crm.customers.slice();
-  if (st.crm.filters.mine) rows = rows.filter((c) => c.assignedTo && c.assignedTo === st.me?.id);
-  return rows;
+  // "Assigned to me" is now a server-side filter (assignedTo, applied before the
+  // LIMIT). No client-side row filtering here — st.crm.customers is already the
+  // filtered set, so select-all-shown and the count line stay truthful.
+  return st.crm.customers.slice();
 }
 function crmScopeLabel() {
   return { orders: "with orders", all: "all customers", callbacks: "callbacks due" }[st.crm.filters.scope] || "";
@@ -4750,7 +4755,7 @@ crmChipPick("crm-tier-filter", "tier", "data-tier");
 crmChipPick("crm-assigned-filter", "assigned", "data-assigned");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
-$("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
+$("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; loadCrm(); };
 $("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
 $("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
 function crmUpdateFilterBadge() {
