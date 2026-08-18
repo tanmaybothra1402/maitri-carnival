@@ -1295,6 +1295,15 @@ Deno.serve(async (request: Request) => {
       const filters = body.filters && typeof body.filters === "object" && !Array.isArray(body.filters) ? body.filters : {};
       const { data, error } = await db.rpc("crm_list_customers", { p_filters: filters });
       if (error) throw error;
+      // SHAPE-TOLERANT (deliberate): crm_list_customers may return either the older
+      // ARRAY of customers, or the newer OBJECT { customers, assigneeCounts,
+      // unassignedCount, totalCount } that backs the salesperson-picker counts.
+      // Handling both means an Edge/migration deploy in either order degrades to a
+      // working list instead of breaking the CRM (an object handed to the old array
+      // client is exactly the outage this guards against). Count fields are forwarded
+      // ONLY when present, so the client shows plain names until counts are live.
+      const isObj = data && typeof data === "object" && !Array.isArray(data);
+      const customers = isObj ? ((data as any).customers ?? []) : (data ?? []);
       const { data: staffRows, error: sErr } = await db
         .from("staff_profiles")
         .select("auth_user_id,staff_name,permissions,active")
@@ -1306,7 +1315,13 @@ Deno.serve(async (request: Request) => {
       const staff = (staffRows ?? [])
         .filter((r: any) => r.active !== false)
         .map((r: any) => ({ id: r.auth_user_id, name: r.staff_name, hasCrm: !!(r.permissions && r.permissions["crm.view"]) }));
-      return jsonResponse(request, { ok: true, data: { customers: data ?? [], staff } });
+      const out: Record<string, unknown> = { customers, staff };
+      if (isObj) {
+        out.assigneeCounts = (data as any).assigneeCounts ?? [];
+        out.unassignedCount = (data as any).unassignedCount ?? 0;
+        out.totalCount = (data as any).totalCount ?? 0;
+      }
+      return jsonResponse(request, { ok: true, data: out });
     }
 
     if (action === "crmCustomerDetail") {

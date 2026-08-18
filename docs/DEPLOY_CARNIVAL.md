@@ -113,6 +113,27 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010027` (2026-08-18) — **HOTFIX / REVERT of 026.** 026 changed
+`crm_list_customers` to return an OBJECT so it could carry the salesperson-picker
+counts, but its matched `admin-api` Edge could not be deployed in the same session
+(the Supabase CLI access token was unavailable), and the LIVE Edge does
+`customers: data ?? []` — so the object shape broke the CRM list. 027 restores the
+025 ARRAY shape verbatim; no behaviour change vs 025. ⚠️ **The counts feature is
+staged, not live.** To ship it: (1) deploy the now shape-TOLERANT `admin-api`
+(handles array OR object, so either deploy order is safe); (2) re-apply the object
+shape as a NEW migration. The admin HTML picker is already live but degrades
+gracefully — it shows salesperson **names without counts** until the object shape
+is back. Do NOT `db push` an object-shape migration before the tolerant Edge is
+deployed.
+
+`202608010026` (2026-08-18) — Salesperson picker counts. `crm_list_customers`
+returns `{ customers, assigneeCounts, unassignedCount, totalCount }` — per-salesperson
+assignment totals computed on the list's exact scope (active + current exhibition),
+in the same call, so "UMA (9)" equals the rows a UMA selection returns. Counts are
+ABSOLUTE (not narrowed by the other active filters) — a roster overview; "(0)" means
+genuinely idle. **Applied then immediately reverted by 027** (see above) because its
+Edge could not deploy this session. Ships with the tolerant Edge + a re-apply.
+
 `202608010025` (2026-08-18) — CRM filters fail OPEN. An unrecognised filter value
 used to empty the list (buyerType/status/tier/assigned → 0 rows) or throw
 (withOrders/callbacksDue → 22P02) — staff read a blank CRM as "data gone"

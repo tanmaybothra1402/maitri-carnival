@@ -767,12 +767,11 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" type="button" data-tier="B">B</button>
     <button class="chip" type="button" data-tier="C">C</button>
   </div>
-  <label>Assignment</label>
-  <div class="crm-chip-row" id="crm-assigned-filter">
-    <button class="chip active" type="button" data-assigned="">All</button>
-    <button class="chip" type="button" data-assigned="assigned">Assigned</button>
-    <button class="chip" type="button" data-assigned="unassigned">Unassigned</button>
-  </div>
+  <label>Salesperson</label>
+  <select id="crm-assignee" style="width:100%">
+    <option value="">All</option>
+    <option value="unassigned">Unassigned</option>
+  </select>
   <label>Scope</label>
   <div class="crm-chip-row" id="crm-scope-filter">
     <button class="chip active" type="button" data-scope="orders">With orders</button>
@@ -786,7 +785,6 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" type="button" data-sort="callback">Callback date</button>
     <button class="chip" type="button" data-sort="tier">Tier</button>
   </div>
-  <label class="crm-mine" style="margin-top:12px"><input type="checkbox" id="crm-mine"/> <span>Only customers assigned to me</span></label>
   <button class="btn" type="button" id="crm-filter-done" style="width:100%;margin-top:14px">Show results</button>
 </div></div>
 
@@ -4506,7 +4504,7 @@ function firmPill(firm) {
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", tier: "", assigned: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
 // Status a call may set — a rejection needs a reason, so it is NOT offered here
@@ -4524,11 +4522,11 @@ async function loadCrm() {
     const data = await admin("crmListCustomers", {
       filters: {
         search: f.search, buyerType: f.buyerType, status: f.status, tier: f.tier,
-        assigned: f.assigned,
-        // "Assigned to me" filters server-side (before the LIMIT). Filtering the
-        // fetched page client-side dropped a salesperson's own buyers that sorted
-        // past row 500 — an incomplete list of their own customers.
-        assignedTo: f.mine ? (st.me?.id || "") : "",
+        // The salesperson picker drives both server params (before the LIMIT):
+        // "Unassigned" -> assigned:'unassigned'; a specific person (incl. Me) ->
+        // assignedTo:<uuid>; "All" -> neither. Counts come back in the same call.
+        assigned: f.assignee === "unassigned" ? "unassigned" : "",
+        assignedTo: (f.assignee && f.assignee !== "unassigned") ? f.assignee : "",
         withOrders: f.scope === "orders",
         callbacksDue: f.scope === "callbacks",
         sort: f.sort,
@@ -4536,6 +4534,13 @@ async function loadCrm() {
     });
     st.crm.customers = data.customers || [];
     st.crm.staff = data.staff || [];
+    // Counts are optional: the Edge only sends them when the RPC is the counts-bearing
+    // shape. Absent (older Edge) -> the picker shows plain names, never a misleading "(0)".
+    st.crm.hasCounts = Array.isArray(data.assigneeCounts);
+    st.crm.assigneeCounts = data.assigneeCounts || [];
+    st.crm.unassignedCount = data.unassignedCount || 0;
+    st.crm.totalCount = data.totalCount || 0;
+    crmBuildAssigneePicker();
     // Drop any selected id that is no longer in the list.
     const present = new Set(st.crm.customers.map((c) => c.id));
     st.crm.sel.forEach((id) => { if (!present.has(id)) st.crm.sel.delete(id); });
@@ -4551,6 +4556,44 @@ function crmFilteredRows() {
 function crmScopeLabel() {
   return { orders: "with orders", all: "all customers", callbacks: "callbacks due" }[st.crm.filters.scope] || "";
 }
+function crmAssigneeName(id) {
+  if (id === st.me?.id) return "me";
+  const s = (st.crm.staff || []).find((x) => x.id === id);
+  return s ? s.name : "salesperson";
+}
+function crmAssigneeLabel() {
+  const a = st.crm.filters.assignee;
+  if (!a) return "";
+  if (a === "unassigned") return ", unassigned";
+  return `, assigned to ${crmAssigneeName(a)}`;
+}
+// Salesperson picker: All / Unassigned / Me / every active staff, each with its
+// assignment count (INCLUDING zeros — an idle salesperson is as useful to spot as
+// a busy one). Counts come from crm_list_customers in the SAME call, computed on
+// the list's exact scope (active + current exhibition), so "UMA (9)" always equals
+// the rows a UMA selection returns. Sorted by count desc, then name.
+function crmBuildAssigneePicker() {
+  const sel = $("crm-assignee");
+  if (!sel) return;
+  const counts = {};
+  (st.crm.assigneeCounts || []).forEach((c) => { counts[c.assignedTo] = c.count; });
+  const has = st.crm.hasCounts;               // show "(n)" only when counts are live
+  const c = (n) => has ? ` (${n})` : "";
+  const meId = st.me?.id || "";
+  // Sort by count desc then name when counts are present; plain alphabetical otherwise.
+  const others = (st.crm.staff || [])
+    .filter((s) => s.id !== meId)
+    .map((s) => ({ id: s.id, name: s.name, n: counts[s.id] || 0 }))
+    .sort((a, b) => (has ? (b.n - a.n) : 0) || String(a.name).localeCompare(String(b.name)));
+  const opts = [
+    `<option value="">All${c(st.crm.totalCount || 0)}</option>`,
+    `<option value="unassigned">Unassigned${c(st.crm.unassignedCount || 0)}</option>`,
+  ];
+  if (meId) opts.push(`<option value="${esc(meId)}">Me${c(counts[meId] || 0)}</option>`);
+  others.forEach((o) => opts.push(`<option value="${esc(o.id)}">${esc(o.name)}${c(o.n)}</option>`));
+  sel.innerHTML = opts.join("");
+  sel.value = st.crm.filters.assignee || "";
+}
 function renderCrmList() {
   crmUpdateFilterBadge();
   const rows = crmFilteredRows();
@@ -4565,7 +4608,7 @@ function renderCrmList() {
   if (dupes) { warn.classList.remove("hidden"); warn.textContent = `⚠ ${dupes} customer${dupes === 1 ? "" : "s"} here match another active customer on BOTH name and phone — likely duplicates. Review before screening; never merge automatically.`; }
   else warn.classList.add("hidden");
   // Always name the active filter so nobody thinks this is the whole database.
-  $("crm-count").textContent = `${rows.length} customer${rows.length === 1 ? "" : "s"} — ${crmScopeLabel()}${st.crm.filters.mine ? ", assigned to me" : ""}`;
+  $("crm-count").textContent = `${rows.length} customer${rows.length === 1 ? "" : "s"} — ${crmScopeLabel()}${crmAssigneeLabel()}`;
   const shown = new Set(rows.map((c) => c.id));
   $("crm-selectall").checked = rows.length > 0 && rows.every((c) => st.crm.sel.has(c.id));
   if (!rows.length) { $("crm-list").innerHTML = '<div class="empty">No customers match these filters.</div>'; renderCrmBulkBar(); return; }
@@ -4752,15 +4795,14 @@ function crmChipPick(container, key, dataAttr) {
 crmChipPick("crm-buyer-filter", "buyerType", "data-buyer");
 crmChipPick("crm-status-filter", "status", "data-status");
 crmChipPick("crm-tier-filter", "tier", "data-tier");
-crmChipPick("crm-assigned-filter", "assigned", "data-assigned");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
-$("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; loadCrm(); };
+$("crm-assignee").onchange = () => { st.crm.filters.assignee = $("crm-assignee").value; loadCrm(); };
 $("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
 $("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
 function crmUpdateFilterBadge() {
   const f = st.crm.filters;
-  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.assigned ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
+  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.assignee ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0);
   const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 $("crm-selectall").onchange = () => {
