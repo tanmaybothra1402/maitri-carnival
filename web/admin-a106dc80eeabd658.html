@@ -4495,6 +4495,29 @@ function renderCrmBulkBar() {
     <button class="btn small secondary" type="button" data-crm-bulk="old">Set Old</button>
     <button class="btn small ghost" type="button" data-crm-bulk="clear">Clear</button>`;
 }
+// A duplicate PAIR for bulk-assign purposes = same canonical company name AND same
+// phone (the 41-row high-confidence set). Name-only or phone-only is too loose.
+// Returns how many selected rows have such a twin NOT in the selection, and the
+// twin ids to optionally add. Never merges — just surfaces the split.
+function crmTwinsOutsideSelection(ids) {
+  const idset = new Set(ids);
+  const canon = (s) => (s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const byKey = new Map();
+  (st.crm.customers || []).forEach((c) => {
+    const k = canon(c.companyName) + "|" + (c.phone || "");
+    if (!canon(c.companyName) || !c.phone) return; // need BOTH to be a high-confidence pair
+    if (!byKey.has(k)) byKey.set(k, []);
+    byKey.get(k).push(c.id);
+  });
+  const twinIds = new Set(); let count = 0;
+  ids.forEach((id) => {
+    const c = (st.crm.customers || []).find((x) => x.id === id); if (!c) return;
+    const k = canon(c.companyName) + "|" + (c.phone || "");
+    const outside = (byKey.get(k) || []).filter((gid) => gid !== id && !idset.has(gid));
+    if (outside.length) { count++; outside.forEach((gid) => twinIds.add(gid)); }
+  });
+  return { count, twinIds: [...twinIds] };
+}
 
 async function openCrmDetail(id) {
   st.crm.currentId = id;
@@ -4529,7 +4552,8 @@ function renderCrmDetail() {
         <textarea id="crm-d-reason" rows="2" maxlength="2000" placeholder="Reason for rejection (required) — reception shows this">${esc(d.statusReason || "")}</textarea>
         <button class="btn small" type="button" id="crm-d-savereject" style="margin-top:6px" ${d.statusReason ? "" : "disabled"}>Save rejection</button>
         <div class="crm-hint">Rejected buyers are flagged at reception — never blocked. Reception sees this reason.</div>
-      </div></div>
+      </div>
+      <div id="crm-d-agreedwarn" class="crm-hint hidden" style="margin-top:8px;color:#B45309;font-weight:700">New buyer marked agreed with no token — intended? The business rule is to ask new buyers for a token.</div></div>
     <div class="crm-field"><label>Assigned salesperson</label>
       <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
       ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>
@@ -4608,12 +4632,22 @@ $("crm-list").onclick = async (e) => {
 };
 $("crm-bulkbar").onclick = async (e) => {
   const b = e.target.closest("[data-crm-bulk]"); if (!b) return;
-  const ids = [...st.crm.sel];
+  let ids = [...st.crm.sel];
   const act = b.dataset.crmBulk;
   if (act === "clear") { st.crm.sel.clear(); renderCrmList(); return; }
   if (act === "assign") {
     const sel = $("crm-bulk-assignee"), assignedTo = sel.value;
     const name = assignedTo ? (sel.options[sel.selectedIndex].text) : "Unassigned";
+    // Duplicate-aware: if any selected row has a name+phone twin NOT selected,
+    // warn and offer to add the twins. Never auto-merge, never force.
+    const tw = crmTwinsOutsideSelection(ids);
+    if (tw.count > 0) {
+      if (confirm(`${tw.count} selected customer${tw.count === 1 ? " has" : "s have"} a likely duplicate (same name and phone) NOT in your selection. Add ${tw.twinIds.length} duplicate${tw.twinIds.length === 1 ? "" : "s"} to the selection so they screen together?\n\nOK = add them · Cancel = assign only the selected.`)) {
+        tw.twinIds.forEach((id) => st.crm.sel.add(id));
+        renderCrmList();
+        ids = [...st.crm.sel];
+      }
+    }
     if (!confirm(`Assign ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${name}?`)) return;
     try { await admin("crmBulkAssign", { customerIds: ids, assignedTo }); st.crm.sel.clear(); await loadCrm(); toast(`Assigned ${ids.length} to ${name}`, "success"); }
     catch (err) { toast(err.message, "error"); }
@@ -4640,6 +4674,11 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
         $("crm-d-savereject").disabled = !$("crm-d-reason").value.trim();
         $("crm-d-reason").focus();
       } else {
+        // Soft, non-blocking warning: new buyer set to 'agreed' without a token.
+        if (val === "agreed" && st.crm.detail && st.crm.detail.buyerType === "new" && !st.crm.detail.tokenAgreed) {
+          $("crm-d-agreedwarn").classList.remove("hidden");
+          if (!confirm("New buyer marked agreed with no token — intended? New buyers are normally asked for a token.")) return;
+        }
         await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }), "Status saved");
       }
       return;
