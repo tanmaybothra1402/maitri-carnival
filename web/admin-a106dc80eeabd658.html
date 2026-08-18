@@ -23,10 +23,10 @@
 .card,.viz-card,.list-card{margin-bottom:12px;padding:16px;border:1px solid rgba(34,94,99,.11);border-radius:15px;background:#fff;box-shadow:var(--shadow)}h1{color:var(--deep);font-size:20px}h2{color:var(--deep);font-size:15px}.copy{margin-top:4px;color:var(--muted);font-size:11px;line-height:1.5}.toolbar{display:flex;align-items:flex-start;gap:9px;margin-bottom:10px}.toolbar h1,.toolbar h2{margin-right:auto}.toolbar .compact{width:auto;min-width:100px}
 label{display:block;margin:13px 0 6px;color:#515B58;font-size:10px;font-weight:800;letter-spacing:.055em;text-transform:uppercase}.optional{color:var(--muted);font-weight:500;letter-spacing:0;text-transform:none}input,select,textarea{width:100%;border:1px solid #D9E2DF;border-radius:11px;background:#fff;color:var(--charcoal);font-size:15px}input,select{height:48px;padding:0 14px}textarea{min-height:84px;padding:12px 14px;resize:vertical}input:focus,select:focus,textarea:focus{outline:0;border-color:var(--teal);box-shadow:0 0 0 3px rgba(43,115,121,.13)}
 .btn{min-height:48px;padding:0 16px;border:0;border-radius:11px;background:var(--deep);color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 5px 13px rgba(34,94,99,.12)}.btn.secondary{border:1.5px solid var(--deep);background:#fff;color:var(--deep);box-shadow:none}.btn.ghost{border:1px solid var(--border);background:#fff;color:var(--slate);box-shadow:none}.btn.danger{background:var(--error)}.btn.small{min-height:40px;padding:0 12px;font-size:11px}.btn:disabled{background:#E8ECEA;color:#929895;box-shadow:none;cursor:not-allowed}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.grid2,.grid3,.grid4{display:grid;gap:9px}.grid2{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:repeat(3,1fr)}.grid4{grid-template-columns:repeat(4,1fr)}
-.segment{position:sticky;top:64px;z-index:42;display:flex;gap:4px;margin-bottom:12px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(232,242,241,.97);backdrop-filter:blur(10px)}.segment button{flex:1;min-height:40px;padding:6px;border:0;border-radius:10px;background:transparent;color:var(--deep);font-size:11px;font-weight:800;cursor:pointer}.segment button.active{background:#fff;box-shadow:0 2px 8px rgba(34,94,99,.14)}
+.segment{position:sticky;top:52px;z-index:42;display:flex;gap:4px;margin-bottom:8px;padding:3px;border:1px solid var(--border);border-radius:14px;background:rgba(232,242,241,.97);backdrop-filter:blur(10px)}.segment button{flex:1;min-height:34px;padding:6px;border:0;border-radius:10px;background:transparent;color:var(--deep);font-size:11px;font-weight:800;cursor:pointer}.segment button.active{background:#fff;box-shadow:0 2px 8px rgba(34,94,99,.14)}
 .list{display:grid;gap:8px;margin-top:10px}.list-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:12px;background:#fff}.list-row.click{cursor:pointer}.list-row.click:active{background:var(--foam);transform:scale(.995)}.list-row b{display:block;color:var(--deep);font-size:13px}.list-row p{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.45}.empty{min-height:110px;display:grid;place-items:center;padding:22px;border:1px dashed rgba(43,115,121,.2);border-radius:14px;background:#F8FBFA;color:var(--muted);font-size:12px;text-align:center}.badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:9px;font-weight:800}.badge.ok{background:#DCFCE7;color:#166534}.badge.wait{background:#FFF3D9;color:#8A5A09}.badge.off{background:#FEE2E2;color:#991B1B}.badge.info{background:var(--foam);color:var(--deep)}
 nav.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:100;height:calc(var(--nav-h) + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,1fr);align-items:start;padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border-top:1px solid rgba(34,94,99,.1);box-shadow:0 -10px 28px rgba(34,55,52,.1);backdrop-filter:blur(14px)}.nav-item{position:relative;height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:none;color:#707674;font-size:10px;font-weight:600;cursor:pointer}.nav-item svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.nav-item.active{color:var(--deep);font-weight:800}.nav-item.active:not(.center)::before{content:"";position:absolute;top:7px;left:50%;width:26px;height:3px;border-radius:999px;background:var(--orange);transform:translateX(-50%)}.center .fab{width:56px;height:56px;display:grid;place-items:center;margin:-25px auto 0;border:3px solid #fff;border-radius:50%;background:var(--deep);box-shadow:0 8px 20px rgba(34,94,99,.3)}.center .fab svg{width:25px;height:25px;stroke:#fff}.center.active .fab{background:var(--orange);box-shadow:0 8px 20px rgba(255,151,0,.28)}
-.dashboard-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.dashboard-header h1{font-size:21px}.updated{margin-top:4px;color:var(--muted);font-size:10px}.dashboard-subnav{position:sticky;top:64px;z-index:42;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 16px rgba(34,94,99,.08)}.dashboard-subnav button{min-height:40px;padding:5px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}.dashboard-subnav button.active{background:var(--deep);color:#fff}.filter-bar{display:flex;align-items:center;gap:7px;min-height:50px;margin-bottom:10px;padding:8px;border:1px solid var(--border);border-radius:13px;background:#fff}.filter-chips{display:flex;flex:1;gap:6px;overflow-x:auto;scrollbar-width:none}.chip{flex:0 0 auto;min-height:32px;padding:5px 10px;border:0;border-radius:16px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:800}.kpi-strip{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.kpi{flex:0 0 116px;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.05)}.kpi.primary{background:linear-gradient(135deg,var(--deep),var(--teal));border-color:transparent;color:#fff}.kpi b{display:block;font-size:21px}.kpi span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.kpi.primary span{color:rgba(255,255,255,.75)}.dashboard-panel[hidden]{display:none!important}.viz-grid{display:grid;grid-template-columns:1fr;gap:10px}.viz-card{min-width:0;overflow:hidden;padding:14px}.viz-card.wide{grid-column:1/-1}.viz-card.hero{border-color:rgba(255,151,0,.34)}.viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.viz-title{color:var(--deep);font-size:14px;font-weight:800}.viz-copy{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}.mini-segment{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--foam)}.mini-segment button{min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:9px;font-weight:800}.mini-segment button.active{background:#fff;color:var(--deep);box-shadow:0 2px 7px rgba(34,94,99,.12)}.chart-frame{position:relative;height:245px;margin-top:8px}.chart-frame.hero{height:280px}.chart-frame canvas{width:100%!important;height:100%!important}.ranking{display:grid;gap:6px;margin-top:8px}.rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}.rank-no{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.rank-row:first-child .rank-no{background:var(--orange);color:#fff}.rank-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.rank-meta{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rank-value{color:var(--deep);font-size:11px;font-weight:850;white-space:nowrap}
+.dashboard-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.dashboard-header h1{font-size:17px}.filter-chips[hidden]{display:none}.updated{margin-top:4px;color:var(--muted);font-size:10px}.dashboard-subnav{position:sticky;top:54px;z-index:42;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px;padding:3px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.96);box-shadow:0 5px 16px rgba(34,94,99,.08)}.dashboard-subnav button{min-height:40px;padding:5px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}.dashboard-subnav button.active{background:var(--deep);color:#fff}.filter-bar{display:flex;align-items:center;gap:7px;min-height:40px;margin-bottom:8px;padding:6px;border:1px solid var(--border);border-radius:13px;background:#fff}.filter-chips{display:flex;flex:1;gap:6px;overflow-x:auto;scrollbar-width:none}.chip{flex:0 0 auto;min-height:32px;padding:5px 10px;border:0;border-radius:16px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:800}.kpi-strip{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}.kpi{flex:0 0 116px;min-height:70px;padding:11px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 4px 14px rgba(34,94,99,.05)}.kpi.primary{background:linear-gradient(135deg,var(--deep),var(--teal));border-color:transparent;color:#fff}.kpi b{display:block;font-size:21px}.kpi span{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.kpi.primary span{color:rgba(255,255,255,.75)}.dashboard-panel[hidden]{display:none!important}.viz-grid{display:grid;grid-template-columns:1fr;gap:10px}.viz-card{min-width:0;overflow:hidden;padding:14px}.viz-card.wide{grid-column:1/-1}.viz-card.hero{border-color:rgba(255,151,0,.34)}.viz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.viz-title{color:var(--deep);font-size:14px;font-weight:800}.viz-copy{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.4}.mini-segment{display:flex;gap:3px;padding:3px;border-radius:10px;background:var(--foam)}.mini-segment button{min-height:30px;padding:5px 8px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:9px;font-weight:800}.mini-segment button.active{background:#fff;color:var(--deep);box-shadow:0 2px 7px rgba(34,94,99,.12)}.chart-frame{position:relative;height:245px;margin-top:8px}.chart-frame.hero{height:280px}.chart-frame canvas{width:100%!important;height:100%!important}.ranking{display:grid;gap:6px;margin-top:8px}.rank-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}.rank-no{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--foam);color:var(--deep);font-size:10px;font-weight:850}.rank-row:first-child .rank-no{background:var(--orange);color:#fff}.rank-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:800}.rank-meta{display:block;margin-top:2px;color:var(--muted);font-size:9px}.rank-value{color:var(--deep);font-size:11px;font-weight:850;white-space:nowrap}
 .rank-row.has-thumb{grid-template-columns:30px 38px minmax(0,1fr) auto}
 .rank-thumb{position:relative;width:38px;height:50px;border-radius:6px;overflow:hidden;background:var(--foam);display:grid;place-items:center}
 .rank-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -241,7 +241,7 @@ h1,h2,h3,.viz-title{color:var(--ink);line-height:1.2}h1{font-size:22px;font-weig
 b,.kpi,.metric,.badge,.entry-tag,.slot-capacity{font-variant-numeric:tabular-nums}
 *{scrollbar-color:#C8D8D4 transparent;scrollbar-width:thin}
 button,input,select,textarea{font:inherit}button{touch-action:manipulation}img{-webkit-user-drag:none;-webkit-touch-callout:none}
-.appbar{height:60px;min-height:60px;padding:0 16px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);box-shadow:var(--sh-1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.appbar{height:52px;min-height:52px;padding:0 16px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--line);box-shadow:var(--sh-1);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .brand{gap:8px}.wordmark{color:var(--teal-deep);font-size:14px;font-weight:800;letter-spacing:.12em}.dot{width:10px;height:10px;background:var(--orange);box-shadow:none}.divider{height:24px;background:var(--line)}.firm-logo{height:18px;object-fit:contain}.staff-meta b{color:var(--ink);font-size:11px}.staff-meta button{min-height:32px;padding:0 8px;border-radius:var(--r-xs);color:var(--teal-deep)}.staff-meta button:hover{background:var(--foam)}
 .page{max-width:620px;padding:16px 12px 24px}.page.active{animation:ekum-enter 200ms var(--ease) both}#page-dashboard{max-width:1120px}
 .card,.viz-card,.list-card{margin-bottom:12px;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-2)}
@@ -257,7 +257,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .btn:hover{background:#1C5358}.btn:active{transform:translateY(1px) scale(.99)}.btn.primary{background:var(--teal-deep);color:#fff}.btn.secondary{background:#fff;border:1.5px solid var(--teal-deep);color:var(--teal-deep);box-shadow:none}.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--body);box-shadow:none}.btn.danger{background:var(--error);color:#fff}.btn.danger-outline{background:#fff;border:1.5px solid var(--error);color:var(--error);box-shadow:none}.btn.sm,.btn.small{min-height:38px;padding:0 12px;font-size:12.5px}.btn.block{width:100%}.btn:disabled{background:#EAEEEC;color:#9AA3A0;border-color:#EAEEEC;box-shadow:none;cursor:not-allowed;transform:none}
 .icon-button,.close{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:var(--r-xs);background:transparent;color:var(--body);font-size:18px;cursor:pointer}.icon-button:hover,.close:hover{background:var(--foam)}
 .grid2,.grid3,.grid4{gap:12px}.toolbar{gap:12px}.toolbar .compact{min-width:108px}
-.segment,.dashboard-subnav{position:sticky;top:60px;z-index:42;display:flex;gap:4px;overflow-x:auto;padding:4px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.95);box-shadow:var(--sh-1);scrollbar-width:none}.segment::-webkit-scrollbar,.dashboard-subnav::-webkit-scrollbar{display:none}.segment button,.dashboard-subnav button{flex:1 0 auto;min-height:40px;padding:0 14px;border:0;border-radius:var(--r-xs);background:transparent;color:var(--body);font-size:11px;font-weight:800;transition:background 200ms var(--ease),color 200ms var(--ease),transform 120ms var(--ease)}.segment button.active,.dashboard-subnav button.active{background:var(--teal-deep);color:#fff;box-shadow:var(--sh-1)}
+.segment,.dashboard-subnav{position:sticky;top:60px;z-index:42;display:flex;gap:4px;overflow-x:auto;padding:4px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.95);box-shadow:var(--sh-1);scrollbar-width:none}.segment::-webkit-scrollbar,.dashboard-subnav::-webkit-scrollbar{display:none}.segment button,.dashboard-subnav button{flex:1 0 auto;min-height:34px;padding:0 14px;border:0;border-radius:var(--r-xs);background:transparent;color:var(--body);font-size:11px;font-weight:800;transition:background 200ms var(--ease),color 200ms var(--ease),transform 120ms var(--ease)}.segment button.active,.dashboard-subnav button.active{background:var(--teal-deep);color:#fff;box-shadow:var(--sh-1)}
 .badge,.entry-tag{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:var(--r-pill);font-size:10px;font-weight:800}.badge.ok,.entry-tag.checked{background:var(--success-bg);color:var(--success)}.badge.wait,.entry-tag.current,.entry-tag.past{background:var(--warn-bg);color:var(--warn)}.badge.off,.entry-tag.paused{background:var(--error-bg);color:var(--error)}.badge.info,.entry-tag.date,.entry-tag.time,.entry-tag.future,.entry-tag.none{background:var(--foam);color:var(--teal-deep)}
 .chip,.dashboard-filter-chip{border:1px solid var(--line);border-radius:var(--r-pill);background:#fff;color:var(--body);font-size:11px;font-weight:700}.chip.on,.dashboard-filter-chip.on{background:var(--foam);border-color:var(--teal);color:var(--teal-deep);font-weight:800}
 .list{gap:8px}.list-row{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.list-row b{color:var(--ink);font-size:13px}.list-row p{font-size:11px}
@@ -472,6 +472,20 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 /* Every scrollable page clears the fixed 7-item nav + the overhanging Sale FAB so
    the last row is never obscured (nav-h 72 + ~25 fab overhang + margin). */
 main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))}
+/* Shared compact list header pattern (reused on Dispatch/Products/Sale/Dashboard/
+   Reception) — a search stays inline, secondary filters collapse behind a button. */
+.mc-topbar{display:flex;gap:8px;margin-bottom:8px}
+.product-master-card{padding:11px}
+.mc-topbar>input,.mc-topbar>.mc-grow{flex:1;min-width:0}
+.mc-fbtn{flex:0 0 auto;display:inline-flex;align-items:center;white-space:nowrap}
+.mc-fbadge{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:7px;padding:0 5px;border-radius:999px;background:var(--orange);color:#fff;font-size:10px;font-weight:900}
+.mc-slimhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px}
+.mc-slimhead h2{font-size:14px;margin:0}
+/* Reception density: the entry board starts as high as possible under the subnav */
+#reception-entry .entry-board{margin-top:9px}
+#reception-entry .entry-section{padding:9px}
+#reception-entry .entry-section-head{padding:0 2px 7px}
+#reception-entry .entry-section-head h2{font-size:13px}
 .crm-token-amt{margin-top:8px}
 .crm-token-amt input:disabled{background:#EEF2F0;color:#9AA0A6}
 .crm-calls{display:grid;gap:7px;margin-top:8px}
@@ -498,27 +512,22 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 <main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Team login</h1><p class="copy">Use your Team ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Team ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
 <main class="page" id="page-reception">
 <div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">New Visitor</button><button data-sub="password">Password</button></div>
-<section class="subpanel" id="reception-entry"><div class="card"><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/><div class="new-visitor-callout"><div><b>Not registered yet?</b><span>Welcome a new visitor and create their access.</span></div><button class="btn secondary small" data-open-registration>Register visitor</button></div>
+<section class="subpanel" id="reception-entry"><div class="card" style="padding:11px">
+<div class="mc-topbar">
+<input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/>
+<button class="btn small secondary mc-fbtn" data-open-registration>＋ Register</button>
+</div>
 <div class="entry-board">
 <section class="entry-section entry-pending-section">
-<div class="entry-section-head">
-<div><span class="entry-kicker">By visit slot</span><h2>Booked — awaiting entry</h2></div>
-<span class="entry-count" id="entry-pending-count">0</span>
-</div>
+<div class="entry-section-head"><h2>Booked — awaiting entry</h2><span class="entry-count" id="entry-pending-count">0</span></div>
 <div class="entry-scroll" id="entry-pending"></div>
 </section>
 <section class="entry-section entry-noslot-section">
-<div class="entry-section-head">
-<div><span class="entry-kicker">Walk-ins</span><h2>No slot booked</h2><p>Registered visitors who did not book a slot — check them in here.</p></div>
-<span class="entry-count" id="entry-noslot-count">0</span>
-</div>
+<div class="entry-section-head"><h2>No slot booked</h2><span class="entry-count" id="entry-noslot-count">0</span></div>
 <div class="entry-scroll" id="entry-noslot"></div>
 </section>
 <section class="entry-section entry-completed-section">
-<div class="entry-section-head">
-<div><span class="entry-kicker">Already entered</span><h2>Completed</h2><p>Most recently checked-in customers appear first.</p></div>
-<span class="entry-count success" id="entry-completed-count">0</span>
-</div>
+<div class="entry-section-head"><h2>Completed</h2><span class="entry-count success" id="entry-completed-count">0</span></div>
 <div class="entry-scroll compact" id="entry-completed"></div>
 </section>
 </div>
@@ -527,10 +536,10 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 <section class="subpanel hidden" id="reception-password"><div class="card"><h1>Password support</h1><p class="copy">Set a temporary password and share it directly with the customer.</p><label>Customer mobile</label><input id="reset-phone" inputmode="numeric" maxlength="12"/><label>New password</label><input id="reset-password" minlength="8" type="text"/><div class="row" style="margin-top:12px"><button class="btn secondary" id="generate-customer-pass">Generate</button><button class="btn" id="reset-customer-pass">Reset password</button></div><div id="password-result"></div></div></section>
 </main>
 <main class="page" id="page-dashboard">
-<div class="dashboard-header"><div><h1>Exhibition Dashboard</h1><div class="updated" id="dash-updated">Not loaded yet</div></div><div class="row"><button class="btn secondary small" id="dash-export">Export</button><button class="btn secondary small" id="dash-refresh">Refresh</button></div></div>
+<div class="dashboard-header"><h1>Dashboard <span class="updated" id="dash-updated" style="display:inline;margin:0"></span></h1><div class="row"><button class="btn secondary small" id="dash-export">Export</button><button class="btn secondary small" id="dash-refresh">Refresh</button></div></div>
 <div class="dashboard-subnav"><button class="active" data-dtab="overview">Overview</button><button data-dtab="products">Products</button><button data-dtab="customers">Customers</button><button data-dtab="zones">Zones</button></div>
-<div class="filter-bar"><button class="btn secondary small" id="filter-open">＋ Filter</button><button class="btn ghost small" id="filter-clear">Clear</button><div class="filter-chips" id="filter-chips"><span class="copy">All exhibition data</span></div></div>
-<div class="card" style="padding:10px"><input id="dash-search" placeholder="Search customer, phone or design"/></div>
+<div class="filter-bar"><input id="dash-search" class="mc-grow" placeholder="Search customer, phone or design" style="height:38px"/><button class="btn secondary small mc-fbtn" id="filter-open">＋ Filter</button><button class="btn ghost small mc-fbtn" id="filter-clear">Clear</button></div>
+<div class="filter-chips" id="filter-chips" hidden><span class="copy">All exhibition data</span></div>
 <div class="kpi-strip"><div class="kpi primary"><b id="k-pieces">0</b><span>Total pieces</span></div><div class="kpi"><b id="k-sets">0</b><span>Total sets</span></div><div class="kpi"><b id="k-buyers">0</b><span>Buyers</span></div><div class="kpi"><b id="k-customers">0</b><span>Customers</span></div><div class="kpi"><b id="k-checkin">0</b><span>Checked in</span></div><div class="kpi"><b id="k-orders">0</b><span>Orders</span></div><div class="kpi"><b id="k-designs">0</b><span>Designs</span></div><div class="kpi"><b id="k-average">0</b><span>Avg pcs / buyer</span></div></div>
 <section class="dashboard-panel" id="dash-overview"><div class="viz-grid">
 <article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">What’s selling best</div><div class="viz-copy">Top designs by pieces. Tap a row to drill down.</div></div></div><div class="chart-frame hero"><canvas id="chart-overview-design"></canvas></div><div class="ranking" id="rank-overview-design"></div></article>
@@ -543,12 +552,13 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 <section class="dashboard-panel" hidden="" id="dash-zones"><div class="viz-grid"><article class="viz-card hero wide"><div class="viz-head"><div><div class="viz-title">State performance</div><div class="viz-copy">Tap a state to apply it as a filter.</div></div><div class="mini-segment" id="zones-mode"><button class="active" data-mode="stateCustomers">Customers</button><button data-mode="statePieces">Pieces</button></div></div><div class="chart-frame hero"><canvas id="chart-zones-state"></canvas></div><div class="ranking" id="rank-zones"></div></article></div></section>
 </main>
 <main class="page" id="page-sale">
-<div class="toolbar"><div><h1>Sale Order</h1><p class="copy">Search a customer and start scanning.</p></div><button class="btn secondary small" id="previous-orders">Previous Orders</button></div>
 <div class="segment mc-mode" id="sale-mode"><button class="active" data-mode="one">One customer</button><button data-mode="multi">Multiple customers</button></div>
-<section class="card focus-card sale-find-card" id="sale-find-card">
-  <div class="sale-find-intro"><span class="section-kicker">Create sale order</span><h2>Choose a customer</h2><p>Search by company, contact or mobile, or pick someone who entered recently.</p></div>
-  <div class="sale-search-wrap"><input id="sale-search" placeholder="Search company, mobile or contact" autocomplete="off"/><span class="sale-search-icon" aria-hidden="true">⌕</span></div>
-  <div class="sale-results-heading" id="sale-results-heading">Recently entered</div>
+<section class="card focus-card sale-find-card" id="sale-find-card" style="padding:11px">
+  <div class="mc-topbar">
+    <div class="sale-search-wrap mc-grow"><input id="sale-search" placeholder="Search company, mobile or contact" autocomplete="off"/><span class="sale-search-icon" aria-hidden="true">⌕</span></div>
+    <button class="btn secondary small mc-fbtn" id="previous-orders">Previous</button>
+  </div>
+  <div class="sale-results-heading hidden" id="sale-results-heading">Recently entered</div>
   <div class="list customer-results" id="sale-results"></div>
 </section>
 <section class="card hidden sale-builder-card" id="sale-builder">
@@ -585,13 +595,22 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 <main class="page" id="page-products">
 <div class="segment" data-module="products"><button class="active" data-sub="master">Product Master</button><button data-sub="mapping">Mapping</button><button data-sub="grid">Bulk add</button></div>
 <section class="subpanel" id="products-master"><div class="card product-master-card">
-  <div class="product-master-head"><div><span class="section-kicker">Product catalogue</span><h1>Product Master <span class="scope-note">· all events</span></h1><p class="catalogue-guide">Grouped by category. Tap any thumbnail to view or edit it.</p></div><div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div></div>
-  <button class="btn small hidden" id="product-new" style="margin-bottom:10px">＋ New product</button>
-  <input id="product-search" placeholder="Search design, category, style or fabric"/>
-  <div class="catalogue-tools"><button class="chip" id="pm-check-images" type="button">Check all images</button><button class="chip pm-missing-chip hidden" id="pm-missing-toggle" type="button">⚠ <span id="pm-missing-count">0</span> missing</button></div>
+  <div class="mc-topbar">
+    <input id="product-search" placeholder="Search design, category, style, fabric"/>
+    <button class="btn small hidden mc-fbtn" id="product-new">＋ New</button>
+    <button class="btn small secondary mc-fbtn" type="button" id="product-options-open">Options</button>
+  </div>
   <div class="mc-warn hidden" id="pm-truncate-warn"></div>
   <div class="catalogue-groups" id="product-list"></div>
 </div></section>
+
+<div class="modal" id="product-options-sheet"><div class="sheet">
+  <div class="sheet-head"><div><h2>Catalogue options</h2><p class="copy">All events. Grouped for browsing; tap any thumbnail to view or edit.</p></div><button class="close" data-close="product-options-sheet">✕</button></div>
+  <div class="product-group-control"><label for="product-group">Group by</label><select id="product-group"><option value="">None</option><option selected="selected" value="category">Category</option><option value="style">Style</option><option value="fabric">Fabric</option><option value="firm">Firm</option></select></div>
+  <label>Image check</label>
+  <div class="catalogue-tools"><button class="chip" id="pm-check-images" type="button">Check all images</button><button class="chip pm-missing-chip hidden" id="pm-missing-toggle" type="button">⚠ <span id="pm-missing-count">0</span> missing</button></div>
+  <button class="btn" type="button" id="product-options-done" style="width:100%;margin-top:14px">Done</button>
+</div></div>
 <section class="subpanel hidden" id="products-grid"><div class="card">
   <div class="grid-head"><div><span class="section-kicker">Bulk add</span><h1>Add designs</h1><p class="copy">Type rows directly — Tab moves across, Enter starts a new row. A blank row is always waiting at the bottom. Nothing is written until you press Save. New designs have no barcode yet; the next free sticker is <b>MC-0644</b>.</p></div><div class="grid-actions"><button class="btn secondary small" id="grid-add">＋ Row</button><button class="btn small" id="grid-save">Save all</button></div></div>
   <div class="grid-report" id="grid-report"></div>
@@ -623,18 +642,9 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
 </main>
 <main class="page" id="page-dispatch">
 <div class="card dispatch-head-card">
-  <div><span class="section-kicker">Warehouse</span><h1>Dispatch</h1><p class="copy">Confirm what physically leaves for each order. Dispatched designs lock automatically.</p></div>
-  <input id="dispatch-search" placeholder="Search company, mobile or contact"/>
-  <div class="chip-row" id="dispatch-firm-chips">
-    <button class="chip active" data-firm="">All firms</button>
-    <button class="chip" data-firm="Maitri">Maitri</button>
-    <button class="chip" data-firm="Niharika">Niharika</button>
-  </div>
-  <div class="chip-row" id="dispatch-status-chips">
-    <button class="chip active" data-status="">All</button>
-    <button class="chip" data-status="Pending">Pending</button>
-    <button class="chip" data-status="Partial">Partially completed</button>
-    <button class="chip" data-status="Completed">Completed</button>
+  <div class="mc-topbar">
+    <input id="dispatch-search" placeholder="Search company, mobile or contact"/>
+    <button class="btn small secondary mc-fbtn" type="button" id="dispatch-filter-open">Filters<span class="mc-fbadge hidden" id="dispatch-filter-count">0</span></button>
   </div>
   <div class="chip-row" id="dispatch-mode-chips">
     <button class="chip active" data-mode="order">By order</button>
@@ -642,6 +652,24 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
   </div>
 </div>
 <div class="list" id="dispatch-list"></div>
+
+<div class="modal" id="dispatch-filter-sheet"><div class="sheet">
+  <div class="sheet-head"><div><h2>Dispatch filters</h2></div><button class="close" data-close="dispatch-filter-sheet">✕</button></div>
+  <label>Firm</label>
+  <div class="chip-row" id="dispatch-firm-chips">
+    <button class="chip active" data-firm="">All firms</button>
+    <button class="chip" data-firm="Maitri">Maitri</button>
+    <button class="chip" data-firm="Niharika">Niharika</button>
+  </div>
+  <label>Status</label>
+  <div class="chip-row" id="dispatch-status-chips">
+    <button class="chip active" data-status="">All</button>
+    <button class="chip" data-status="Pending">Pending</button>
+    <button class="chip" data-status="Partial">Partially completed</button>
+    <button class="chip" data-status="Completed">Completed</button>
+  </div>
+  <button class="btn" type="button" id="dispatch-filter-done" style="width:100%;margin-top:14px">Show results</button>
+</div></div>
 <button class="btn dispatch-save-btn dp-confirm-bar hidden" id="dp-confirm" disabled>Confirm dispatch</button>
 </main>
 
@@ -4136,6 +4164,8 @@ $("pm-missing-toggle").onclick = () => {
 };
 $("product-search").oninput = renderProducts;
 $("product-group").onchange = renderProducts;
+$("product-options-open").onclick = () => openModal("product-options-sheet");
+$("product-options-done").onclick = () => closeModal("product-options-sheet");
 $("product-list").onclick = (e) => {
   const b = e.target.closest("[data-product]");
   if (b) openProduct(b.dataset.product);
@@ -4750,6 +4780,7 @@ $("crm-detail-modal").addEventListener("input", (e) => {
 
 async function loadDispatch() {
   if (!has("dispatch.view")) return;
+  dispatchUpdateFilterBadge();
   const byProduct = st.dispatch.mode === "product";
   try {
     const res = await admin("listDispatch", {
@@ -4965,6 +4996,12 @@ $("dispatch-status-chips").onclick = (e) => {
   );
   loadDispatch();
 };
+$("dispatch-filter-open").onclick = () => openModal("dispatch-filter-sheet");
+$("dispatch-filter-done").onclick = () => closeModal("dispatch-filter-sheet");
+function dispatchUpdateFilterBadge() {
+  const n = (st.dispatch.firm ? 1 : 0) + (st.dispatch.status ? 1 : 0);
+  const b = $("dispatch-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
+}
 
 $("dispatch-mode-chips").onclick = (e) => {
   const b = e.target.closest("[data-mode]");
