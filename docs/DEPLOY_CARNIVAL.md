@@ -113,6 +113,34 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010023` (2026-08-18) — `crm.bulk` key gates the three mass-edit actions
+(`crm_bulk_assign` / `crm_bulk_set_buyer_type` / `crm_bulk_set_tier`). admin-api:
+`crm.bulk` in ALL_PERMISSIONS but **excluded from GROUPS.crm and from the
+manager/administrator presets** (so ticking CRM never grants it); the 3 bulk
+actions re-gated onto `crm.bulk`; coherence guard also drops `crm.bulk` without
+`crm.view`; createStaff/updateStaff carry a `crmBulk` sub-toggle. HTML: a nested
+**Bulk edits** sub-toggle under the CRM module (plus the CRM module's missing
+`<input>` / ORDER / SECTION editor entries — 021 added the data but not the form
+control, so editing staff still wiped CRM); CRM list hides checkboxes / select-all
+/ bulk bar / inline New-Regular + A/B/C for non-bulk staff; per-customer tier
+control added to the detail card so `crm.write` keeps single-customer editing.
+Migration backfills `crm.bulk` to exactly two accounts (`tanmaybothra1402-2fb5`,
+`ganesh`) and aborts if that count isn't 2. Redeploys admin-api + HTML.
+NOTE: applied via MCP `apply_migration` (which stamps a 14-digit CLI-timestamp
+version); the ledger version was reconciled back to this 12-digit house number by
+an UPDATE to `supabase_migrations.schema_migrations` preserving `statements`.
+
+`202608010022` (2026-08-18) — tier-first ordering on every customer list, in SQL
+before the LIMIT (sorting after a cap silently drops A-tier off the page).
+`crm_list_customers`: tier rank is the default primary, explicit Call queue /
+Callback sorts still win with tier as tiebreak. `admin_directory` (Reception +
+Sale search): tier-first, created_at desc tiebreak. **New `admin_dispatch_orders`
+RPC** backs listDispatch — the old PostgREST path had a 300-row cap against 486
+dispatchable orders and couldn't sort by the nested `customer_crm.tier`; ordering
++ search moved into SQL. Dashboard RPCs left as metric/recency order by design
+(no plain customer roster; tier badge already renders). Redeploys admin-api + HTML.
+Same 14→12-digit ledger reconciliation as 023 (see note there). No customer-facing change.
+
 `202608010021` (2026-08-17) — permission-coherence fix. `crm.assign` moved from
 the Admin group to the CRM module (admin-api GROUPS.crm + PRESET_PERMISSIONS.crm +
 staff_permission_defaults 'crm' preset + a **new CRM checkbox in the staff editor**
