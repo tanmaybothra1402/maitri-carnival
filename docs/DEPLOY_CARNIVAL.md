@@ -113,6 +113,16 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010019` (2026-08-17) — buyer_type value `old` → `regular` (constraint +
+crm_set_buyer_type / crm_bulk_set_buyer_type restated; 0 live rows to migrate;
+customer_crm_log audit history deliberately left intact). This checkpoint also
+redeploys `admin-api` (assign picker now lists ALL active staff with a "no CRM
+access" marker, not only crm.view holders) and the admin HTML: `old`→`regular`
+labels, and a **screen-density pass** — CRM description/4 filter rows collapsed
+into a search + Filters bottom-sheet (chrome 491→165px at 390×844, 2→4 cards);
+Reception header trimmed (508→374px); an app-wide `main.page` bottom padding so
+the last row always clears the 7-item nav + Sale FAB. No customer-facing change.
+
 Migrations `202608010001`–`202608010009` are the multi-exhibition build. In order:
 
 | Migration | What it does |

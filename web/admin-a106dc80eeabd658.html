@@ -429,7 +429,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-b{display:inline-flex;align-items:center;min-height:20px;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:800}
 .crm-b.pending{background:#FFF3D9;color:#8A5A09}.crm-b.on_hold{background:#E5E7EB;color:#374151}
 .crm-b.agreed{background:#DCFCE7;color:#166534}.crm-b.rejected{background:#FEE2E2;color:#991B1B}
-.crm-b.new{background:var(--foam);color:var(--deep)}.crm-b.old{background:#EDE9FE;color:#5B21B6}
+.crm-b.new{background:var(--foam);color:var(--deep)}.crm-b.regular{background:#EDE9FE;color:#5B21B6}
 .crm-b.dupe{background:#FEF3C7;color:#92400E}.crm-b.assigned{background:#E0F2FE;color:#075985}
 .crm-row-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;color:var(--muted);font-size:9px;white-space:nowrap}
 .crm-dupe-hint{margin-bottom:12px;padding:9px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11px;font-weight:700}
@@ -459,12 +459,19 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-inline-type{display:flex;gap:5px;margin-top:7px}
 .crm-inline-type button{min-height:28px;padding:3px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--slate);font-size:10px;font-weight:800;cursor:pointer}
 .crm-inline-type button.active.new{background:var(--deep);color:#fff;border-color:var(--deep)}
-.crm-inline-type button.active.old{background:#5B21B6;color:#fff;border-color:#5B21B6}
+.crm-inline-type button.active.regular{background:#5B21B6;color:#fff;border-color:#5B21B6}
 .crm-bulkbar{position:sticky;top:64px;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;border:1px solid var(--deep);border-radius:12px;background:var(--foam);box-shadow:0 5px 16px rgba(34,94,99,.1)}
 .crm-bulkbar b{color:var(--deep);font-size:12px}
 .crm-bulkbar select{height:40px;flex:1 1 160px;min-width:0}
 .crm-bulkbar .btn{min-height:40px}
 .crm-followup-badge{color:#B91C1C;font-weight:800}
+.crm-topbar{display:flex;gap:8px;margin-bottom:10px}
+.crm-topbar input{flex:1;min-width:0}
+.crm-filter-btn{flex:0 0 auto;display:inline-flex;align-items:center;white-space:nowrap}
+.crm-filter-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:7px;padding:0 5px;border-radius:999px;background:var(--orange);color:#fff;font-size:10px;font-weight:900}
+/* Every scrollable page clears the fixed 7-item nav + the overhanging Sale FAB so
+   the last row is never obscured (nav-h 72 + ~25 fab overhang + margin). */
+main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))}
 .crm-token-amt{margin-top:8px}
 .crm-token-amt input:disabled{background:#EEF2F0;color:#9AA0A6}
 .crm-calls{display:grid;gap:7px;margin-top:8px}
@@ -491,11 +498,11 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <main class="page active" id="login-screen" style="padding-top:40px"><section class="card"><div class="login-brand-lockup"><span class="wordmark"><i class="dot"></i>EKUM</span><span class="divider"></span><img alt="Maitri" class="login-firm-logo maitri-logo" src="assets/maitri-logo.png"/><img alt="Niharika" class="login-firm-logo niharika-logo" src="assets/niharika-logo.png"/></div><h1 style="margin-top:12px">Team login</h1><p class="copy">Use your Team ID and password. Administrators may also use their existing email.</p><form id="login-form"><label>Team ID or admin email</label><input autocomplete="username" id="login-id" placeholder="sales01" required=""/><label>Password</label><input autocomplete="current-password" id="login-password" required="" type="password"/><button class="btn" style="width:100%;margin-top:14px">Login</button></form></section></main>
 <main class="page" id="page-reception">
 <div class="segment" data-module="reception"><button class="active" data-sub="entry">Entry</button><button data-sub="registration">New Visitor</button><button data-sub="password">Password</button></div>
-<section class="subpanel" id="reception-entry"><div class="card"><span class="section-kicker">Visitor reception</span><h1>Reception</h1><p class="copy">Find a visitor, confirm their entry or update their visit slot from one place.</p><label>Search visitor</label><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/><div class="new-visitor-callout"><div><b>Not registered yet?</b><span>Welcome a new visitor and create their access.</span></div><button class="btn secondary small" data-open-registration>Register visitor</button></div>
+<section class="subpanel" id="reception-entry"><div class="card"><input id="entry-search" placeholder="Search company, mobile, contact, city or agent"/><div class="new-visitor-callout"><div><b>Not registered yet?</b><span>Welcome a new visitor and create their access.</span></div><button class="btn secondary small" data-open-registration>Register visitor</button></div>
 <div class="entry-board">
 <section class="entry-section entry-pending-section">
 <div class="entry-section-head">
-<div><span class="entry-kicker">By visit slot</span><h2>Booked — awaiting entry</h2><p>Current slot first, then past and upcoming slots.</p></div>
+<div><span class="entry-kicker">By visit slot</span><h2>Booked — awaiting entry</h2></div>
 <span class="entry-count" id="entry-pending-count">0</span>
 </div>
 <div class="entry-scroll" id="entry-pending"></div>
@@ -660,43 +667,51 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 <div class="lightbox" id="dispatch-lightbox"><button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button><img alt="" id="lightbox-img"/><span class="lightbox-caption" id="lightbox-caption"></span></div>
 
 <main class="page" id="page-crm">
-  <div class="crm-head"><div><span class="section-kicker">Buyer screening</span><h1>CRM</h1><p class="copy">Screen new buyers before their first billing — assign a caller, log the call, record references, set an outcome. Rejected buyers are flagged at the gate, never blocked.</p></div></div>
-  <div class="mc-warn hidden" id="crm-dupe-warn"></div>
-  <div class="crm-filters">
-    <input id="crm-search" placeholder="Search company, contact, phone or city"/>
-    <div class="crm-chip-row" id="crm-buyer-filter">
-      <button class="chip active" type="button" data-buyer="">All</button>
-      <button class="chip" type="button" data-buyer="unscreened">Unscreened</button>
-      <button class="chip" type="button" data-buyer="new">New buyer</button>
-      <button class="chip" type="button" data-buyer="old">Old buyer</button>
-    </div>
-    <div class="crm-chip-row" id="crm-status-filter">
-      <button class="chip active" type="button" data-status="">Any status</button>
-      <button class="chip" type="button" data-status="pending">Pending</button>
-      <button class="chip" type="button" data-status="on_hold">On hold</button>
-      <button class="chip" type="button" data-status="agreed">Agreed</button>
-      <button class="chip" type="button" data-status="rejected">Rejected</button>
-    </div>
-    <div class="crm-chip-row" id="crm-scope-filter">
-      <button class="chip active" type="button" data-scope="orders">With orders</button>
-      <button class="chip" type="button" data-scope="all">All customers</button>
-      <button class="chip" type="button" data-scope="callbacks">Callbacks due</button>
-    </div>
-    <div class="crm-chip-row" id="crm-sort">
-      <span class="crm-sort-label">Sort</span>
-      <button class="chip active" type="button" data-sort="recent">Newest</button>
-      <button class="chip" type="button" data-sort="queue">Call queue</button>
-      <button class="chip" type="button" data-sort="callback">Callback date</button>
-    </div>
-    <label class="crm-mine"><input type="checkbox" id="crm-mine"/> <span>Only customers assigned to me</span></label>
+  <div class="crm-topbar">
+    <input id="crm-search" placeholder="Search company, phone, city"/>
+    <button class="btn small secondary crm-filter-btn" type="button" id="crm-filter-open">Filters<span class="crm-filter-badge hidden" id="crm-filter-count">0</span></button>
   </div>
+  <div class="mc-warn hidden" id="crm-dupe-warn"></div>
   <div class="crm-listhead">
     <span class="crm-count" id="crm-count"></span>
-    <label class="crm-selectall"><input type="checkbox" id="crm-selectall"/> <span>Select all shown</span></label>
+    <label class="crm-selectall"><input type="checkbox" id="crm-selectall"/> <span>Select all</span></label>
   </div>
   <div class="crm-bulkbar hidden" id="crm-bulkbar"></div>
   <div class="crm-list" id="crm-list"><div class="crm-loading">Loading…</div></div>
 </main>
+
+<div class="modal" id="crm-filter-sheet"><div class="sheet">
+  <div class="sheet-head"><div><h2>Filters &amp; sort</h2><p class="copy">Screen new buyers before first billing. Rejected buyers are flagged at the gate, never blocked.</p></div><button class="close" data-close="crm-filter-sheet">✕</button></div>
+  <label>Buyer type</label>
+  <div class="crm-chip-row" id="crm-buyer-filter">
+    <button class="chip active" type="button" data-buyer="">All</button>
+    <button class="chip" type="button" data-buyer="unscreened">Unscreened</button>
+    <button class="chip" type="button" data-buyer="new">New buyer</button>
+    <button class="chip" type="button" data-buyer="regular">Regular buyer</button>
+  </div>
+  <label>Status</label>
+  <div class="crm-chip-row" id="crm-status-filter">
+    <button class="chip active" type="button" data-status="">Any status</button>
+    <button class="chip" type="button" data-status="pending">Pending</button>
+    <button class="chip" type="button" data-status="on_hold">On hold</button>
+    <button class="chip" type="button" data-status="agreed">Agreed</button>
+    <button class="chip" type="button" data-status="rejected">Rejected</button>
+  </div>
+  <label>Scope</label>
+  <div class="crm-chip-row" id="crm-scope-filter">
+    <button class="chip active" type="button" data-scope="orders">With orders</button>
+    <button class="chip" type="button" data-scope="all">All customers</button>
+    <button class="chip" type="button" data-scope="callbacks">Callbacks due</button>
+  </div>
+  <label>Sort</label>
+  <div class="crm-chip-row" id="crm-sort">
+    <button class="chip active" type="button" data-sort="recent">Newest</button>
+    <button class="chip" type="button" data-sort="queue">Call queue</button>
+    <button class="chip" type="button" data-sort="callback">Callback date</button>
+  </div>
+  <label class="crm-mine" style="margin-top:12px"><input type="checkbox" id="crm-mine"/> <span>Only customers assigned to me</span></label>
+  <button class="btn" type="button" id="crm-filter-done" style="width:100%;margin-top:14px">Show results</button>
+</div></div>
 
 <div class="modal" id="crm-detail-modal"><div class="sheet">
   <div class="sheet-head"><div><h2 id="crm-d-title">Customer</h2><p class="copy" id="crm-d-sub"></p></div><button class="close" data-close="crm-detail-modal">✕</button></div>
@@ -4444,6 +4459,7 @@ function crmScopeLabel() {
   return { orders: "with orders", all: "all customers", callbacks: "callbacks due" }[st.crm.filters.scope] || "";
 }
 function renderCrmList() {
+  crmUpdateFilterBadge();
   const rows = crmFilteredRows();
   const dupes = rows.filter((c) => c.dupName && c.dupPhone).length;
   const warn = $("crm-dupe-warn");
@@ -4457,7 +4473,7 @@ function renderCrmList() {
   $("crm-list").innerHTML = rows.map((c) => {
     const sel = st.crm.sel.has(c.id);
     const badges = [crmB(c.crmStatus, CRM_STATUS[c.crmStatus] || c.crmStatus)];
-    badges.push(c.buyerType ? crmB(c.buyerType, c.buyerType === "new" ? "New buyer" : "Old buyer") : crmB("on_hold", "Unscreened"));
+    badges.push(c.buyerType ? crmB(c.buyerType, c.buyerType === "new" ? "New buyer" : "Regular buyer") : crmB("on_hold", "Unscreened"));
     if (c.assignedName) badges.push(crmB("assigned", "→ " + c.assignedName));
     if (c.dupName && c.dupPhone) badges.push(crmB("dupe", "Possible duplicate"));
     else if (c.dupName || c.dupPhone) badges.push(crmB("dupe", c.dupName ? "Dup name" : "Dup phone"));
@@ -4474,7 +4490,7 @@ function renderCrmList() {
         </div>
         <div class="crm-inline-type">
           <button type="button" data-crm-type="new" data-id="${esc(c.id)}" class="${c.buyerType === "new" ? "active new" : ""}">New</button>
-          <button type="button" data-crm-type="old" data-id="${esc(c.id)}" class="${c.buyerType === "old" ? "active old" : ""}">Old</button>
+          <button type="button" data-crm-type="regular" data-id="${esc(c.id)}" class="${c.buyerType === "regular" ? "active regular" : ""}">Regular</button>
         </div>
       </div>
       <div class="crm-row-right"><span>${meta.join(" · ")}</span>${when}</div>
@@ -4487,12 +4503,12 @@ function renderCrmBulkBar() {
   const n = st.crm.sel.size;
   if (!n) { bar.classList.add("hidden"); bar.innerHTML = ""; return; }
   const canAssign = has("crm.assign");
-  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`)).join("");
+  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}">${esc(s.name)}${s.hasCrm === false ? " — no CRM access" : ""}</option>`)).join("");
   bar.classList.remove("hidden");
   bar.innerHTML = `<b>${n} selected</b>
     ${canAssign ? `<select id="crm-bulk-assignee">${staffOpts}</select><button class="btn small" type="button" data-crm-bulk="assign">Assign</button>` : ""}
     <button class="btn small secondary" type="button" data-crm-bulk="new">Set New</button>
-    <button class="btn small secondary" type="button" data-crm-bulk="old">Set Old</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="regular">Set Regular</button>
     <button class="btn small ghost" type="button" data-crm-bulk="clear">Clear</button>`;
 }
 // A duplicate PAIR for bulk-assign purposes = same canonical company name AND same
@@ -4538,13 +4554,13 @@ function crmSeg(name, current, opts) {
 function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
   const canAssign = has("crm.assign");
-  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}"${d.assignedTo === s.id ? " selected" : ""}>${esc(s.name)}</option>`)).join("");
+  const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}"${d.assignedTo === s.id ? " selected" : ""}>${esc(s.name)}${s.hasCrm === false ? " — no CRM access" : ""}</option>`)).join("");
   const calls = (d.calls || []).map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}${cl.followupAt ? ` · <span class="crm-followup-badge">callback ${esc(fmt(cl.followupAt))}</span>` : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
   const refs = (d.references || []).map((r) => `<div class="crm-ref"><span>${esc(r.text)}</span><button type="button" data-crm-delref="${esc(r.id)}">Remove</button></div>`).join("") || '<div class="crm-hint">No references recorded.</div>';
   const rejected = d.crmStatus === "rejected";
   $("crm-d-body").innerHTML = `
     <div class="crm-field"><label>Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</label>
-      ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["old", "Old buyer"]])}
+      ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["regular", "Regular buyer"]])}
       <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div></div>
     <div class="crm-field"><label>Outcome / status</label>
       ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
@@ -4610,6 +4626,13 @@ crmChipPick("crm-status-filter", "status", "data-status");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
 $("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
+$("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
+$("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
+function crmUpdateFilterBadge() {
+  const f = st.crm.filters;
+  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
+  const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
+}
 $("crm-selectall").onchange = () => {
   const rows = crmFilteredRows();
   if ($("crm-selectall").checked) rows.forEach((c) => st.crm.sel.add(c.id));
@@ -4653,9 +4676,10 @@ $("crm-bulkbar").onclick = async (e) => {
     catch (err) { toast(err.message, "error"); }
     return;
   }
-  if (act === "new" || act === "old") {
-    if (!confirm(`Set ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${act === "new" ? "New" : "Old"} buyer?`)) return;
-    try { await admin("crmBulkSetBuyerType", { customerIds: ids, buyerType: act }); st.crm.sel.clear(); await loadCrm(); toast(`Set ${ids.length} to ${act === "new" ? "New" : "Old"}`, "success"); }
+  if (act === "new" || act === "regular") {
+    const label = act === "new" ? "New" : "Regular";
+    if (!confirm(`Set ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${label} buyer?`)) return;
+    try { await admin("crmBulkSetBuyerType", { customerIds: ids, buyerType: act }); st.crm.sel.clear(); await loadCrm(); toast(`Set ${ids.length} to ${label}`, "success"); }
     catch (err) { toast(err.message, "error"); }
     return;
   }

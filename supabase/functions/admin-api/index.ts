@@ -1267,9 +1267,12 @@ Deno.serve(async (request: Request) => {
         .select("auth_user_id,staff_name,permissions,active")
         .order("staff_name", { ascending: true });
       if (sErr) throw sErr;
+      // ALL active staff, not only crm.view holders — a buyer can be assigned to a
+      // salesperson before their CRM access is granted. hasCrm marks who can act on
+      // it now; the client shows a "no CRM access" note but never hides or blocks them.
       const staff = (staffRows ?? [])
-        .filter((r: any) => r.active !== false && r.permissions && r.permissions["crm.view"])
-        .map((r: any) => ({ id: r.auth_user_id, name: r.staff_name }));
+        .filter((r: any) => r.active !== false)
+        .map((r: any) => ({ id: r.auth_user_id, name: r.staff_name, hasCrm: !!(r.permissions && r.permissions["crm.view"]) }));
       return jsonResponse(request, { ok: true, data: { customers: data ?? [], staff } });
     }
 
