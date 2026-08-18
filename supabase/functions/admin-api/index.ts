@@ -266,6 +266,8 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   crmListCustomers: ["crm.view"],
   crmCustomerDetail: ["crm.view"],
   crmSetBuyerType: ["crm.write"],
+  crmSetTier: ["crm.write"],
+  crmBulkSetTier: ["crm.write"],
   crmSetStatus: ["crm.write"],
   crmSetReferenceFlag: ["crm.write"],
   crmSetToken: ["crm.write"],
@@ -1146,7 +1148,7 @@ Deno.serve(async (request: Request) => {
       let query = db.from("orders")
         .select(
           "id,customer_id,firm,status,dispatch_status,total_designs,total_sets,total_pieces,updated_at," +
-          "customers(company_name,contact_name,phone_e164,city,state,agent)",
+          "customers(company_name,contact_name,phone_e164,city,state,agent,customer_crm(tier))",
         )
         .eq("exhibition_id", ex.id)
         .gt("total_designs", 0)
@@ -1186,6 +1188,9 @@ Deno.serve(async (request: Request) => {
         city: o.customers?.city ?? "",
         state: o.customers?.state ?? "",
         agent: o.customers?.agent ?? "",
+        // customer_crm is 1:1 (PK = customer_id); PostgREST may embed it as an
+        // object or a single-element array — handle both.
+        tier: (Array.isArray(o.customers?.customer_crm) ? o.customers?.customer_crm[0]?.tier : o.customers?.customer_crm?.tier) ?? null,
       }));
       // By-order view (default): unchanged bare array.
       if (!body.withLines) return jsonResponse(request, { ok: true, data: orders });
@@ -1288,6 +1293,28 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("crm_set_buyer_type", {
         p_customer_id: clean(body.customerId),
         p_buyer_type: clean(body.buyerType) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetTier") {
+      const { data, error } = await db.rpc("crm_set_tier", {
+        p_customer_id: clean(body.customerId),
+        p_tier: clean(body.tier) || null,
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmBulkSetTier") {
+      const ids = Array.isArray(body.customerIds) ? body.customerIds.map((x: unknown) => clean(x)).filter(Boolean) : [];
+      if (!ids.length) throw new Error("NO_CUSTOMERS");
+      const { data, error } = await db.rpc("crm_bulk_set_tier", {
+        p_customer_ids: ids,
+        p_tier: clean(body.tier) || null,
         p_actor: admin.id,
       });
       if (error) throw error;

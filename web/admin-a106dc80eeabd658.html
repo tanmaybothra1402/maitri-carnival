@@ -474,6 +474,20 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-contact-num{font-size:14px;font-weight:800;color:var(--deep);font-variant-numeric:tabular-nums}
 .crm-sub{margin:13px 0 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--slate)}
 .crm-sub:first-child{margin-top:0}
+/* Shared customer-tier badge (neutral — buyers may glimpse staff screens). One helper. */
+.crm-tier{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:900;flex:0 0 auto;vertical-align:middle;line-height:1}
+.crm-tier-A{background:var(--deep);color:#fff}
+.crm-tier-B{background:#7C8DB0;color:#fff}
+.crm-tier-C{background:#E7ECEE;color:#4B5A59;border:1px solid var(--border)}
+/* inline tier control on CRM list rows (mirrors .crm-inline-type) */
+.crm-inline-tier{display:flex;gap:5px;margin-top:6px}
+.crm-inline-tier button{min-width:30px;min-height:28px;padding:3px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--slate);font-size:11px;font-weight:900;cursor:pointer}
+.crm-inline-tier button.active{background:var(--deep);color:#fff;border-color:var(--deep)}
+/* Name + tier badge on one line — the name ellipsizes, the badge never wraps. */
+.crm-rowtitle{display:flex;align-items:center;gap:6px;min-width:0}
+.crm-rowtitle b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-nametier{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%}
+.mc-nametier>:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crm-topbar{display:flex;gap:8px;margin-bottom:10px}
 .crm-topbar input{flex:1;min-width:0}
 .crm-filter-btn{flex:0 0 auto;display:inline-flex;align-items:center;white-space:nowrap}
@@ -734,6 +748,13 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" type="button" data-status="agreed">Agreed</button>
     <button class="chip" type="button" data-status="rejected">Rejected</button>
   </div>
+  <label>Tier</label>
+  <div class="crm-chip-row" id="crm-tier-filter">
+    <button class="chip active" type="button" data-tier="">Any tier</button>
+    <button class="chip" type="button" data-tier="A">A</button>
+    <button class="chip" type="button" data-tier="B">B</button>
+    <button class="chip" type="button" data-tier="C">C</button>
+  </div>
   <label>Scope</label>
   <div class="crm-chip-row" id="crm-scope-filter">
     <button class="chip active" type="button" data-scope="orders">With orders</button>
@@ -745,6 +766,7 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip active" type="button" data-sort="recent">Newest</button>
     <button class="chip" type="button" data-sort="queue">Call queue</button>
     <button class="chip" type="button" data-sort="callback">Callback date</button>
+    <button class="chip" type="button" data-sort="tier">Tier</button>
   </div>
   <label class="crm-mine" style="margin-top:12px"><input type="checkbox" id="crm-mine"/> <span>Only customers assigned to me</span></label>
   <button class="btn" type="button" id="crm-filter-done" style="width:100%;margin-top:14px">Show results</button>
@@ -1320,7 +1342,7 @@ function entryCard(c, completed = false) {
     : `<span class="entry-tag status ${slot.key}">${esc(slot.status)}</span>${slot.key !== "none" ? `<span class="entry-tag date">${esc(slot.date)}</span>${slot.clock ? `<span class="entry-tag time">${esc(slot.clock)}</span>` : ""}` : ""}`;
   return `<article class="entry-card ${!completed && slot.key === "current" ? "current" : ""}">
     <div class="entry-card-main">
-      <div class="entry-card-title"><b>${esc(c.companyName)}</b></div>
+      <div class="entry-card-title"><b>${esc(c.companyName)}</b>${tierBadge(c.tier)}</div>
       ${c.crmStatus === "rejected" ? '<div class="entry-flag">⚠ Flagged — question before allowing entry</div>' : ""}
       <div class="entry-tag-row">${slotTags}${!c.active ? '<span class="entry-tag paused">Paused</span>' : ""}</div>
       <div class="entry-primary">${esc(contactLine || "Contact not added")}</div>
@@ -1622,7 +1644,7 @@ function ranking(
               ${isDesign ? dashDesignThumb(r.label) : ""}
 
               <span class="rank-label">
-                ${esc(r.label)}
+                ${tierBadge(r.tier)} ${esc(r.label)}
 
                 <small class="rank-meta">
                   ${
@@ -2084,7 +2106,7 @@ function drillBuyerRows(rows) {
               data-drill-value="${esc(customer.companyName)}"
             >
               <span class="drill-row-main">
-                <b>${esc(customer.companyName)}</b>
+                <span class="mc-nametier"><b>${esc(customer.companyName)}</b>${tierBadge(customer.tier)}</span>
 
                 <span>
                   ${esc(
@@ -2350,7 +2372,7 @@ async function searchSaleCustomers() {
     $("sale-results").innerHTML = rows.map((c) => {
       const meta = [c.contactName, c.phone ? "+" + c.phone : "", [c.city,c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
       const entered = c.checkedInAt ? `<span class="customer-status entered">Entered ${esc(new Date(c.checkedInAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }))}</span>` : '<span class="customer-status registered">Registered</span>';
-      return `<button class="customer-choice" data-sale-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div class="customer-choice-copy"><b>${esc(c.companyName)}</b><p>${esc(meta || "Customer details not added")}</p></div>${entered}<span class="customer-choice-arrow">›</span></button>`;
+      return `<button class="customer-choice" data-sale-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent, tier: c.tier }))}'><div class="customer-choice-copy"><div class="mc-nametier"><b>${esc(c.companyName)}</b>${tierBadge(c.tier)}</div><p>${esc(meta || "Customer details not added")}</p></div>${entered}<span class="customer-choice-arrow">›</span></button>`;
     }).join("") || `<div class="empty">${query ? "No customers found" : "No customers have been checked in yet."}</div>`;
   } catch (e) {
     toast(e.message, "error");
@@ -2382,7 +2404,7 @@ async function openSaleCustomer(c) {
   $("sale-find-card").classList.add("hidden");
   $("sale-results").innerHTML = "";
   $("sale-builder").classList.remove("hidden");
-  $("sale-party").textContent = c.companyName;
+  $("sale-party").innerHTML = `<span class="mc-nametier"><span>${esc(c.companyName)}</span>${tierBadge(c.tier)}</span>`;
   $("sale-customer-meta").textContent = [c.contactName, c.phone ? `+${c.phone}` : "", [c.city,c.state].filter(Boolean).join(", "), c.agent ? `Agent: ${c.agent}` : ""].filter(Boolean).join(" · ");
   try {
     loading(true, "Opening customer order…");
@@ -2730,7 +2752,7 @@ async function mcSearch() {
     $("multi-results").innerHTML = rows.map((c) => {
       const meta = [c.contactName, c.phone ? "+" + c.phone : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
       const sel = mcSelected(c.id);
-      return `<button class="customer-choice ${sel ? "mc-selected" : ""}" data-mc-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent }))}'><div class="customer-choice-copy"><b>${esc(c.companyName)}</b><p>${esc(meta || "Customer details not added")}</p></div><span class="mc-check">${sel ? "✓" : "＋"}</span></button>`;
+      return `<button class="customer-choice ${sel ? "mc-selected" : ""}" data-mc-customer='${esc(JSON.stringify({ id: c.id, companyName: c.companyName, phone: c.phone, contactName: c.contactName, city: c.city, state: c.state, agent: c.agent, tier: c.tier }))}'><div class="customer-choice-copy"><div class="mc-nametier"><b>${esc(c.companyName)}</b>${tierBadge(c.tier)}</div><p>${esc(meta || "Customer details not added")}</p></div><span class="mc-check">${sel ? "✓" : "＋"}</span></button>`;
     }).join("") || `<div class="empty">${query ? "No customers found" : "No customers have been checked in yet."}</div>`;
   } catch (e) {
     toast(e.message, "error");
@@ -4461,13 +4483,16 @@ function firmPill(firm) {
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", tier: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
 // Status a call may set — a rejection needs a reason, so it is NOT offered here
 // (the server also guards this). Rejection is done from the customer status control.
 const CRM_CALL_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed" };
 function crmB(cls, t) { return `<span class="crm-b ${esc(cls)}">${esc(t)}</span>`; }
+// The ONE customer-tier badge, called from every screen. Unranked (null / '') renders
+// nothing — never an empty badge or a dash. Only A/B/C are valid.
+function tierBadge(tier) { return (tier === "A" || tier === "B" || tier === "C") ? `<span class="crm-tier crm-tier-${tier}" title="Tier ${tier}">${tier}</span>` : ""; }
 
 async function loadCrm() {
   $("crm-list").innerHTML = '<div class="crm-loading">Loading…</div>';
@@ -4475,7 +4500,7 @@ async function loadCrm() {
     const f = st.crm.filters;
     const data = await admin("crmListCustomers", {
       filters: {
-        search: f.search, buyerType: f.buyerType, status: f.status,
+        search: f.search, buyerType: f.buyerType, status: f.status, tier: f.tier,
         withOrders: f.scope === "orders",
         callbacksDue: f.scope === "callbacks",
         sort: f.sort,
@@ -4523,13 +4548,18 @@ function renderCrmList() {
       <input type="checkbox" class="crm-rowcheck" data-crm-check="${esc(c.id)}" ${sel ? "checked" : ""} aria-label="Select"/>
       <div style="min-width:0">
         <div class="crm-row-open" role="button" tabindex="0" data-crm-open="${esc(c.id)}">
-          <b>${esc(c.companyName || "Unnamed")}</b>
+          <div class="crm-rowtitle"><b>${esc(c.companyName || "Unnamed")}</b>${tierBadge(c.tier)}</div>
           <p>${esc([c.contactName, c.phone ? ("+" + c.phone) : "", loc].filter(Boolean).join(" · ") || "No contact details")}</p>
           <div class="crm-badges">${badges.join("")}</div>
         </div>
         <div class="crm-inline-type">
           <button type="button" data-crm-type="new" data-id="${esc(c.id)}" class="${c.buyerType === "new" ? "active new" : ""}">New</button>
           <button type="button" data-crm-type="regular" data-id="${esc(c.id)}" class="${c.buyerType === "regular" ? "active regular" : ""}">Regular</button>
+        </div>
+        <div class="crm-inline-tier">
+          <button type="button" data-crm-tier="A" data-id="${esc(c.id)}" class="${c.tier === "A" ? "active" : ""}">A</button>
+          <button type="button" data-crm-tier="B" data-id="${esc(c.id)}" class="${c.tier === "B" ? "active" : ""}">B</button>
+          <button type="button" data-crm-tier="C" data-id="${esc(c.id)}" class="${c.tier === "C" ? "active" : ""}">C</button>
         </div>
       </div>
       <div class="crm-row-right"><span>${meta.join(" · ")}</span>${when}</div>
@@ -4548,6 +4578,10 @@ function renderCrmBulkBar() {
     ${canAssign ? `<select id="crm-bulk-assignee">${staffOpts}</select><button class="btn small" type="button" data-crm-bulk="assign">Assign</button>` : ""}
     <button class="btn small secondary" type="button" data-crm-bulk="new">Set New</button>
     <button class="btn small secondary" type="button" data-crm-bulk="regular">Set Regular</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="tierA">Tier A</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="tierB">Tier B</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="tierC">Tier C</button>
+    <button class="btn small secondary" type="button" data-crm-bulk="tierNull">Clear tier</button>
     <button class="btn small ghost" type="button" data-crm-bulk="clear">Clear</button>`;
 }
 // A duplicate PAIR for bulk-assign purposes = same canonical company name AND same
@@ -4577,7 +4611,7 @@ function crmTwinsOutsideSelection(ids) {
 async function openCrmDetail(id) {
   st.crm.currentId = id;
   const c = st.crm.customers.find((x) => x.id === id) || {};
-  $("crm-d-title").textContent = c.companyName || "Customer";
+  $("crm-d-title").innerHTML = `<span class="mc-nametier"><span>${esc(c.companyName || "Customer")}</span>${tierBadge(c.tier)}</span>`;
   $("crm-d-sub").textContent = [c.contactName, c.phone ? ("+" + c.phone) : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
   const dup = $("crm-d-dupe");
   if (c.dupName || c.dupPhone) { dup.classList.remove("hidden"); dup.textContent = `Possible duplicate — shares ${[c.dupName ? "company name" : "", c.dupPhone ? "phone" : ""].filter(Boolean).join(" and ")} with another active customer. Verify before screening; never merge here.`; }
@@ -4677,6 +4711,7 @@ function crmChipPick(container, key, dataAttr) {
 }
 crmChipPick("crm-buyer-filter", "buyerType", "data-buyer");
 crmChipPick("crm-status-filter", "status", "data-status");
+crmChipPick("crm-tier-filter", "tier", "data-tier");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
 $("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
@@ -4684,7 +4719,7 @@ $("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
 $("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
 function crmUpdateFilterBadge() {
   const f = st.crm.filters;
-  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
+  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
   const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 $("crm-selectall").onchange = () => {
@@ -4701,6 +4736,14 @@ $("crm-list").onclick = async (e) => {
     const id = typeBtn.dataset.id, cur = st.crm.customers.find((c) => c.id === id);
     const val = (cur && cur.buyerType === typeBtn.dataset.crmType) ? "" : typeBtn.dataset.crmType; // click active again = clear
     try { await admin("crmSetBuyerType", { customerId: id, buyerType: val }); if (cur) cur.buyerType = val || null; renderCrmList(); toast("Buyer type saved", "success"); }
+    catch (err) { toast(err.message, "error"); }
+    return;
+  }
+  const tierBtn = e.target.closest("[data-crm-tier]");
+  if (tierBtn) {
+    const id = tierBtn.dataset.id, cur = st.crm.customers.find((c) => c.id === id);
+    const val = (cur && cur.tier === tierBtn.dataset.crmTier) ? "" : tierBtn.dataset.crmTier; // tap active tier to clear
+    try { await admin("crmSetTier", { customerId: id, tier: val }); if (cur) cur.tier = val || null; renderCrmList(); toast("Tier saved", "success"); }
     catch (err) { toast(err.message, "error"); }
     return;
   }
@@ -4734,6 +4777,14 @@ $("crm-bulkbar").onclick = async (e) => {
     const label = act === "new" ? "New" : "Regular";
     if (!confirm(`Set ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${label} buyer?`)) return;
     try { await admin("crmBulkSetBuyerType", { customerIds: ids, buyerType: act }); st.crm.sel.clear(); await loadCrm(); toast(`Set ${ids.length} to ${label}`, "success"); }
+    catch (err) { toast(err.message, "error"); }
+    return;
+  }
+  if (act === "tierA" || act === "tierB" || act === "tierC" || act === "tierNull") {
+    const tier = act === "tierNull" ? "" : act.slice(-1);
+    const label = tier ? "tier " + tier : "no tier";
+    if (!confirm(`Set ${ids.length} customer${ids.length === 1 ? "" : "s"} to ${label}?`)) return;
+    try { await admin("crmBulkSetTier", { customerIds: ids, tier }); st.crm.sel.clear(); await loadCrm(); toast(`Set ${ids.length} to ${label}`, "success"); }
     catch (err) { toast(err.message, "error"); }
     return;
   }
@@ -4863,6 +4914,7 @@ function aggregateDispatchByDesign(orders, lines) {
     g.buyers.push({
       orderId: l.orderId,
       company: o.companyName || o.contactName || "Unnamed party",
+      tier: o.tier || null,
       city: [o.city, o.state].filter(Boolean).join(", "),
       firm: o.firm || "",
       dispatchedAt: l.dispatchedAt || "", // real per-line ship date for the destructive-removal confirmation (NOT o.updatedAt, which later dispatches/edits bump)
@@ -4906,7 +4958,7 @@ function renderDispatchProduct() {
                 ? `<button class="dp-undo" data-dp-remove data-di="${di}" data-bi="${bi}">${b.remove ? "Keep the dispatch" : `Remove ${b.already} dispatched`}</button>` : "";
               const warn = b.warn ? `<div class="dp-warn">${esc(b.warn)}</div>` : "";
               return `<div class="dp-buyer-line${b.remove ? " dp-undoing" : ""}">
-                <div class="dispatch-line-body"><b>${esc(b.company)}</b><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${warn}${undoBtn}${removeBtn}</div>
+                <div class="dispatch-line-body"><span class="mc-nametier"><b>${esc(b.company)}</b>${tierBadge(b.tier)}</span><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${warn}${undoBtn}${removeBtn}</div>
                 <div class="dispatch-qty">
                   <input class="dispatch-check" type="checkbox" data-di="${di}" data-bi="${bi}" data-dp-check ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} aria-label="Dispatch all remaining ${esc(d.designNo)} for ${esc(b.company)}"/>
                   <input class="dispatch-sets" type="number" min="0" max="${rem}" value="${b.remove ? 0 : Number(b.now) || 0}" data-di="${di}" data-bi="${bi}" data-dp-now ${disabled ? "disabled" : ""} aria-label="Sets to dispatch now for ${esc(b.company)}"/>
@@ -4986,7 +5038,7 @@ function renderDispatchList() {
     ? rows
         .map(
           (o) =>
-            `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div><div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`,
+            `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div><div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`,
         )
         .join("")
     : '<div class="empty">No orders match these filters.</div>';

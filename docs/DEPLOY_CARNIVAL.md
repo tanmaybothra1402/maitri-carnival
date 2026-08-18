@@ -113,6 +113,19 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010020` (2026-08-17) — customer tier (A/B/C, NULL=unranked) on
+`customer_crm` (NOT customers — kept behind the buyer-invisible wall). New
+`crm_set_tier` / `crm_bulk_set_tier`; six readers extended to return tier
+(crm_list_customers, crm_customer_detail, admin_directory, admin_dispatch_detail,
+admin_dashboard_v2, admin_dashboard_drill_v1); admin-api gains crmSetTier /
+crmBulkSetTier + tier in the listDispatch orders join. HTML shows ONE shared
+`tierBadge()` beside the company name on CRM/Reception/Dispatch/Dashboard/Sale,
+inline A/B/C + bulk + tier filter/sort in CRM. Also **fixes a 019 bug**:
+crm_list_customers filtered buyer_type on ('new','old') so the "Regular buyer"
+filter returned zero rows — now ('new','regular'). Redeploys admin-api + HTML.
+Tier is unreachable from a customer session (customer_crm 42501; dashboard readers
+guard staff-only on their first statement). No customer-facing change.
+
 `202608010019` (2026-08-17) — buyer_type value `old` → `regular` (constraint +
 crm_set_buyer_type / crm_bulk_set_buyer_type restated; 0 live rows to migrate;
 customer_crm_log audit history deliberately left intact). This checkpoint also
