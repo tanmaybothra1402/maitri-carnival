@@ -11,6 +11,14 @@
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
 <title>EKUM Team · Maitri Carnival 2026</title>
+<!-- Home-screen icon (staff). Served same-origin from GitHub Pages so it works
+     when ImageKit is unreachable and survives the eventual local-host move.
+     180x180, opaque, no pre-rounded corners (iOS masks its own). Distinct teal
+     EKUM tile vs the customer app's white Maitri tile — staff run both. -->
+<link href="assets/icons/admin-180.png" rel="apple-touch-icon" sizes="180x180"/>
+<meta content="EKUM Team" name="apple-mobile-web-app-title"/>
+<meta content="EKUM Team" name="application-name"/>
+<link href="manifest-admin.json" rel="manifest"/>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
 <link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
 <link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
@@ -758,6 +766,12 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" type="button" data-tier="A">A</button>
     <button class="chip" type="button" data-tier="B">B</button>
     <button class="chip" type="button" data-tier="C">C</button>
+  </div>
+  <label>Assignment</label>
+  <div class="crm-chip-row" id="crm-assigned-filter">
+    <button class="chip active" type="button" data-assigned="">All</button>
+    <button class="chip" type="button" data-assigned="assigned">Assigned</button>
+    <button class="chip" type="button" data-assigned="unassigned">Unassigned</button>
   </div>
   <label>Scope</label>
   <div class="crm-chip-row" id="crm-scope-filter">
@@ -4492,7 +4506,7 @@ function firmPill(firm) {
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", tier: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], filters: { search: "", buyerType: "", status: "", tier: "", assigned: "", mine: false, scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
 // Status a call may set — a rejection needs a reason, so it is NOT offered here
@@ -4510,6 +4524,7 @@ async function loadCrm() {
     const data = await admin("crmListCustomers", {
       filters: {
         search: f.search, buyerType: f.buyerType, status: f.status, tier: f.tier,
+        assigned: f.assigned,
         withOrders: f.scope === "orders",
         callbacksDue: f.scope === "callbacks",
         sort: f.sort,
@@ -4732,6 +4747,7 @@ function crmChipPick(container, key, dataAttr) {
 crmChipPick("crm-buyer-filter", "buyerType", "data-buyer");
 crmChipPick("crm-status-filter", "status", "data-status");
 crmChipPick("crm-tier-filter", "tier", "data-tier");
+crmChipPick("crm-assigned-filter", "assigned", "data-assigned");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
 $("crm-mine").onchange = () => { st.crm.filters.mine = $("crm-mine").checked; renderCrmList(); };
@@ -4739,7 +4755,7 @@ $("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
 $("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
 function crmUpdateFilterBadge() {
   const f = st.crm.filters;
-  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
+  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.assigned ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0) + (f.mine ? 1 : 0);
   const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 $("crm-selectall").onchange = () => {
