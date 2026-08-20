@@ -22,5 +22,10 @@ them into `migrations/` until the Edge is deployed.
   (`offset` param + `{orders, total}` so the client can page past the 300 cap and show
   a true total). Proven against prod under a temp name: total=486, camelCase keys,
   offset:300 returns the 186 orders that were previously unreachable.
-- (from the prior session) the object-shape `crm_list_customers` with picker counts is
-  the same class of change — re-apply it here too when the Edge deploys.
+- `crm_list_customers_object_counts.sql` — the object-shape `crm_list_customers`
+  `{ customers, assigneeCounts, unassignedCount, totalCount }` backing the CRM
+  salesperson-picker counts (prior session; migration 026 applied then reverted by
+  027). The on-disk Edge is already shape-tolerant for it.
+
+Both RPCs' on-disk Edge handlers are shape-tolerant, so step 2 (deploy Edge) is safe
+against today's live array-shape RPCs, and step 3 (apply these) has no breakage window.
