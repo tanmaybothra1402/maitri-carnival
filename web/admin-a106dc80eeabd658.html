@@ -21,13 +21,12 @@
 <link href="manifest-admin.json" rel="manifest"/>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
 <link crossorigin="" href="https://ik.imagekit.io" rel="preconnect"/>
-<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase.js"></script>
 <!-- Chart.js is used ONLY by the dashboard (one `new Chart()` call). `defer` keeps
      it off the render-blocking path so reception / sale / dispatch / CRM staff — who
      never open the dashboard — aren't held ~0.6s at load waiting for a 70KB lib.
      It still loads before DOMContentLoaded, long before any dashboard render. -->
-<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script defer src="vendor/chart.umd.js"></script>
 <style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}html{-webkit-text-size-adjust:100%}html,body{min-height:100%;max-width:100%;overflow-x:hidden;background:linear-gradient(180deg,#FAF8F2 0,var(--warm) 240px);color:var(--charcoal);font-family:Inter,system-ui,-apple-system,sans-serif}body{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 24px)}button,input,select,textarea{font:inherit}.hidden{display:none!important}img,svg{max-width:100%}
 .appbar{position:sticky;top:0;z-index:60;height:64px;display:flex;align-items:center;gap:8px;padding:0 12px;background:rgba(255,255,255,.97);border-bottom:1px solid rgba(34,94,99,.1);box-shadow:0 4px 18px rgba(34,55,52,.06);backdrop-filter:blur(12px)}.brand{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}.wordmark{display:flex;align-items:center;gap:6px;color:var(--deep);font-size:14px;font-weight:800;letter-spacing:.105em;white-space:nowrap}.dot{width:11px;height:11px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px rgba(255,151,0,.1)}.divider{width:1px;height:24px;background:var(--border)}.firm-logo{height:21px;width:auto}.staff-meta{margin-left:auto;min-width:0;text-align:right}.staff-meta b{display:block;color:var(--deep);font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.staff-meta button{border:0;background:none;color:var(--muted);font-size:9px;cursor:pointer}
@@ -1968,7 +1967,7 @@ async function ensureXlsx() {
   if (window.XLSX) return;
   await new Promise((res, rej) => {
     const x = document.createElement("script");
-    x.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    x.src = "vendor/xlsx.full.min.js";
     x.onload = res;
     x.onerror = rej;
     document.head.appendChild(x);
@@ -3333,7 +3332,7 @@ async function ensureScanner() {
   await new Promise((res, rej) => {
     const s = document.createElement("script");
     s.src =
-      "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+      "vendor/html5-qrcode.min.js";
     s.onload = res;
     s.onerror = rej;
     document.head.appendChild(s);
@@ -6250,7 +6249,7 @@ async function ensureJsPdf() {
   if (window.jspdf?.jsPDF) return;
   await new Promise((res, rej) => {
     const x = document.createElement("script");
-    x.src = "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js";
+    x.src = "vendor/jspdf.umd.min.js";
     x.onload = res;
     x.onerror = rej;
     document.head.appendChild(x);

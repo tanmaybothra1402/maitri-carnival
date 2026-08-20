@@ -21,8 +21,7 @@
 <link href="manifest-customer.json" rel="manifest"/>
 <link href="https://ezmtiiftolcaslqfvozu.supabase.co" rel="preconnect"/>
 <!-- Customers see no product images. Design number and attributes are the identifiers. -->
-<link crossorigin="" href="https://cdn.jsdelivr.net" rel="preconnect"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase.js"></script>
 <style> :root{--teal-deep:#225E63;--teal:#2B7379;--foam:#E8F2F1;--warm:#F7F3EA;--card:#FFFFFF;--ink:#1E2A28;--body:#33413E;--muted:#7B817F;--line:#E4E8E6;--orange:#FF9700;--success:#15803D;--success-bg:#DCFCE7;--warn:#B7791F;--warn-bg:#FFF5DF;--error:#DC2626;--error-bg:#FEE2E2;--indigo:#2E2A6B;--pink:#E6007E;--r-xs:8px;--r:12px;--r-lg:16px;--r-pill:999px;--sh-1:0 1px 3px rgba(20,40,38,.06);--sh-2:0 6px 18px rgba(34,94,99,.08);--sh-pop:0 14px 34px rgba(20,40,38,.16);--ease:cubic-bezier(.2,.7,.3,1);--deep:var(--teal-deep);--white:var(--card);--border:var(--line);--slate:var(--body);--charcoal:var(--ink);--warning:var(--warn);--shadow:var(--sh-2);--nav-h:72px}
     html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
@@ -440,7 +439,7 @@ function loadScript(src) {
 async function ensureJsPDF() {
   if (window.jspdf && window.jspdf.jsPDF) return;
   await loadScript(
-    "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js",
+    "vendor/jspdf.umd.min.js",
   );
   if (!window.jspdf || !window.jspdf.jsPDF)
     throw new Error("PDF tool could not load. Try again.");
@@ -448,7 +447,7 @@ async function ensureJsPDF() {
 async function ensureScanner() {
   if (window.Html5Qrcode) return;
   await loadScript(
-    "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js",
+    "vendor/html5-qrcode.min.js",
   );
 }
 
