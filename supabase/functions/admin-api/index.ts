@@ -1192,36 +1192,48 @@ Deno.serve(async (request: Request) => {
       // the tier rank nor order the parent by the nested customer_crm. Hence the
       // admin_dispatch_orders RPC. The search now joins in SQL (no separate
       // <=300-row customer id lookup, so it is no longer capped).
-      const { data: rows, error } = await db.rpc("admin_dispatch_orders", {
+      const off = Math.max(0, Number(body.offset) || 0);
+      const { data, error } = await db.rpc("admin_dispatch_orders", {
         p_filters: {
           exhibitionId: ex.id,
           firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
           dispatchStatus: ["Pending", "Partial", "Completed"].includes(statusFilter) ? statusFilter : null,
           search: q || null,
           limit: 300,
+          offset: off,
         },
       });
       if (error) throw error;
-      const orders = ((rows as any[]) ?? []).map((o: any) => ({
-        orderId: o.id,
-        customerId: o.customer_id,
+      // SHAPE-TOLERANT (deliberate): admin_dispatch_orders may return the older bare
+      // ARRAY of snake_case rows, or the newer OBJECT { orders:[camelCase], total }
+      // that adds pagination + a true total. Read either, camelCase-first with a
+      // snake_case fallback, so an Edge/migration deploy in either order degrades to a
+      // working list instead of breaking dispatch.
+      const paged = data && typeof data === "object" && !Array.isArray(data) && Array.isArray((data as any).orders);
+      const rawRows: any[] = paged ? (data as any).orders : (((data as any[]) ?? []));
+      const total: number | null = paged ? (Number((data as any).total) || rawRows.length) : null;
+      const orders = rawRows.map((o: any) => ({
+        orderId: o.orderId ?? o.id,
+        customerId: o.customerId ?? o.customer_id,
         firm: o.firm,
         status: o.status,
-        dispatchStatus: o.dispatch_status ?? "Pending",
-        designs: Number(o.total_designs) || 0,
-        sets: Number(o.total_sets) || 0,
-        pieces: Number(o.total_pieces) || 0,
-        updatedAt: o.updated_at,
-        companyName: o.company_name ?? "",
-        contactName: o.contact_name ?? "",
-        phone: o.phone_e164 ?? "",
+        dispatchStatus: o.dispatchStatus ?? o.dispatch_status ?? "Pending",
+        designs: Number(o.designs ?? o.total_designs) || 0,
+        sets: Number(o.sets ?? o.total_sets) || 0,
+        pieces: Number(o.pieces ?? o.total_pieces) || 0,
+        updatedAt: o.updatedAt ?? o.updated_at,
+        companyName: o.companyName ?? o.company_name ?? "",
+        contactName: o.contactName ?? o.contact_name ?? "",
+        phone: o.phone ?? o.phone_e164 ?? "",
         city: o.city ?? "",
         state: o.state ?? "",
         agent: o.agent ?? "",
         tier: o.tier ?? null,
       }));
-      // By-order view (default): unchanged bare array.
-      if (!body.withLines) return jsonResponse(request, { ok: true, data: orders });
+      // By-order view: a bare array when total is unknown (old RPC) so the current
+      // client is unaffected; { orders, total } once the RPC provides a total, so the
+      // client can page past the 300 cap with Load more. The client reads both.
+      if (!body.withLines) return jsonResponse(request, { ok: true, data: total === null ? orders : { orders, total } });
       // By-product pick-list: also return every design line for these orders so the
       // client can roll up "remaining to ship" per design. No images — quantities only.
       const orderIds = orders.map((o) => o.orderId);
@@ -1252,7 +1264,7 @@ Deno.serve(async (request: Request) => {
           };
         });
       }
-      return jsonResponse(request, { ok: true, data: { orders, lines } });
+      return jsonResponse(request, { ok: true, data: { orders, lines, total: total ?? orders.length } });
     }
 
     // Full-resolution images here by design: dispatch staff must be able to

@@ -4947,16 +4947,20 @@ $("crm-detail-modal").addEventListener("input", (e) => {
   if (e.target.id === "crm-d-reason" && $("crm-d-savereject")) $("crm-d-savereject").disabled = !e.target.value.trim();
 });
 
-async function loadDispatch() {
+async function loadDispatch(append) {
   if (!has("dispatch.view")) return;
   dispatchUpdateFilterBadge();
   const byProduct = st.dispatch.mode === "product";
+  // append = "Load more": fetch the next page and keep the rows already shown.
+  // Any other call (tab open, filter/search, save) is a fresh load from offset 0.
+  st.dispatch.offset = append ? (st.dispatch.rows || []).length : 0;
   try {
     const res = await admin("listDispatch", {
       query: $("dispatch-search").value.trim(),
       firm: st.dispatch.firm,
       dispatchStatus: st.dispatch.status,
       withLines: byProduct,
+      offset: st.dispatch.offset,
     });
     if (byProduct) {
       const orders = (res && res.orders) || [];
@@ -4976,7 +4980,12 @@ async function loadDispatch() {
         }).catch(() => {}); // dispatch-only staff can't load it → clean placeholder, no crash
       }
     } else {
-      st.dispatch.rows = res || [];
+      // res is a bare ARRAY (old Edge — no pagination) or { orders, total } (paginated
+      // Edge). total===null keeps today's behaviour (no Load more). On append, keep the
+      // rows already shown and add the next page.
+      const page = Array.isArray(res) ? res : ((res && res.orders) || []);
+      st.dispatch.total = (res && !Array.isArray(res) && typeof res.total === "number") ? res.total : null;
+      st.dispatch.rows = (append ? (st.dispatch.rows || []) : []).concat(page);
       $("dp-confirm").classList.add("hidden"); // by-order has its own Save; hide the by-product bar
       renderDispatchList();
     }
@@ -5132,13 +5141,19 @@ $("dp-confirm").onclick = async () => {
 
 function renderDispatchList() {
   const rows = st.dispatch.rows || [];
+  const total = st.dispatch.total; // null when the Edge doesn't paginate (degrades to today)
+  // Load more: only when the server reported a true total and more rows remain past
+  // the fetched page — this is what makes the 186 orders past the 300 cap reachable.
+  const more = (total != null && rows.length < total)
+    ? `<button class="btn small secondary" id="dispatch-more" style="width:100%;margin-top:10px">Load more — showing ${rows.length} of ${total}</button>`
+    : (total != null && rows.length ? `<div style="text-align:center;color:var(--muted);font-size:11px;font-weight:700;margin-top:10px">All ${total} shown</div>` : "");
   $("dispatch-list").innerHTML = rows.length
     ? rows
         .map(
           (o) =>
             `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div><div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`,
         )
-        .join("")
+        .join("") + more
     : '<div class="empty">No orders match these filters.</div>';
 }
 
@@ -5215,7 +5230,8 @@ $("dispatch-list").onclick = (e) => {
     renderDispatchProduct();
     return;
   }
-  // By-order: open the per-order detail.
+  // By-order: Load more (append the next page), then the per-order detail open.
+  if (e.target.closest("#dispatch-more")) { loadDispatch(true); return; }
   const b = e.target.closest("[data-order]");
   if (b && st.dispatch.mode !== "product") openDispatch(b.dataset.order);
 };
@@ -5906,7 +5922,7 @@ function selectExhibition(id) {
   st.entryRows = [];
   st.bookings = [];
   st.slots = [];
-  st.dispatch = { rows: [], detail: null, firm: "", status: "", mode: "order", product: null };
+  st.dispatch = { rows: [], detail: null, firm: "", status: "", mode: "order", product: null, offset: 0, total: null };
   st.sale.customer = null;
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };
