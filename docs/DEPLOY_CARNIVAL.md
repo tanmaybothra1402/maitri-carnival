@@ -113,6 +113,20 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010028` (2026-08-18) — dispatch filters fail OPEN. `admin_dispatch_orders`
+returned 0 rows for an unrecognised `firm` or `dispatchStatus` (blank-screen, the
+025 treatment never applied here). The two enums normalise to NULL when
+unrecognised → "show all". Output stays snake_case (the deployed Edge maps those
+keys to camelCase — changing them here would break the live dispatch screen), so
+this is RPC-only, no Edge redeploy. Defense-in-depth: the Edge already sanitises
+those values, so it was not UI-reachable. Proven: firm=GARBAGE 0→300,
+dispatchStatus=GARBAGE 0→300; valid values still exact (Niharika 132, Completed 0,
+Partial 1). ⚠️ Two dispatch items remain **staged, pending the blocked Edge deploy**:
+(BUG 1) aligning the RPC output to camelCase + its matched Edge mapper; (BUG 4) the
+300-row cap (486 orders with lines → 186 unreachable) needs the Edge to send a
+higher limit or paginate. Neither is applied — do not `db push` a camelCase-output
+migration before the matched Edge is deployed.
+
 `202608010027` (2026-08-18) — **HOTFIX / REVERT of 026.** 026 changed
 `crm_list_customers` to return an OBJECT so it could carry the salesperson-picker
 counts, but its matched `admin-api` Edge could not be deployed in the same session
