@@ -5184,6 +5184,17 @@ $("dispatch-status-chips").onclick = (e) => {
   );
   loadDispatch();
 };
+// A filter sheet must be a direct child of <body>. A .page's enter-animation leaves a
+// PERSISTENT transform on the page element, which makes that page the containing block
+// for a position:fixed modal — so a sheet nested inside the page is sized/placed against
+// the (tall, scrolled) page box, not the viewport, and its flex-end panel lands far
+// off-screen. That is the "Filters does nothing" bug on Dispatch (tapping fires
+// openModal, but the panel renders ~19,000px down). It is LATENT on Products' options
+// sheet for the same reason. Every other modal already lives in <body>; reparent these
+// two to match. Idempotent — safe to run once at init (handlers are all id-based).
+["dispatch-filter-sheet", "product-options-sheet"].forEach((id) => {
+  const el = $(id); if (el && el.parentElement !== document.body) document.body.appendChild(el);
+});
 $("dispatch-filter-open").onclick = () => openModal("dispatch-filter-sheet");
 $("dispatch-filter-done").onclick = () => closeModal("dispatch-filter-sheet");
 function dispatchUpdateFilterBadge() {
