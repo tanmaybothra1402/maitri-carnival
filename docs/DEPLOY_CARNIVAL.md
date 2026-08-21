@@ -113,6 +113,22 @@ the CRM list defaults to **customers with orders**. This checkpoint redeploys
 (list bulk-select + inline buyer-type, restructured detail card, fixed checkbox
 labels). No customer-facing change.
 
+`202608010030` (2026-08-20) — `admin_dispatch_orders` returns camelCase
+`{ orders:[...], total }` with an `offset` param (BUG 1 + BUG 4). Fixes Tanmay's
+"the filter isn't working": the dispatch list reports the true total (**486**, not
+the 300 cap) and orders past row 300 ("Pehnava Boutique") are reachable via **Load
+more**. **Order-critical:** applied AFTER admin-api **v44** (the shape-tolerant Edge,
+byte-identical to the repo source) so there was no breakage window; firm/status
+filters verified intact (Niharika 132 / Completed 0 / Partial 1 / GARBAGE 486).
+
+`202608010029` (2026-08-20) — `crm_list_customers` returns an OBJECT
+`{ customers, assigneeCounts, unassignedCount, totalCount }` for the CRM
+salesperson-picker counts (the shape 026 introduced and 027 reverted; re-applied now
+the Edge reads it). Applied after v44. Verified live: assigned **145** across
+GHANSHYAM 25 / KISHAN 21 / UMA 19 / TEJA 17 / PUNITH 16 / MAHAVEER 15 / HARISH 14 /
+DALARAM 10 / PAWAN 7 / VINAY 1; 26 active staff so 16 render as (0). (Resolves the
+two items 028 previously flagged as staged.)
+
 `202608010028` (2026-08-18) — dispatch filters fail OPEN. `admin_dispatch_orders`
 returned 0 rows for an unrecognised `firm` or `dispatchStatus` (blank-screen, the
 025 treatment never applied here). The two enums normalise to NULL when
