@@ -305,6 +305,14 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   crmBulkAssign: ["crm.bulk"],
   crmAddReference: ["crm.write"],
   crmDeleteReference: ["crm.write"],
+  crmVerifyReference: ["crm.write"],
+  crmSetPayment: ["crm.write"],
+  crmSetAgent: ["crm.write"],
+  crmSetReferenceStanding: ["crm.write"],
+  crmAddCategory: ["crm.write"],
+  crmRemoveCategory: ["crm.write"],
+  crmListAgents: ["crm.view"],
+  crmListReferenceCompanies: ["crm.view"],
   crmAssign: ["crm.assign"],
   createStaff: ["admin.staff"],
   listStaff: ["admin.staff"],
@@ -1229,6 +1237,11 @@ Deno.serve(async (request: Request) => {
         state: o.state ?? "",
         agent: o.agent ?? "",
         tier: o.tier ?? null,
+        // Reference standing (staff-set) + rejected flag/reason — informational on the
+        // dispatch screen. Warn, never block: the client keeps the dispatch button enabled.
+        referenceStanding: o.referenceStanding ?? null,
+        refRejected: Boolean(o.refRejected),
+        refRejectReason: o.refRejectReason ?? null,
       }));
       // By-order view: a bare array when total is unknown (old RPC) so the current
       // client is unaffected; { orders, total } once the RPC provides a total, so the
@@ -1476,6 +1489,89 @@ Deno.serve(async (request: Request) => {
       });
       if (error) throw error;
       return jsonResponse(request, { ok: true, data });
+    }
+
+    // Reference verification step 2: we called the company and recorded the outcome.
+    if (action === "crmVerifyReference") {
+      const { data, error } = await db.rpc("crm_verify_reference", {
+        p_reference_id: clean(body.referenceId),
+        p_poc: clean(body.pocName),
+        p_notes: clean(body.notes),
+        p_verdict: clean(body.verdict),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetPayment") {
+      const raw = body.creditDays;
+      const creditDays = raw === "" || raw === null || raw === undefined ? null : Math.round(Number(raw));
+      if (creditDays !== null && (!Number.isFinite(creditDays) || creditDays < 0 || creditDays > 3650)) throw new Error("Credit days must be 0-3650");
+      const { data, error } = await db.rpc("crm_set_payment", {
+        p_customer_id: clean(body.customerId),
+        p_method: clean(body.method),
+        p_credit_days: creditDays,
+        p_notes: clean(body.notes),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    // Self-growing agent: crm_set_agent resolves-or-creates by canonical key and keeps
+    // customers.agent in sync with the canonical name.
+    if (action === "crmSetAgent") {
+      const { data, error } = await db.rpc("crm_set_agent", {
+        p_customer_id: clean(body.customerId),
+        p_agent_name: clean(body.agentName),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmSetReferenceStanding") {
+      const { data, error } = await db.rpc("crm_set_reference_standing", {
+        p_customer_id: clean(body.customerId),
+        p_standing: clean(body.standing),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmAddCategory") {
+      const { data, error } = await db.rpc("crm_add_category", {
+        p_customer_id: clean(body.customerId),
+        p_category: clean(body.category),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "crmRemoveCategory") {
+      const { data, error } = await db.rpc("crm_remove_category", {
+        p_customer_id: clean(body.customerId),
+        p_category: clean(body.category),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    // Pickers: the shared self-growing lists (service-role read; buyers never see these).
+    if (action === "crmListAgents") {
+      const { data, error } = await db.from("agents").select("id,name").order("name", { ascending: true });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: (data ?? []).map((a: any) => ({ id: a.id, name: a.name })) });
+    }
+
+    if (action === "crmListReferenceCompanies") {
+      const { data, error } = await db.from("reference_companies").select("id,name").order("name", { ascending: true });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data: (data ?? []).map((r: any) => ({ id: r.id, name: r.name })) });
     }
 
     if (action === "getCustomerOrders") {
