@@ -307,10 +307,9 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   crmBulkAssign: ["crm.bulk"],
   crmAddReference: ["crm.write"],
   crmDeleteReference: ["crm.write"],
-  crmVerifyReference: ["crm.write"],
+  crmSetReferenceSpoken: ["crm.write"],
   crmSetPayment: ["crm.write"],
   crmSetAgent: ["crm.write"],
-  crmSetReferenceStanding: ["crm.write"],
   crmAddCategory: ["crm.write"],
   crmRemoveCategory: ["crm.write"],
   crmListAgents: ["crm.view"],
@@ -1247,14 +1246,12 @@ Deno.serve(async (request: Request) => {
         state: o.state ?? "",
         agent: o.agent ?? "",
         tier: o.tier ?? null,
-        // Customer approval status (crm_status) — the new dispatch-card pill. Warn,
-        // never block: the client keeps the dispatch button enabled in every state.
-        crmStatus: o.crmStatus ?? o.crm_status ?? "pending",
-        // Reference standing (staff-set) + rejected flag/reason — a SEPARATE signal
-        // from approval. Also informational on the dispatch screen; never a gate.
-        referenceStanding: o.referenceStanding ?? null,
-        refRejected: Boolean(o.refRejected),
-        refRejectReason: o.refRejectReason ?? null,
+        // ONE derived approval signal for the dispatch card (SQL-computed in
+        // admin_dispatch_orders from buyer_type + crm_status). none | unscreened | warn |
+        // reject. Warn, never block — the dispatch button stays enabled in every state.
+        // Replaces the old crmStatus + referenceStanding + refRejected trio (that
+        // duplication was half of what made the card noisy).
+        dispatchFlag: o.dispatchFlag ?? "none",
         // When a category filter is active, these reflect the FILTERED lines only.
         categoryFilter: o.categoryFilter ?? null,
         catLineCount: Number(o.catLineCount ?? 0) || 0,
@@ -1553,12 +1550,12 @@ Deno.serve(async (request: Request) => {
     }
 
     // Reference verification step 2: we called the company and recorded the outcome.
-    if (action === "crmVerifyReference") {
-      const { data, error } = await db.rpc("crm_verify_reference", {
+    if (action === "crmSetReferenceSpoken") {
+      const { data, error } = await db.rpc("crm_set_reference_spoken", {
         p_reference_id: clean(body.referenceId),
+        p_spoken: body.spoken === true || body.spoken === "true",
         p_poc: clean(body.pocName),
         p_notes: clean(body.notes),
-        p_verdict: clean(body.verdict),
         p_actor: admin.id,
       });
       if (error) throw error;
@@ -1586,16 +1583,6 @@ Deno.serve(async (request: Request) => {
       const { data, error } = await db.rpc("crm_set_agent", {
         p_customer_id: clean(body.customerId),
         p_agent_name: clean(body.agentName),
-        p_actor: admin.id,
-      });
-      if (error) throw error;
-      return jsonResponse(request, { ok: true, data });
-    }
-
-    if (action === "crmSetReferenceStanding") {
-      const { data, error } = await db.rpc("crm_set_reference_standing", {
-        p_customer_id: clean(body.customerId),
-        p_standing: clean(body.standing),
         p_actor: admin.id,
       });
       if (error) throw error;

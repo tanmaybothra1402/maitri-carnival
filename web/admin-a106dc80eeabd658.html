@@ -802,14 +802,6 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" type="button" data-category="MU">MU</button>
     <button class="chip" type="button" data-category="BS">BS</button>
   </div>
-  <label>Reference check</label>
-  <div class="crm-chip-row" id="crm-refstanding-filter">
-    <button class="chip active" type="button" data-refstanding="">Any</button>
-    <button class="chip" type="button" data-refstanding="pending">Pending call</button>
-    <button class="chip" type="button" data-refstanding="approved">Approved</button>
-    <button class="chip" type="button" data-refstanding="rejected">Rejected</button>
-    <button class="chip" type="button" data-refstanding="none">No refs</button>
-  </div>
   <label>Salesperson</label>
   <select id="crm-assignee" style="width:100%">
     <option value="">All</option>
@@ -839,20 +831,6 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
   <div id="crm-d-body"><div class="crm-loading">Loading…</div></div>
 </div></div>
 
-<div class="modal" id="crm-logcheck-sheet"><div class="sheet">
-  <div class="sheet-head"><div><h2>Log reference check</h2><p class="copy" id="crm-lc-company">We called the company — record the outcome.</p></div><button class="close" data-close="crm-logcheck-sheet">✕</button></div>
-  <label>Who we spoke to</label>
-  <input id="crm-lc-poc" maxlength="200" placeholder="Person at the company (optional)"/>
-  <label style="margin-top:10px">Notes</label>
-  <textarea id="crm-lc-notes" rows="3" maxlength="4000" placeholder="e.g. good qty but slow payment"></textarea>
-  <label style="margin-top:10px">Verdict</label>
-  <div class="crm-seg" id="crm-lc-verdict">
-    <button type="button" data-val="pending" class="active pending">Pending</button>
-    <button type="button" data-val="approved">Approved</button>
-    <button type="button" data-val="rejected">Rejected</button>
-  </div>
-  <button class="btn" type="button" id="crm-lc-save" style="width:100%;margin-top:14px">Save check</button>
-</div></div>
 
 <main class="page" id="page-admin">
 <div class="segment" data-module="admin"><button class="active" data-sub="slots">Slots</button><button data-sub="staff">Team</button><button data-sub="settings">Settings</button><button data-sub="exhibitions">Exhibitions</button></div>
@@ -4570,15 +4548,20 @@ function firmPill(firm) {
 // Small inline pill (not a block) so a rejected buyer never shows two loud red blocks
 // alongside the separate "Reference rejected" flag. green=agreed, amber=pending/on_hold,
 // red=rejected. Reuses the .crm-b pill classes.
-function dispatchApprovalPill(s) {
-  if (s === "agreed") return crmB("agreed", "✓ Approved");
-  if (s === "rejected") return crmB("rejected", "✕ Rejected");
-  if (s === "on_hold") return crmB("on_hold", "On hold");
-  return crmB("on_hold", "Pending"); // pending + any unknown/null: quiet amber
+// The ONE dispatch approval signal, from admin_dispatch_orders' derived dispatchFlag.
+// 'none' (regular buyer, or new+agreed) → no pill. 'unscreened' (716 of 875 buyers) →
+// QUIET GREY, never a warning colour, or it becomes wallpaper. Warning colours are
+// reserved for the two states that matter: 'warn' (amber) and 'reject' (red). Warn,
+// never block — the dispatch button stays enabled in every case.
+function dispatchFlagPill(flag) {
+  if (flag === "unscreened") return `<span class="crm-b" style="background:#F3F4F6;color:#6B7280" title="Not screened yet — no approval needed to dispatch">Unscreened</span>`;
+  if (flag === "warn") return crmB("on_hold", "⚠ Pending approval");
+  if (flag === "reject") return crmB("rejected", "✕ Rejected");
+  return ""; // 'none'
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, agents: [], refCompanies: [], lookupsLoaded: false, folds: {}, showAllCalls: false, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", category: "", agentId: "", refStanding: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, agents: [], refCompanies: [], lookupsLoaded: false, folds: {}, showAllCalls: false, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", category: "", agentId: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
 // Status a call may set — a rejection needs a reason, so it is NOT offered here
@@ -4591,14 +4574,6 @@ function tierBadge(tier) { return (tier === "A" || tier === "B" || tier === "C")
 // Category chips (display-only). Auto = filled; manual (asked-about, not ordered) = dashed outline.
 function crmCatChips(cats) {
   return (cats || []).map((x) => `<span title="${x.m ? "Manually added — asked about, not ordered" : "From order history"}" style="display:inline-block;padding:1px 6px;margin:0 3px 3px 0;border-radius:8px;font-size:10px;font-weight:800;${x.m ? "background:#fff;border:1px dashed #94A3B8;color:#475569" : "background:#EEF2F7;color:#334155"}">${esc(x.c)}${x.m ? " +" : ""}</span>`).join("");
-}
-// Reference standing pill — reuses the status badge colours (approved=green, watch=amber,
-// rejected=red). Null renders nothing. Purely informational; never a gate.
-function crmStandingPill(s) {
-  if (s === "approved") return crmB("agreed", "Ref ✓");
-  if (s === "watch") return crmB("on_hold", "Ref watch");
-  if (s === "rejected") return crmB("rejected", "Ref ✕");
-  return "";
 }
 
 async function loadCrm() {
@@ -4617,7 +4592,6 @@ async function loadCrm() {
         // New (all filter in SQL before the LIMIT):
         category: f.category,
         agentId: f.agentId,
-        refStanding: f.refStanding,
         withOrders: f.scope === "orders",
         callbacksDue: f.scope === "callbacks",
         sort: f.sort,
@@ -4712,9 +4686,6 @@ function renderCrmList() {
     // No linked agent: a QUIET muted label, no pill/colour (normal for >half the book).
     // "No agent" = buyer answered (their reply meant none); "Not asked" = never filled.
     else badges.push(`<span style="align-self:center;color:var(--muted);font-size:10px;font-weight:600" title="Trade agent">${c.agentAnswered ? "No agent" : "Not asked"}</span>`);
-    const stPill = crmStandingPill(c.referenceStanding);
-    if (stPill) badges.push(stPill);
-    if (c.refPending) badges.push(`<span class="crm-b" style="background:#FEF9C3;color:#854D0E" title="Reference call pending">Ref pending</span>`);
     if (c.dupName && c.dupPhone) badges.push(crmB("dupe", "Possible duplicate"));
     else if (c.dupName || c.dupPhone) badges.push(crmB("dupe", c.dupName ? "Dup name" : "Dup phone"));
     const catChips = crmCatChips(c.categories);
@@ -4939,8 +4910,10 @@ function renderCrmDetail() {
     ? `<div class="crm-field"><label style="margin:0">Calls (0) <span style="text-transform:none;font-weight:600;color:var(--muted)">— none yet</span></label></div>`
     : crmFold("calls", callSignal, `<div class="crm-calls">${callsHtml}</div>${showAllBtn}`);
   const callLogBlock = `<div style="margin-top:14px">${addCallSection}</div>${historyBlock}`;
-  const refVerdict = (v) => v === "approved" ? crmB("agreed", "✓ approved") : v === "rejected" ? crmB("rejected", "✕ rejected") : crmB("on_hold", "pending");
-  const refs = (d.references || []).map((r) => `<div class="crm-ref"><span style="min-width:0">${esc(r.companyName || r.text || "")} ${refVerdict(r.verdict)}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:4px;flex-shrink:0"><button type="button" class="btn small secondary" data-crm-logcheck="${esc(r.id)}">Log check</button><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
+  // One "Spoken to" checkbox per reference (checked = we called that company). Replaces
+  // the retired approved/watch/rejected verdict + the Log-check sheet. POC + note are kept
+  // and shown when present; the checkbox preserves them.
+  const refs = (d.references || []).map((r) => `<div class="crm-ref"><span style="min-width:0">${esc(r.companyName || r.text || "")}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:8px;flex-shrink:0;align-items:center"><label class="crm-check" style="margin:0;white-space:nowrap"><input type="checkbox" data-crm-spoken="${esc(r.id)}" ${r.spokenTo ? "checked" : ""}/> <span>Spoken to</span></label><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
   const detailCats = Array.isArray(d.categories) ? d.categories
     : [...(d.categoriesAuto || []).map((x) => ({ c: x, m: false })), ...(d.categoriesManual || []).filter((x) => !(d.categoriesAuto || []).includes(x)).map((x) => ({ c: x, m: true }))];
   const rejected = d.crmStatus === "rejected";
@@ -4960,7 +4933,7 @@ function renderCrmDetail() {
   // References/agent/terms fold — routed through the shared crmFold mechanism. The
   // collapsed header carries the signal (agent badge + standing pill); the body is the
   // full evidence + terms editor. Kept below the action controls, as before.
-  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}${crmStandingPill(d.referenceStanding)}`;
+  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}`;
   // Agent + reference-company fields are real JS-filtered pickers (crmPicker*), NOT
   // <datalist> — datalist type-to-filter is unreliable/absent on iOS Safari. Each is a
   // plain input + an on-demand results list rendered beneath it. Selecting an existing
@@ -4975,9 +4948,6 @@ function renderCrmDetail() {
         </div>
         ${d.agentName ? `<button type="button" class="btn small secondary" id="crm-d-agent-clear" style="margin-top:6px">Clear agent</button>` : ""}
         <div class="crm-hint">Pick an existing agent, or tap “+ Add” to create one. One consolidated list — don't re-type a spelling variant.</div>
-        <div class="crm-sub">Reference standing</div>
-        ${crmSeg("refstanding", d.referenceStanding || "", [["", "Unset"], ["approved", "Approved"], ["watch", "Watch"], ["rejected", "Rejected"]])}
-        <div class="crm-hint">Your overall call. Evidence below; you decide. Shown on dispatch — never blocks a shipment.</div>
         <div class="crm-sub">References the buyer named</div>
         <div style="position:relative">
           <input id="crm-d-refinput" autocomplete="off" maxlength="200" placeholder="Type a company to search or add" style="width:100%"/>
@@ -5067,32 +5037,6 @@ async function crmSaveCall() {
     toast("Call logged", "success");
   } catch (e) { toast(e.message, "error"); if ($("crm-c-save")) $("crm-c-save").disabled = false; }
 }
-// Reference verification step 2 — log the call outcome from a BODY-parented sheet.
-let crmLogCheckRefId = null;
-function crmOpenLogCheck(refId) {
-  crmLogCheckRefId = refId;
-  const r = ((st.crm.detail && st.crm.detail.references) || []).find((x) => x.id === refId) || {};
-  $("crm-lc-company").textContent = r.companyName ? `Company: ${r.companyName}` : "We called the company — record the outcome.";
-  $("crm-lc-poc").value = r.pocName || "";
-  $("crm-lc-notes").value = r.notes || "";
-  const v = r.verdict || "pending";
-  $("crm-lc-verdict").querySelectorAll("button").forEach((b) => b.classList.toggle("active", b.dataset.val === v));
-  openModal("crm-logcheck-sheet");
-}
-$("crm-logcheck-sheet").addEventListener("click", async (e) => {
-  const seg = e.target.closest("#crm-lc-verdict [data-val]");
-  if (seg) { seg.parentElement.querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === seg)); return; }
-  if (e.target.id === "crm-lc-save") {
-    const active = $("crm-lc-verdict").querySelector("button.active");
-    try {
-      await admin("crmVerifyReference", { referenceId: crmLogCheckRefId, pocName: $("crm-lc-poc").value.trim(), notes: $("crm-lc-notes").value.trim(), verdict: active ? active.dataset.val : "pending" });
-      closeModal("crm-logcheck-sheet");
-      await crmRefresh();
-      toast("Reference check saved", "success");
-    } catch (err) { toast(err.message, "error"); }
-    return;
-  }
-});
 // Shared self-growing lists for the pickers (agents + reference companies). Loaded once.
 async function crmEnsureLookups(force) {
   if (st.crm.lookupsLoaded && !force) return;
@@ -5119,14 +5063,13 @@ crmChipPick("crm-tier-filter", "tier", "data-tier");
 crmChipPick("crm-scope-filter", "scope", "data-scope");
 crmChipPick("crm-sort", "sort", "data-sort");
 crmChipPick("crm-category-filter", "category", "data-category");
-crmChipPick("crm-refstanding-filter", "refStanding", "data-refstanding");
 $("crm-assignee").onchange = () => { st.crm.filters.assignee = $("crm-assignee").value; loadCrm(); };
 $("crm-agent-filter").onchange = () => { st.crm.filters.agentId = $("crm-agent-filter").value; loadCrm(); };
 $("crm-filter-open").onclick = () => openModal("crm-filter-sheet");
 $("crm-filter-done").onclick = () => closeModal("crm-filter-sheet");
 function crmUpdateFilterBadge() {
   const f = st.crm.filters;
-  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.assignee ? 1 : 0) + (f.category ? 1 : 0) + (f.agentId ? 1 : 0) + (f.refStanding ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0);
+  const n = (f.buyerType ? 1 : 0) + (f.status ? 1 : 0) + (f.tier ? 1 : 0) + (f.assignee ? 1 : 0) + (f.category ? 1 : 0) + (f.agentId ? 1 : 0) + (f.scope !== "orders" ? 1 : 0) + (f.sort !== "recent" ? 1 : 0);
   const b = $("crm-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 $("crm-selectall").onchange = () => {
@@ -5209,7 +5152,6 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     const kind = seg.closest("[data-crm-seg]").dataset.crmSeg, val = seg.dataset.val;
     if (kind === "buyerType") { await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved"); return; }
     if (kind === "tier") { await crmDo(() => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }), "Tier saved"); return; }
-    if (kind === "refstanding") { await crmDo(() => admin("crmSetReferenceStanding", { customerId: st.crm.currentId, standing: val }), "Reference standing saved"); return; }
     if (kind === "paymethod") { seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg)); return; }
     // status is a <select> now (crm-d-status-sel) — handled in the change listener.
   }
@@ -5244,8 +5186,6 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     if (chev) chev.textContent = st.crm.folds[k] ? "▾" : "▸";
     return;
   }
-  const lc = e.target.closest("[data-crm-logcheck]");
-  if (lc) { crmOpenLogCheck(lc.dataset.crmLogcheck); return; }
   if (e.target.id === "crm-d-agent-clear") { await crmDo(() => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: "" }), "Agent cleared"); st.crm.lookupsLoaded = false; crmEnsureLookups(true); return; }
   if (e.target.id === "crm-d-pay-save") {
     const pm = document.querySelector('[data-fold-body="refs"] [data-crm-seg="paymethod"] button.active');
@@ -5263,6 +5203,14 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
 });
 $("crm-detail-modal").addEventListener("change", async (e) => {
   if (e.target.id === "crm-d-assign") { await crmDo(() => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: e.target.value || "" }), "Assignment updated"); return; }
+  // Per-reference "Spoken to" checkbox. Preserve the reference's existing POC/note
+  // (crm_set_reference_spoken overwrites them) by resending the current values.
+  const sp = e.target.closest("[data-crm-spoken]");
+  if (sp) {
+    const ref = ((st.crm.detail && st.crm.detail.references) || []).find((x) => x.id === sp.dataset.crmSpoken) || {};
+    await crmDo(() => admin("crmSetReferenceSpoken", { referenceId: sp.dataset.crmSpoken, spoken: e.target.checked, pocName: ref.pocName || "", notes: ref.notes || "" }), e.target.checked ? "Marked spoken to" : "Marked not spoken");
+    return;
+  }
   if (e.target.id === "crm-d-status-sel") {
     const val = e.target.value;
     if (val === "rejected") {
@@ -5578,7 +5526,7 @@ function renderDispatchList() {
             const filtered = !!o.categoryFilter;
             const catTag = filtered ? `<span style="display:inline-block;padding:1px 6px;margin-right:5px;border-radius:7px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:900">${esc(o.categoryFilter)}</span>` : "";
             const counts = `${catTag}${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs${filtered && o.catPending ? " · " + o.catPending + " pending" : ""}`;
-            return `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}${dispatchApprovalPill(o.crmStatus)}${crmStandingPill(o.referenceStanding)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div>${o.refRejected ? `<div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800">⚠ Reference rejected${o.refRejectReason ? " — " + esc(o.refRejectReason) : ""}</div>` : ""}<div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${counts}</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`;
+            return `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}${dispatchFlagPill(o.dispatchFlag)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div><div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${counts}</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`;
           },
         )
         .join("") + more
@@ -5641,7 +5589,7 @@ function dispatchRenderCategoryChips() {
 // openModal, but the panel renders ~19,000px down). It is LATENT on Products' options
 // sheet for the same reason. Every other modal already lives in <body>; reparent these
 // two to match. Idempotent — safe to run once at init (handlers are all id-based).
-["dispatch-filter-sheet", "product-options-sheet", "crm-logcheck-sheet"].forEach((id) => {
+["dispatch-filter-sheet", "product-options-sheet"].forEach((id) => {
   const el = $(id); if (el && el.parentElement !== document.body) document.body.appendChild(el);
 });
 $("dispatch-filter-open").onclick = () => openModal("dispatch-filter-sheet");
