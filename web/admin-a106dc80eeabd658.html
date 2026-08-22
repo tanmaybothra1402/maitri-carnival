@@ -5423,7 +5423,8 @@ function aggregateDispatchByDesign(orders, lines) {
       dispatchedAt: l.dispatchedAt || "", // real per-line ship date for the destructive-removal confirmation (NOT o.updatedAt, which later dispatches/edits bump)
       ordered, already,
       pcsPerSet: Number(l.pcsPerSet) || 1,
-      now: remaining, // sets to dispatch this action — default remaining; payload = already + now
+      now: 0, // sets to dispatch this action — default 0 (UNCHECKED). A buyer ships only
+              // when someone deliberately ticks them; payload = already + now.
       remove: false,  // DESTRUCTIVE: removes an already-dispatched line (→ dispatchedSets 0). Confirmed separately.
       warn: "",       // inline "Only N remaining." feedback when an entry is clamped
     });
@@ -5476,28 +5477,45 @@ function renderDispatchProduct() {
             <div class="dispatch-line-body"><b>${esc(d.designNo)}</b><div class="dispatch-line-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} · ${d.remaining} set${d.remaining === 1 ? "" : "s"} remaining</div></div>
             <span class="dp-chevron">${d._open ? "▾" : "▸"}</span>
           </button>
-          ${d._open ? `<div class="dp-buyers">${buyers}</div>` : ""}
+          ${d._open ? `<div class="dp-buyers">${buyers}</div>${dpConfirmBtnHtml(di, writable)}` : ""}
         </div>`;
       }).join("")
     : '<div class="empty">Nothing to ship for these filters.</div>';
-  // Confirm bar: shown in product mode for writable staff; disabled until there is
-  // something pending. Writes only fire from its own handler — never on expand/edit.
-  const pend = dpPending();
-  const btn = $("dp-confirm");
-  btn.classList.toggle("hidden", !(writable && rows.length));
-  btn.disabled = pend.length === 0;
-  btn.textContent = pend.length ? `Confirm dispatch · ${pend.length} line${pend.length === 1 ? "" : "s"}` : "Confirm dispatch";
+  // Confirm is now PER PRODUCT (rendered inside each expanded card, above). A tap can
+  // only ever dispatch THAT design's ticked buyers — never everything at once. The old
+  // global bar is retired: keep it hidden so it cannot submit across products.
+  $("dp-confirm").classList.add("hidden");
+}
+// The per-product Confirm button, inside each expanded design card. Enabled only when at
+// least one buyer of THIS design is ticked (or armed for removal); labelled with exactly
+// what it will do. Writes fire only from dpConfirmProduct — never on expand or edit.
+function dpConfirmBtnHtml(di, writable) {
+  if (!writable) return "";
+  const pend = dpProductPending(di);
+  return `<button class="btn dispatch-save-btn" type="button" data-dp-confirm="${di}" style="width:100%;margin-top:11px" ${pend.length ? "" : "disabled"}>${pend.length ? dpConfirmLabel(pend) : "Tick a buyer to dispatch"}</button>`;
+}
+function dpConfirmLabel(pend) {
+  const disp = pend.filter((p) => !p.isRemove), rem = pend.filter((p) => p.isRemove);
+  const sets = disp.reduce((s, p) => s + p.now, 0);
+  const parts = [];
+  if (disp.length) parts.push(`Dispatch ${disp.length} buyer${disp.length === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"}`);
+  if (rem.length) parts.push(`Remove ${rem.length}`);
+  return parts.join(" · ") || "Confirm dispatch";
 }
 // The absolute dispatchedSets that will be sent for a buyer. A pending increment adds
 // to what is already dispatched (never 0 — cancelling it just leaves `already`). ONLY the
 // explicit, confirmed Remove sends 0, which the RPC treats as deleting the line.
 function dpBuyerSets(b) { return b.remove ? 0 : (Number(b.already) || 0) + (Number(b.now) || 0); }
-function dpPending() {
+// Pending changes for ONE design card (di) — the scope of its Confirm button. It NEVER
+// walks other products: a by-product dispatch can only ever touch the design in front of
+// you, so there is no path that submits across products.
+function dpProductPending(di) {
+  const d = st.dispatch.product?.[di]; if (!d) return [];
   const out = [];
-  (st.dispatch.product || []).forEach((d) => d.buyers.forEach((b) => {
-    if (b.remove && b.already > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: 0, summary: `REMOVE ${b.already} already dispatched` });
-    else if (!b.remove && Number(b.now) > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: dpBuyerSets(b), summary: `${b.now} set${Number(b.now) === 1 ? "" : "s"}` });
-  }));
+  d.buyers.forEach((b) => {
+    if (b.remove && b.already > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: 0, isRemove: true, summary: `REMOVE ${b.already} already dispatched` });
+    else if (!b.remove && Number(b.now) > 0) out.push({ orderId: b.orderId, company: b.company, designNo: d.designNo, dispatchedSets: dpBuyerSets(b), now: Number(b.now), summary: `${b.now} set${Number(b.now) === 1 ? "" : "s"}` });
+  });
   return out;
 }
 function dpSetNow(di, bi, val) {
@@ -5510,30 +5528,30 @@ function dpSetNow(di, bi, val) {
   if (Number(b.now) > 0) b.remove = false;            // dispatching cancels a pending removal
   renderDispatchProduct();
 }
-$("dp-confirm").onclick = async () => {
-  const pend = dpPending();
-  if (!pend.length) { toast("Set a quantity (or Undo) first — nothing to dispatch yet", "error"); return; }
-  // Requirement 4: an explicit summary of exactly what will be written before the write.
+// Per-product Confirm: writes ONLY this design's ticked buyers, one saveDispatch per
+// order — the SAME path + payload shape as the by-order Save (C3: both go through
+// admin("saveDispatch", { orderId, lines }); admin_save_dispatch is merge-safe, so only
+// the designs sent are touched). Nothing writes until this is tapped and the summary
+// accepted — never on expand or edit.
+async function dpConfirmProduct(di) {
+  const pend = dpProductPending(di);
+  if (!pend.length) { toast("Tick a buyer to dispatch first", "error"); return; }
   const summary = "Confirm dispatch:\n\n" +
     pend.map((p) => `• ${p.company} · ${p.designNo} · ${p.summary}`).join("\n") +
     "\n\nThis locks those lines from customer edits. Proceed?";
   if (!confirm(summary)) return;
-  // Group by order → ONE saveDispatch per order, same path + payload shape as by-order.
-  // admin_save_dispatch is merge-safe (only the designs sent are touched) and validates
-  // dispatchedSets against ordered; dispatchedSets:0 removes the line (the undo path).
   const byOrder = {};
   pend.forEach((p) => (byOrder[p.orderId] ||= []).push({ designNo: p.designNo, dispatchedSets: p.dispatchedSets }));
-  const btn = $("dp-confirm"), old = btn.textContent;
-  btn.disabled = true; btn.textContent = "Dispatching…";
   let okN = 0; const fails = [];
+  loading(true, "Dispatching…");
   for (const [orderId, lines] of Object.entries(byOrder)) {
     try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", category: st.dispatch.category, lines }); okN++; }
     catch (e) { fails.push(mcFriendlyError ? mcFriendlyError(e.message) : e.message); }
   }
-  btn.textContent = old;
+  loading(false);
   await loadDispatch(); // re-fetch → fresh remaining/dispatched, edit state reset
   toast(fails.length ? `${okN} order${okN === 1 ? "" : "s"} saved · ${fails.length} failed: ${fails[0]}` : `Dispatch saved across ${okN} order${okN === 1 ? "" : "s"}`, fails.length ? "error" : "success");
-};
+}
 
 function renderDispatchList() {
   const rows = st.dispatch.rows || [];
@@ -5648,6 +5666,8 @@ $("dispatch-mode-chips").onclick = (e) => {
 $("dispatch-list").onclick = (e) => {
   // By-product: expand, cancel a pending increment, or the confirmed destructive remove.
   // None of these write — the write happens only from the Confirm dispatch handler.
+  const conf = e.target.closest("[data-dp-confirm]");
+  if (conf) { dpConfirmProduct(Number(conf.dataset.dpConfirm)); return; }
   const tog = e.target.closest("[data-dp-toggle]");
   if (tog) { const d = st.dispatch.product?.[Number(tog.dataset.dpToggle)]; if (d) { d._open = !d._open; renderDispatchProduct(); } return; }
   const cancel = e.target.closest("[data-dp-cancel]"); // Undo a pending increment → now 0 (payload stays `already`, never 0)
