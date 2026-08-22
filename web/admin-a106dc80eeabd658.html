@@ -4874,14 +4874,14 @@ async function crmPickerCommit(kind, name) {
   if (kind === "agent") {
     const prev = st.crm.detail.agentName || "";
     await crmWrite({ key: "agent", el: inp && inp.parentElement,
-      optimistic: () => { st.crm.detail.agentName = name; if (inp) inp.value = name; },
+      optimistic: () => { st.crm.detail.agentName = name; if (inp) inp.value = name; crmRenderRefsHeader(); crmRenderAgentClear(); },
       write: () => cfg.commit(name),
-      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; }, msg: cfg.toast });
+      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; crmRenderRefsHeader(); crmRenderAgentClear(); }, msg: cfg.toast });
   } else {
     // Adding a reference: the server assigns the row id and resolves the company, so learn
-    // the truth once and repaint JUST the refs list — not the whole card (no lost scroll).
+    // the truth once and repaint JUST the refs list + header — not the whole card (no lost scroll).
     await crmWrite({ key: "refco-add", el: inp && inp.parentElement,
-      write: async () => { await cfg.commit(name); st.crm.detail = await admin("crmCustomerDetail", { customerId: st.crm.currentId }); crmRenderRefs(); if (inp) inp.value = ""; },
+      write: async () => { await cfg.commit(name); st.crm.detail = await admin("crmCustomerDetail", { customerId: st.crm.currentId }); crmRenderRefs(); crmRenderRefsHeader(); if (inp) inp.value = ""; },
       msg: cfg.toast });
   }
   // A create may have grown the shared list — refresh lookups for the next open (background).
@@ -4932,6 +4932,18 @@ function crmCatBody(d) {
         ${["MR", "KT", "NRK", "MU", "BS"].map((cat) => { const f = detailCats.find((x) => x.c === cat); const state = !f ? "add" : (f.m ? "man" : "auto"); return `<button type="button" class="chip ${f ? "active" : ""}" data-crm-cat="${cat}" data-cat-state="${state}"${state === "auto" ? ' disabled title="From orders — cannot remove"' : ""}>${state === "add" ? "+ " : ""}${cat}</button>`; }).join("")}
       </div>`;
 }
+// Derived collapsed-fold / title summaries that read state a crmWrite mutates. Each is a
+// pure function of local st.crm.detail, so a write repaints it from the optimistic value —
+// never a refetch. Keeping these in sync is not cosmetic: a fold header that still says
+// "0 spoken" after you tick "Spoken to" is the same contradiction that makes a user tap
+// again to check it worked (the bug we removed).
+function crmRefsHeaderHtml(d) {
+  const refCount = (d.references || []).length;
+  const refSpoken = (d.references || []).filter((r) => r.spokenTo).length;
+  const refSummary = refCount ? `${refCount} ref${refCount > 1 ? "s" : ""}${refSpoken ? ` · ${refSpoken} spoken` : ""}` : "";
+  return `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}${refSummary ? `<span style="color:var(--muted);font-weight:600;font-size:11px">${esc(refSummary)}</span>` : ""}`;
+}
+function crmAgentClearHtml(d) { return d.agentName ? `<button type="button" class="btn small secondary" id="crm-d-agent-clear" style="margin-top:6px">Clear agent</button>` : ""; }
 function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
   const canAssign = has("crm.assign");
@@ -4985,12 +4997,9 @@ function renderCrmDetail() {
   // References/agent/terms fold — routed through the shared crmFold mechanism. The
   // collapsed header carries the signal (agent badge + standing pill); the body is the
   // full evidence + terms editor. Kept below the action controls, as before.
-  // Collapsed header signal: agent badge + a reference tally so the fold advertises its
-  // contents (chose "N refs · M spoken"; omit the spoken clause at zero to stay terse).
-  const refCount = (d.references || []).length;
-  const refSpoken = (d.references || []).filter((r) => r.spokenTo).length;
-  const refSummary = refCount ? `${refCount} ref${refCount > 1 ? "s" : ""}${refSpoken ? ` · ${refSpoken} spoken` : ""}` : "";
-  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}${refSummary ? `<span style="color:var(--muted);font-weight:600;font-size:11px">${esc(refSummary)}</span>` : ""}`;
+  // Collapsed header signal: agent badge + a reference tally ("N refs · M spoken"). Built by
+  // crmRefsHeaderHtml so a spoken/delete/add/agent write can repaint it from local state.
+  const refsHeader = crmRefsHeaderHtml(d);
   // Agent + reference-company fields are real JS-filtered pickers (crmPicker*), NOT
   // <datalist> — datalist type-to-filter is unreliable/absent on iOS Safari. Each is a
   // plain input + an on-demand results list rendered beneath it. Selecting an existing
@@ -5003,7 +5012,7 @@ function renderCrmDetail() {
           <input id="crm-d-agent" autocomplete="off" value="${esc(d.agentName || "")}" maxlength="120" placeholder="Type to search or add an agent" style="width:100%"/>
           <div id="crm-agent-results" class="hidden" style="margin-top:6px;max-height:240px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:10px;background:#fff"></div>
         </div>
-        ${d.agentName ? `<button type="button" class="btn small secondary" id="crm-d-agent-clear" style="margin-top:6px">Clear agent</button>` : ""}
+        <div id="crm-d-agent-clearwrap">${crmAgentClearHtml(d)}</div>
         <div class="crm-hint">Pick an existing agent, or tap “+ Add” to create one. One consolidated list — don't re-type a spelling variant.</div>
         <div class="crm-sub">References the buyer named</div>
         <div style="position:relative">
@@ -5101,6 +5110,12 @@ async function crmWrite({ key, el, optimistic, write, rollback, msg }) {
 function crmSegPaint(grp, val) { if (grp) grp.querySelectorAll("button").forEach((b) => { b.className = b.dataset.val === val ? ("active " + b.dataset.val) : ""; }); }
 function crmRenderRefs() { const el = document.querySelector("#crm-d-body .crm-refs"); if (el) el.innerHTML = crmRefsListHtml(st.crm.detail); }
 function crmRenderCats() { const el = $("crm-d-catwrap"); if (el) el.innerHTML = crmCatBody(st.crm.detail); }
+// Repaint the derived summaries from local state (no refetch, no full re-render). The refs
+// fold header lives in the fold button's first span; it is always in the DOM (only the fold
+// BODY toggles), so the tally updates whether the fold is open or collapsed.
+function crmRenderRefsHeader() { const btn = document.querySelector('#crm-d-body [data-fold="refs"]'); if (btn && btn.firstElementChild) btn.firstElementChild.innerHTML = crmRefsHeaderHtml(st.crm.detail); }
+function crmRenderAgentClear() { const el = $("crm-d-agent-clearwrap"); if (el) el.innerHTML = crmAgentClearHtml(st.crm.detail); }
+function crmRenderTitleTier() { const el = $("crm-d-title"); if (el && st.crm.detail) el.innerHTML = `<span class="mc-nametier"><span>${esc(st.crm.detail.companyName || "Customer")}</span>${tierBadge(st.crm.detail.tier)}</span>`; }
 async function crmSaveCall() {
   const outcome = $("crm-c-outcome").value;
   const followupRaw = $("crm-c-followup").value;
@@ -5244,9 +5259,9 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     if (kind === "tier") {
       const grp = seg.closest("[data-crm-seg]"), prev = st.crm.detail.tier || "";
       crmWrite({ key: "tier", el: grp,
-        optimistic: () => { st.crm.detail.tier = val; crmSegPaint(grp, val); },
+        optimistic: () => { st.crm.detail.tier = val; crmSegPaint(grp, val); crmRenderTitleTier(); },
         write: () => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }),
-        rollback: () => { st.crm.detail.tier = prev; crmSegPaint(grp, prev); }, msg: "Tier saved" });
+        rollback: () => { st.crm.detail.tier = prev; crmSegPaint(grp, prev); crmRenderTitleTier(); }, msg: "Tier saved" });
       return;
     }
     if (kind === "paymethod") { seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg)); return; }
@@ -5277,9 +5292,9 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     const idx = arr.findIndex((x) => x.id === id); if (idx < 0) return;
     const removed = arr[idx];
     crmWrite({ key: "delref:" + id,
-      optimistic: () => { arr.splice(idx, 1); crmRenderRefs(); },
+      optimistic: () => { arr.splice(idx, 1); crmRenderRefs(); crmRenderRefsHeader(); },
       write: () => admin("crmDeleteReference", { referenceId: id }),
-      rollback: () => { arr.splice(idx, 0, removed); crmRenderRefs(); }, msg: "Reference removed" });
+      rollback: () => { arr.splice(idx, 0, removed); crmRenderRefs(); crmRenderRefsHeader(); }, msg: "Reference removed" });
     return;
   }
   if (e.target.id === "crm-c-save") { await crmSaveCall(); return; }
@@ -5298,10 +5313,10 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   }
   if (e.target.id === "crm-d-agent-clear") {
     const prev = st.crm.detail.agentName || "", inp = $("crm-d-agent");
-    crmWrite({ key: "agent", el: e.target,
-      optimistic: () => { st.crm.detail.agentName = ""; if (inp) inp.value = ""; },
+    crmWrite({ key: "agent", el: inp && inp.parentElement,
+      optimistic: () => { st.crm.detail.agentName = ""; if (inp) inp.value = ""; crmRenderRefsHeader(); crmRenderAgentClear(); },
       write: () => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: "" }),
-      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; }, msg: "Agent cleared" });
+      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; crmRenderRefsHeader(); crmRenderAgentClear(); }, msg: "Agent cleared" });
     return;
   }
   if (e.target.id === "crm-d-pay-save") {
@@ -5347,9 +5362,9 @@ $("crm-detail-modal").addEventListener("change", async (e) => {
     const id = sp.dataset.crmSpoken, want = sp.checked, row = sp.closest(".crm-ref");
     const ref = ((st.crm.detail && st.crm.detail.references) || []).find((x) => x.id === id) || {};
     crmWrite({ key: "spoken:" + id, el: row,
-      optimistic: () => { ref.spokenTo = want; },
+      optimistic: () => { ref.spokenTo = want; crmRenderRefsHeader(); },
       write: () => admin("crmSetReferenceSpoken", { referenceId: id, spoken: want, pocName: ref.pocName || "", notes: ref.notes || "" }),
-      rollback: () => { ref.spokenTo = !want; if (sp.isConnected) sp.checked = !want; }, msg: want ? "Marked spoken to" : "Marked not spoken" });
+      rollback: () => { ref.spokenTo = !want; if (sp.isConnected) sp.checked = !want; crmRenderRefsHeader(); }, msg: want ? "Marked spoken to" : "Marked not spoken" });
     return;
   }
   if (e.target.id === "crm-d-status-sel") {
