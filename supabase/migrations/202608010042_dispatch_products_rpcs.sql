@@ -15,7 +15,7 @@
 --   Completed = dispatched >= ordered
 -- Default (no status chip) returns outstanding shippable work only (remaining > 0), which
 -- excludes Completed and Closed. A status chip returns exactly its own set — Closed lines
--- are INCLUDED so the Closed chip works (the withLines path stripped them; this does not).
+-- are INCLUDED so the Closed chip works (the old by-product payload stripped them; not here).
 --
 -- dispatchFlag is the SAME derivation as admin_dispatch_orders (C3): buyer_type + crm_status.
 -- By-order (admin_dispatch_orders) is unchanged and keeps its order-level status meaning.

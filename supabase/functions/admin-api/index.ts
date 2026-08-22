@@ -1259,50 +1259,11 @@ Deno.serve(async (request: Request) => {
         catLineCount: Number(o.catLineCount ?? 0) || 0,
         catPending: Number(o.catPending ?? 0) || 0,
       }));
-      // By-order view: a bare array when total is unknown (old RPC) so the current
-      // client is unaffected; { orders, total } once the RPC provides a total, so the
-      // client can page past the 300 cap with Load more. The client reads both.
-      if (!body.withLines) return jsonResponse(request, { ok: true, data: total === null ? orders : { orders, total, categories } });
-      // By-product pick-list: also return every design line for these orders so the
-      // client can roll up "remaining to ship" per design. No images — quantities only.
-      const orderIds = orders.map((o) => o.orderId);
-      let lines: Array<Record<string, unknown>> = [];
-      if (orderIds.length) {
-        const [{ data: items, error: iErr }, { data: dls, error: dErr }, { data: sqs, error: sErr }] = await Promise.all([
-          db.from("order_items").select("order_id,design_no,qty,pcs_per_set_snapshot").in("order_id", orderIds),
-          db.from("dispatch_lines").select("order_id,design_no,dispatched_sets,dispatched_at").in("order_id", orderIds),
-          db.from("dispatch_squareoffs").select("order_id,design_no").in("order_id", orderIds),
-        ]);
-        if (iErr) throw iErr;
-        if (dErr) throw dErr;
-        if (sErr) throw sErr;
-        const k = (oid: string, dn: string) => oid + " " + dn;
-        // Squared-off lines are OUT of the queue - never dispatchable - so drop them from
-        // the by-product pick-list (mirrors the by-order detail struck-through handling).
-        const squared = new Set((sqs ?? []).map((sq: any) => k(sq.order_id, sq.design_no)));
-        // Keep the per-line dispatch timestamp alongside the set count. The removal
-        // confirmation must name the date THIS line was actually shipped — not the
-        // order's updated_at, which recompute_dispatch_status()/_write_order bump on
-        // every later dispatch or edit and would show a plausible-but-wrong date.
-        const dispatched = new Map<string, { sets: number; at: string | null }>();
-        (dls ?? []).forEach((d: any) => dispatched.set(k(d.order_id, d.design_no), { sets: Number(d.dispatched_sets) || 0, at: d.dispatched_at ?? null }));
-        // Scope the by-product pick-list to the category too, so the MR person's
-        // product view never rolls up MU lines. Same leading-letters prefix rule as
-        // the SQL derivation (upper(substring(design_no from '^[A-Za-z]+'))).
-        const catPrefix = (dn: string) => (String(dn).match(/^[A-Za-z]+/) || [""])[0].toUpperCase();
-        lines = (items ?? []).filter((it: any) => (!category || catPrefix(it.design_no) === category) && !squared.has(k(it.order_id, it.design_no))).map((it: any) => {
-          const dl = dispatched.get(k(it.order_id, it.design_no));
-          return {
-            orderId: it.order_id,
-            designNo: it.design_no,
-            orderedSets: Number(it.qty) || 0,
-            dispatchedSets: dl?.sets || 0,
-            dispatchedAt: dl?.at ?? null,
-            pcsPerSet: Number(it.pcs_per_set_snapshot) || 0,
-          };
-        });
-      }
-      return jsonResponse(request, { ok: true, data: { orders, lines, total: total ?? orders.length, categories } });
+      // By-order view: a bare array when total is unknown (old RPC) so an older client is
+      // unaffected; { orders, total } once the RPC provides a total, so Load more can page
+      // past the 300 cap. The client reads both. (The old by-product design-line branch was
+      // removed in CP2 — by-product now uses admin_dispatch_products / _product_buyers.)
+      return jsonResponse(request, { ok: true, data: total === null ? orders : { orders, total, categories } });
     }
 
     // By-product pick-list, DESIGN as the unit. Paginates on designs (not orders), so there
