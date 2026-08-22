@@ -4541,7 +4541,7 @@ function firmPill(firm) {
 }
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
-st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, agents: [], refCompanies: [], lookupsLoaded: false, foldOpen: false, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", category: "", agentId: "", refStanding: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
+st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, agents: [], refCompanies: [], lookupsLoaded: false, folds: {}, showAllCalls: false, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", category: "", agentId: "", refStanding: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
 const CRM_STATUS = { pending: "Pending", on_hold: "On hold", agreed: "Agreed", rejected: "Rejected" };
 const CRM_OUTCOME = { connected: "Connected", no_answer: "No answer", busy: "Busy", wrong_number: "Wrong number", callback: "Call back" };
 // Status a call may set — a rejection needs a reason, so it is NOT offered here
@@ -4750,6 +4750,7 @@ function crmTwinsOutsideSelection(ids) {
 
 async function openCrmDetail(id) {
   st.crm.currentId = id;
+  st.crm.showAllCalls = false; // reset the call-log "show all" per customer
   const c = st.crm.customers.find((x) => x.id === id) || {};
   $("crm-d-title").innerHTML = `<span class="mc-nametier"><span>${esc(c.companyName || "Customer")}</span>${tierBadge(c.tier)}</span>`;
   $("crm-d-sub").textContent = [c.contactName, c.phone ? ("+" + c.phone) : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
@@ -4764,11 +4765,45 @@ async function openCrmDetail(id) {
 function crmSeg(name, current, opts) {
   return `<div class="crm-seg" data-crm-seg="${name}">` + opts.map(([v, label]) => `<button type="button" class="${current === v ? ("active " + v) : ""}" data-val="${esc(v)}">${esc(label)}</button>`).join("") + `</div>`;
 }
+// One collapsible-section mechanism, shared by every fold in the detail card (refs,
+// call log). State lives in st.crm.folds[key] and persists across re-renders; the
+// generic [data-fold] handler toggles the matching [data-fold-body]/[data-fold-chev].
+// No second accordion, no new CSS class — reuses .hidden and inline styles.
+function crmFold(key, headerHtml, innerHtml) {
+  const open = !!(st.crm.folds && st.crm.folds[key]);
+  return `<div class="crm-field">
+      <button type="button" data-fold="${key}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:none;border:0;padding:0;cursor:pointer;text-align:left">
+        <span style="display:flex;align-items:baseline;gap:6px;min-width:0;flex-wrap:wrap">${headerHtml}</span>
+        <span data-fold-chev="${key}" style="color:var(--muted);font-weight:800;flex-shrink:0;align-self:center">${open ? "▾" : "▸"}</span>
+      </button>
+      <div data-fold-body="${key}" class="${open ? "" : "hidden"}" style="margin-top:10px">${innerHtml}</div>
+    </div>`;
+}
 function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
   const canAssign = has("crm.assign");
   const staffOpts = ['<option value="">— Unassigned —</option>'].concat((st.crm.staff || []).map((s) => `<option value="${esc(s.id)}"${d.assignedTo === s.id ? " selected" : ""}>${esc(s.name)}${s.hasCrm === false ? " — no CRM access" : ""}</option>`)).join("");
-  const calls = (d.calls || []).map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}${cl.followupAt ? ` · <span class="crm-followup-badge">callback ${esc(fmt(cl.followupAt))}</span>` : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
+  // Call log — collapsed by default so the action controls above it stay on-screen.
+  // Header carries the signal (count + last outcome + date). Expanded body caps at the
+  // 5 most recent with a "Show all N"; the Add-call form is button-revealed, never
+  // permanently rendered (it costs 319px on every card otherwise).
+  const allCalls = d.calls || [];
+  const callN = allCalls.length;
+  const lastCall = allCalls[0];
+  const callSignal = `<label style="margin:0;cursor:pointer">Calls (${callN})</label><span style="text-transform:none;font-weight:600;color:var(--muted);font-size:11px">· last: ${esc(CRM_OUTCOME[lastCall && lastCall.outcome] || (lastCall && lastCall.outcome) || "")} · ${esc(lastCall ? fmt(lastCall.calledAt) : "")}</span>`;
+  const shownCalls = st.crm.showAllCalls ? allCalls : allCalls.slice(0, 5);
+  const callsHtml = shownCalls.map((cl) => `<div class="crm-call"><b>${esc(CRM_OUTCOME[cl.outcome] || cl.outcome)}</b>${cl.statusAfter ? " · " + esc(CRM_STATUS[cl.statusAfter] || cl.statusAfter) : ""}${cl.followupAt ? ` · <span class="crm-followup-badge">callback ${esc(fmt(cl.followupAt))}</span>` : ""}<span>${esc(fmt(cl.calledAt))}${cl.calledByName ? " · " + esc(cl.calledByName) : ""}</span>${cl.notes ? `<p>${esc(cl.notes)}</p>` : ""}</div>`).join("") || '<div class="crm-hint">No calls logged yet.</div>';
+  const showAllBtn = (callN > 5 && !st.crm.showAllCalls) ? `<button type="button" class="btn small secondary" id="crm-callshowall" style="width:100%;margin-top:6px">Show all ${callN}</button>` : "";
+  const addCallForm = `<label style="text-transform:none;font-weight:800;color:var(--deep)">Log a call</label>
+        <select id="crm-c-outcome">${Object.entries(CRM_OUTCOME).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
+        <textarea id="crm-c-notes" rows="2" maxlength="4000" placeholder="Notes — what the buyer said…"></textarea>
+        <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_CALL_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
+        <div id="crm-c-followwrap" class="hidden" style="margin-top:8px"><label style="text-transform:none;font-weight:700;color:var(--slate)">Call back on (required)</label><input id="crm-c-followup" type="datetime-local"/></div>
+        <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>`;
+  const addCallSection = `<button type="button" class="btn small secondary" id="crm-addcall-reveal" style="width:100%;margin-top:8px">+ Log a call</button><div id="crm-addcall-form" class="crm-addcall hidden" style="margin-top:8px">${addCallForm}</div>`;
+  const callLogBlock = callN === 0
+    ? `<div class="crm-field"><label style="margin:0">Calls (0) <span style="text-transform:none;font-weight:600;color:var(--muted)">— none yet</span></label>${addCallSection}</div>`
+    : crmFold("calls", callSignal, `<div class="crm-calls">${callsHtml}</div>${showAllBtn}${addCallSection}`);
   const refVerdict = (v) => v === "approved" ? crmB("agreed", "✓ approved") : v === "rejected" ? crmB("rejected", "✕ rejected") : crmB("on_hold", "pending");
   const refs = (d.references || []).map((r) => `<div class="crm-ref"><span style="min-width:0">${esc(r.companyName || r.text || "")} ${refVerdict(r.verdict)}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:4px;flex-shrink:0"><button type="button" class="btn small secondary" data-crm-logcheck="${esc(r.id)}">Log check</button><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
   const detailCats = Array.isArray(d.categories) ? d.categories
@@ -4787,18 +4822,41 @@ function renderCrmDetail() {
          <div class="crm-contact-num">+${esc(digits)}</div>
        </div>`
     : `<div class="crm-contact"><div class="crm-hint" style="margin:0">No phone number on file</div></div>`;
+  // References/agent/terms fold — routed through the shared crmFold mechanism. The
+  // collapsed header carries the signal (agent badge + standing pill); the body is the
+  // full evidence + terms editor. Kept below the action controls, as before.
+  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : ""}${crmStandingPill(d.referenceStanding)}`;
+  const refsInner = `<div class="crm-sub">Trade agent</div>
+        <div class="crm-addrow"><input id="crm-d-agent" list="crm-agent-list" value="${esc(d.agentName || "")}" maxlength="120" placeholder="Type or pick an agent"/><button class="btn small" type="button" id="crm-d-agent-save">Save</button></div>
+        <datalist id="crm-agent-list"></datalist>
+        <div class="crm-sub">Reference standing</div>
+        ${crmSeg("refstanding", d.referenceStanding || "", [["", "Unset"], ["approved", "Approved"], ["watch", "Watch"], ["rejected", "Rejected"]])}
+        <div class="crm-hint">Your overall call. Evidence below; you decide. Shown on dispatch — never blocks a shipment.</div>
+        <div class="crm-sub">References the buyer named</div>
+        <div class="crm-addrow"><input id="crm-d-refinput" list="crm-refco-list" maxlength="200" placeholder="Company the buyer named"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div>
+        <datalist id="crm-refco-list"></datalist>
+        <div class="crm-refs" style="margin-top:8px">${refs}</div>
+        <div class="crm-sub">Payment terms</div>
+        ${crmSeg("paymethod", d.payMethod || "", [["", "—"], ["cash", "Cash"], ["cheque", "Cheque"]])}
+        <div class="crm-addrow" style="margin-top:6px"><input id="crm-d-creditdays" type="number" min="0" max="3650" inputmode="numeric" placeholder="Credit days" value="${d.creditDays != null ? d.creditDays : ""}"/><span class="crm-hint" style="margin:0;align-self:center">days</span></div>
+        <textarea id="crm-d-paynotes" rows="2" maxlength="2000" placeholder="Payment notes" style="margin-top:6px">${esc(d.payNotes || "")}</textarea>
+        <button class="btn small" type="button" id="crm-d-pay-save" style="margin-top:6px">Save payment terms</button>`;
+  // Order: contact → action controls (Attributes, Status & assignment) → folds
+  // (call log, references). The action controls sit above every fold so they are on
+  // screen without scrolling; the call log and references collapse below them.
   $("crm-d-body").innerHTML = `
     ${contact}
-    <div class="crm-field"><label>Call log</label>
-      <div class="crm-calls">${calls}</div>
-      <div class="crm-addcall">
-        <label style="text-transform:none;font-weight:800;color:var(--deep)">Log a call</label>
-        <select id="crm-c-outcome">${Object.entries(CRM_OUTCOME).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select>
-        <textarea id="crm-c-notes" rows="2" maxlength="4000" placeholder="Notes — what the buyer said…"></textarea>
-        <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_CALL_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
-        <div id="crm-c-followwrap" class="hidden" style="margin-top:8px"><label style="text-transform:none;font-weight:700;color:var(--slate)">Call back on (required)</label><input id="crm-c-followup" type="datetime-local"/></div>
-        <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>
-      </div></div>
+    <div class="crm-field"><label>Status &amp; assignment</label>
+      ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
+      <div id="crm-d-reasonwrap" class="${rejected ? "" : "hidden"}" style="margin-top:8px">
+        <textarea id="crm-d-reason" rows="2" maxlength="2000" placeholder="Reason for rejection (required) — reception shows this">${esc(d.statusReason || "")}</textarea>
+        <button class="btn small" type="button" id="crm-d-savereject" style="margin-top:6px" ${d.statusReason ? "" : "disabled"}>Save rejection</button>
+        <div class="crm-hint">Rejected buyers are flagged at reception — never blocked. Reception sees this reason.</div>
+      </div>
+      <div id="crm-d-agreedwarn" class="crm-hint hidden" style="margin-top:8px;color:#B45309;font-weight:700">New buyer marked agreed with no token — intended? The business rule is to ask new buyers for a token.</div>
+      <div class="crm-sub">Assigned salesperson</div>
+      <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
+      ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>
     <div class="crm-field"><label>Attributes</label>
       <div class="crm-sub">Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</div>
       ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["regular", "Regular buyer"]])}
@@ -4815,44 +4873,8 @@ function renderCrmDetail() {
       <div class="crm-sub">Token</div>
       <label class="crm-check"><input type="checkbox" id="crm-d-token" ${d.tokenAgreed ? "checked" : ""}/> <span>Token amount agreed</span></label>
       <div class="crm-token-amt"><input id="crm-d-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div></div>
-    <div class="crm-field">
-      <button type="button" id="crm-fold-toggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:none;border:0;padding:0;cursor:pointer;text-align:left">
-        <label style="margin:0;cursor:pointer">References, agent &amp; terms</label>
-        <span style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-          ${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : ""}
-          ${crmStandingPill(d.referenceStanding)}
-          <span id="crm-fold-chev" style="color:var(--muted);font-weight:800">${st.crm.foldOpen ? "▾" : "▸"}</span>
-        </span>
-      </button>
-      <div id="crm-fold-body" class="${st.crm.foldOpen ? "" : "hidden"}" style="margin-top:10px">
-        <div class="crm-sub">Trade agent</div>
-        <div class="crm-addrow"><input id="crm-d-agent" list="crm-agent-list" value="${esc(d.agentName || "")}" maxlength="120" placeholder="Type or pick an agent"/><button class="btn small" type="button" id="crm-d-agent-save">Save</button></div>
-        <datalist id="crm-agent-list"></datalist>
-        <div class="crm-sub">Reference standing</div>
-        ${crmSeg("refstanding", d.referenceStanding || "", [["", "Unset"], ["approved", "Approved"], ["watch", "Watch"], ["rejected", "Rejected"]])}
-        <div class="crm-hint">Your overall call. Evidence below; you decide. Shown on dispatch — never blocks a shipment.</div>
-        <div class="crm-sub">References the buyer named</div>
-        <div class="crm-addrow"><input id="crm-d-refinput" list="crm-refco-list" maxlength="200" placeholder="Company the buyer named"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div>
-        <datalist id="crm-refco-list"></datalist>
-        <div class="crm-refs" style="margin-top:8px">${refs}</div>
-        <div class="crm-sub">Payment terms</div>
-        ${crmSeg("paymethod", d.payMethod || "", [["", "—"], ["cash", "Cash"], ["cheque", "Cheque"]])}
-        <div class="crm-addrow" style="margin-top:6px"><input id="crm-d-creditdays" type="number" min="0" max="3650" inputmode="numeric" placeholder="Credit days" value="${d.creditDays != null ? d.creditDays : ""}"/><span class="crm-hint" style="margin:0;align-self:center">days</span></div>
-        <textarea id="crm-d-paynotes" rows="2" maxlength="2000" placeholder="Payment notes" style="margin-top:6px">${esc(d.payNotes || "")}</textarea>
-        <button class="btn small" type="button" id="crm-d-pay-save" style="margin-top:6px">Save payment terms</button>
-      </div>
-    </div>
-    <div class="crm-field"><label>Status &amp; assignment</label>
-      ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
-      <div id="crm-d-reasonwrap" class="${rejected ? "" : "hidden"}" style="margin-top:8px">
-        <textarea id="crm-d-reason" rows="2" maxlength="2000" placeholder="Reason for rejection (required) — reception shows this">${esc(d.statusReason || "")}</textarea>
-        <button class="btn small" type="button" id="crm-d-savereject" style="margin-top:6px" ${d.statusReason ? "" : "disabled"}>Save rejection</button>
-        <div class="crm-hint">Rejected buyers are flagged at reception — never blocked. Reception sees this reason.</div>
-      </div>
-      <div id="crm-d-agreedwarn" class="crm-hint hidden" style="margin-top:8px;color:#B45309;font-weight:700">New buyer marked agreed with no token — intended? The business rule is to ask new buyers for a token.</div>
-      <div class="crm-sub">Assigned salesperson</div>
-      <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
-      ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>`;
+    ${callLogBlock}
+    ${crmFold("refs", refsHeader, refsInner)}`;
   // Native type-ahead options for the self-growing agent + reference-company pickers.
   if ($("crm-agent-list")) $("crm-agent-list").innerHTML = (st.crm.agents || []).map((a) => `<option value="${esc(a.name)}"></option>`).join("");
   if ($("crm-refco-list")) $("crm-refco-list").innerHTML = (st.crm.refCompanies || []).map((a) => `<option value="${esc(a.name)}"></option>`).join("");
@@ -5054,13 +5076,24 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   if (delref) { await crmDo(() => admin("crmDeleteReference", { referenceId: delref.dataset.crmDelref }), "Reference removed"); return; }
   if (e.target.id === "crm-d-refadd") { const v = $("crm-d-refinput").value.trim(); if (!v) { toast("Enter a reference", "error"); return; } await crmDo(() => admin("crmAddReference", { customerId: st.crm.currentId, referenceText: v }), "Reference added"); return; }
   if (e.target.id === "crm-c-save") { await crmSaveCall(); return; }
-  // Folded "References, agent & terms" — toggle without a re-render (state persists).
-  if (e.target.closest("#crm-fold-toggle")) { st.crm.foldOpen = !st.crm.foldOpen; $("crm-fold-body").classList.toggle("hidden", !st.crm.foldOpen); $("crm-fold-chev").textContent = st.crm.foldOpen ? "▾" : "▸"; return; }
+  // Reveal the Add-call form (button-gated so it isn't rendered on every card).
+  if (e.target.id === "crm-addcall-reveal") { const f = $("crm-addcall-form"); if (f) f.classList.toggle("hidden"); return; }
+  // Show the full call history (default view caps at the 5 most recent).
+  if (e.target.id === "crm-callshowall") { st.crm.showAllCalls = true; renderCrmDetail(); return; }
+  // Any collapsible fold (references, call log) — toggle without a re-render, state persists.
+  const fold = e.target.closest("[data-fold]");
+  if (fold) {
+    const k = fold.dataset.fold; st.crm.folds = st.crm.folds || {}; st.crm.folds[k] = !st.crm.folds[k];
+    const body = document.querySelector(`[data-fold-body="${k}"]`), chev = document.querySelector(`[data-fold-chev="${k}"]`);
+    if (body) body.classList.toggle("hidden", !st.crm.folds[k]);
+    if (chev) chev.textContent = st.crm.folds[k] ? "▾" : "▸";
+    return;
+  }
   const lc = e.target.closest("[data-crm-logcheck]");
   if (lc) { crmOpenLogCheck(lc.dataset.crmLogcheck); return; }
   if (e.target.id === "crm-d-agent-save") { await crmDo(() => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: $("crm-d-agent").value.trim() }), "Agent saved"); st.crm.lookupsLoaded = false; crmEnsureLookups(true); return; }
   if (e.target.id === "crm-d-pay-save") {
-    const pm = document.querySelector('#crm-fold-body [data-crm-seg="paymethod"] button.active');
+    const pm = document.querySelector('[data-fold-body="refs"] [data-crm-seg="paymethod"] button.active');
     await crmDo(() => admin("crmSetPayment", { customerId: st.crm.currentId, method: pm ? pm.dataset.val : "", creditDays: $("crm-d-creditdays").value.trim(), notes: $("crm-d-paynotes").value.trim() }), "Payment terms saved");
     return;
   }
