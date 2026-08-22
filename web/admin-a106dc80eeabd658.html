@@ -715,6 +715,16 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <button class="chip" data-status="Partial">Partially completed</button>
     <button class="chip" data-status="Completed">Completed</button>
   </div>
+  <label>Category (department)</label>
+  <div class="chip-row" id="dispatch-category-chips">
+    <button class="chip active" data-category="">All</button>
+    <button class="chip" data-category="MR">MR</button>
+    <button class="chip" data-category="KT">KT</button>
+    <button class="chip" data-category="NRK">NRK</button>
+    <button class="chip" data-category="MU">MU</button>
+    <button class="chip" data-category="BS">BS</button>
+  </div>
+  <div class="crm-hint" style="margin-top:6px">Shows only your department's lines inside each order. Remembered on this device.</div>
   <button class="btn" type="button" id="dispatch-filter-done" style="width:100%;margin-top:14px">Show results</button>
 </div></div>
 <button class="btn dispatch-save-btn dp-confirm-bar hidden" id="dp-confirm" disabled>Confirm dispatch</button>
@@ -725,6 +735,7 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
     <div><h2 id="dispatch-title">Dispatch</h2><p class="copy" id="dispatch-subtitle"></p></div>
     <button class="close" data-close="dispatch-modal">✕</button>
   </div>
+  <div id="dispatch-cat-banner" class="hidden" style="margin-bottom:10px;padding:8px 11px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11.5px;font-weight:800"></div>
   <div class="dispatch-toolbar">
     <span class="dispatch-progress" id="dispatch-progress"></span>
     <div class="row">
@@ -4548,6 +4559,18 @@ function firmPill(firm) {
   const f = String(firm || "");
   return `<span class="firm-pill ${f.toLowerCase()}">${esc(f)}</span>`;
 }
+// Customer approval status on the dispatch card. Warn, never block. Deliberately
+// QUIET: pending is ~874/875 today, so it's a soft amber that reads as "not screened
+// yet", never an error state — otherwise staff tune it out before screening populates.
+// Small inline pill (not a block) so a rejected buyer never shows two loud red blocks
+// alongside the separate "Reference rejected" flag. green=agreed, amber=pending/on_hold,
+// red=rejected. Reuses the .crm-b pill classes.
+function dispatchApprovalPill(s) {
+  if (s === "agreed") return crmB("agreed", "✓ Approved");
+  if (s === "rejected") return crmB("rejected", "✕ Rejected");
+  if (s === "on_hold") return crmB("on_hold", "On hold");
+  return crmB("on_hold", "Pending"); // pending + any unknown/null: quiet amber
+}
 
 // ── CRM (buyer screening) ──────────────────────────────────────────────────
 st.crm = st.crm || { customers: [], staff: [], assigneeCounts: [], unassignedCount: 0, totalCount: 0, agents: [], refCompanies: [], lookupsLoaded: false, folds: {}, showAllCalls: false, filters: { search: "", buyerType: "", status: "", tier: "", assignee: "", category: "", agentId: "", refStanding: "", scope: "orders", sort: "recent" }, sel: new Set(), currentId: null, detail: null, _t: null };
@@ -5311,6 +5334,7 @@ async function loadDispatch(append) {
       query: $("dispatch-search").value.trim(),
       firm: st.dispatch.firm,
       dispatchStatus: st.dispatch.status,
+      category: st.dispatch.category,
       withLines: byProduct,
       offset: st.dispatch.offset,
     });
@@ -5483,7 +5507,7 @@ $("dp-confirm").onclick = async () => {
   btn.disabled = true; btn.textContent = "Dispatching…";
   let okN = 0; const fails = [];
   for (const [orderId, lines] of Object.entries(byOrder)) {
-    try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", lines }); okN++; }
+    try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", category: st.dispatch.category, lines }); okN++; }
     catch (e) { fails.push(mcFriendlyError ? mcFriendlyError(e.message) : e.message); }
   }
   btn.textContent = old;
@@ -5499,14 +5523,24 @@ function renderDispatchList() {
   const more = (total != null && rows.length < total)
     ? `<button class="btn small secondary" id="dispatch-more" style="width:100%;margin-top:10px">Load more — showing ${rows.length} of ${total}</button>`
     : (total != null && rows.length ? `<div style="text-align:center;color:var(--muted);font-size:11px;font-weight:700;margin-top:10px">All ${total} shown</div>` : "");
+  // Unmistakable "a filter is active" banner: while a category is on, every count and
+  // status on these cards is for that department's lines only — never the whole order.
+  const cat = st.dispatch.category;
+  const banner = cat
+    ? `<div style="margin-bottom:10px;padding:8px 11px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11.5px;font-weight:800">Showing ${esc(cat)} lines only — designs · sets · pieces and the status pill are for ${esc(cat)}, not the whole order.</div>`
+    : "";
   $("dispatch-list").innerHTML = rows.length
-    ? rows
+    ? banner + rows
         .map(
-          (o) =>
-            `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}${crmStandingPill(o.referenceStanding)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div>${o.refRejected ? `<div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800">⚠ Reference rejected${o.refRejectReason ? " — " + esc(o.refRejectReason) : ""}</div>` : ""}<div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`,
+          (o) => {
+            const filtered = !!o.categoryFilter;
+            const catTag = filtered ? `<span style="display:inline-block;padding:1px 6px;margin-right:5px;border-radius:7px;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:900">${esc(o.categoryFilter)}</span>` : "";
+            const counts = `${catTag}${o.designs} designs · ${o.sets} sets · ${o.pieces} pcs${filtered && o.catPending ? " · " + o.catPending + " pending" : ""}`;
+            return `<button class="dispatch-card" data-order="${esc(o.orderId)}"><div class="dispatch-card-top"><div style="min-width:0"><span class="mc-nametier"><b>${esc(o.companyName || o.contactName || "Unnamed party")}</b>${tierBadge(o.tier)}${dispatchApprovalPill(o.crmStatus)}${crmStandingPill(o.referenceStanding)}</span><div class="dispatch-card-meta">${esc([o.contactName, o.phone, [o.city, o.state].filter(Boolean).join(", ")].filter(Boolean).join(" · "))}</div></div>${dispatchStatusPill(o.dispatchStatus)}</div>${o.refRejected ? `<div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:800">⚠ Reference rejected${o.refRejectReason ? " — " + esc(o.refRejectReason) : ""}</div>` : ""}<div class="dispatch-card-foot">${firmPill(o.firm)}<span class="dispatch-ordered">${counts}</span><span class="dispatch-ordered">${esc(fmt(o.updatedAt))}</span></div></button>`;
+          },
         )
         .join("") + more
-    : '<div class="empty">No orders match these filters.</div>';
+    : (banner + '<div class="empty">No orders match these filters.</div>');
 }
 
 $("dispatch-search").oninput = debounceDispatch();
@@ -5537,6 +5571,21 @@ $("dispatch-status-chips").onclick = (e) => {
   );
   loadDispatch();
 };
+
+$("dispatch-category-chips").onclick = (e) => {
+  const b = e.target.closest("[data-category]");
+  if (!b) return;
+  st.dispatch.category = b.dataset.category;
+  try { if (st.dispatch.category) localStorage.setItem("maitri.dispatch.category", st.dispatch.category); else localStorage.removeItem("maitri.dispatch.category"); } catch { /* private mode */ }
+  dispatchSyncCategoryChips();
+  loadDispatch();
+};
+// Reflect st.dispatch.category (which may have been restored from localStorage) onto
+// the static chips — the active chip isn't always "All" on load.
+function dispatchSyncCategoryChips() {
+  const row = $("dispatch-category-chips"); if (!row) return;
+  [...row.children].forEach((c) => c.classList.toggle("active", (c.dataset.category || "") === (st.dispatch.category || "")));
+}
 // A filter sheet must be a direct child of <body>. A .page's enter-animation leaves a
 // PERSISTENT transform on the page element, which makes that page the containing block
 // for a position:fixed modal — so a sheet nested inside the page is sized/placed against
@@ -5551,7 +5600,8 @@ $("dispatch-status-chips").onclick = (e) => {
 $("dispatch-filter-open").onclick = () => openModal("dispatch-filter-sheet");
 $("dispatch-filter-done").onclick = () => closeModal("dispatch-filter-sheet");
 function dispatchUpdateFilterBadge() {
-  const n = (st.dispatch.firm ? 1 : 0) + (st.dispatch.status ? 1 : 0);
+  dispatchSyncCategoryChips();
+  const n = (st.dispatch.firm ? 1 : 0) + (st.dispatch.status ? 1 : 0) + (st.dispatch.category ? 1 : 0);
   const b = $("dispatch-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
 
@@ -5611,7 +5661,7 @@ $("dispatch-list").onchange = (e) => {
 async function openDispatch(orderId) {
   try {
     loading(true, "Loading order…");
-    const d = await admin("getDispatch", { orderId });
+    const d = await admin("getDispatch", { orderId, category: st.dispatch.category });
     st.dispatch.detail = d;
     renderDispatchDetail();
     openModal("dispatch-modal");
@@ -5632,6 +5682,16 @@ function renderDispatchDetail() {
   const lines = d.lines || [];
   const done = lines.filter((l) => Number(l.dispatchedSets) >= Number(l.qty) && Number(l.dispatchedSets) > 0).length;
   $("dispatch-progress").innerHTML = `${done} of ${lines.length} designs fully dispatched ${dispatchStatusPill(d.dispatchStatus)}`;
+  // Filtered detail: only this department's lines are shown/dispatchable. Make it
+  // unmistakable, and say how many of the order's designs are hidden.
+  const catBanner = $("dispatch-cat-banner");
+  if (d.categoryFilter) {
+    const all = Number(d.allDesigns) || lines.length;
+    catBanner.textContent = `Showing ${d.categoryFilter} lines only — ${lines.length} of this order's ${all} design${all === 1 ? "" : "s"}. The status pill above is the whole order's.`;
+    catBanner.classList.remove("hidden");
+  } else {
+    catBanner.classList.add("hidden");
+  }
 
   const writable = has("dispatch.write");
   $("dispatch-lines").innerHTML = lines.length
@@ -5766,6 +5826,7 @@ $("dispatch-save").onclick = async () => {
     const res = await admin("saveDispatch", {
       orderId: d.id,
       note: $("dispatch-note").value,
+      category: st.dispatch.category,
       lines: (d.lines || []).map((l) => ({
         designNo: l.designNo,
         dispatchedSets: Number(l.dispatchedSets) || 0,
@@ -6287,7 +6348,10 @@ function selectExhibition(id) {
   st.entryRows = [];
   st.bookings = [];
   st.slots = [];
-  st.dispatch = { rows: [], detail: null, firm: "", status: "", mode: "order", product: null, offset: 0, total: null };
+  // Category filter is remembered PER DEVICE (localStorage) — a convenience so a
+  // salesperson doesn't re-pick their department each visit, not a permission.
+  const _dcat = (() => { try { return localStorage.getItem("maitri.dispatch.category") || ""; } catch { return ""; } })();
+  st.dispatch = { rows: [], detail: null, firm: "", status: "", category: ["MR", "KT", "NRK", "MU", "BS"].includes(_dcat) ? _dcat : "", mode: "order", product: null, offset: 0, total: null };
   st.sale.customer = null;
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };

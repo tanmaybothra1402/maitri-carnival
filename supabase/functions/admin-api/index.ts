@@ -1201,11 +1201,15 @@ Deno.serve(async (request: Request) => {
       // admin_dispatch_orders RPC. The search now joins in SQL (no separate
       // <=300-row customer id lookup, so it is no longer capped).
       const off = Math.max(0, Number(body.offset) || 0);
+      // Category = design-number prefix (MR/KT/NRK/MU/BS), scoped in SQL before the
+      // limit. Same 5 the CRM uses; anything else is treated as no filter.
+      const category = ["MR", "KT", "NRK", "MU", "BS"].includes(clean(body.category)) ? clean(body.category) : null;
       const { data, error } = await db.rpc("admin_dispatch_orders", {
         p_filters: {
           exhibitionId: ex.id,
           firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
           dispatchStatus: ["Pending", "Partial", "Completed"].includes(statusFilter) ? statusFilter : null,
+          category,
           search: q || null,
           limit: 300,
           offset: off,
@@ -1237,11 +1241,18 @@ Deno.serve(async (request: Request) => {
         state: o.state ?? "",
         agent: o.agent ?? "",
         tier: o.tier ?? null,
-        // Reference standing (staff-set) + rejected flag/reason — informational on the
-        // dispatch screen. Warn, never block: the client keeps the dispatch button enabled.
+        // Customer approval status (crm_status) — the new dispatch-card pill. Warn,
+        // never block: the client keeps the dispatch button enabled in every state.
+        crmStatus: o.crmStatus ?? o.crm_status ?? "pending",
+        // Reference standing (staff-set) + rejected flag/reason — a SEPARATE signal
+        // from approval. Also informational on the dispatch screen; never a gate.
         referenceStanding: o.referenceStanding ?? null,
         refRejected: Boolean(o.refRejected),
         refRejectReason: o.refRejectReason ?? null,
+        // When a category filter is active, these reflect the FILTERED lines only.
+        categoryFilter: o.categoryFilter ?? null,
+        catLineCount: Number(o.catLineCount ?? 0) || 0,
+        catPending: Number(o.catPending ?? 0) || 0,
       }));
       // By-order view: a bare array when total is unknown (old RPC) so the current
       // client is unaffected; { orders, total } once the RPC provides a total, so the
@@ -1265,7 +1276,11 @@ Deno.serve(async (request: Request) => {
         // every later dispatch or edit and would show a plausible-but-wrong date.
         const dispatched = new Map<string, { sets: number; at: string | null }>();
         (dls ?? []).forEach((d: any) => dispatched.set(k(d.order_id, d.design_no), { sets: Number(d.dispatched_sets) || 0, at: d.dispatched_at ?? null }));
-        lines = (items ?? []).map((it: any) => {
+        // Scope the by-product pick-list to the category too, so the MR person's
+        // product view never rolls up MU lines. Same leading-letters prefix rule as
+        // the SQL derivation (upper(substring(design_no from '^[A-Za-z]+'))).
+        const catPrefix = (dn: string) => (String(dn).match(/^[A-Za-z]+/) || [""])[0].toUpperCase();
+        lines = (items ?? []).filter((it: any) => !category || catPrefix(it.design_no) === category).map((it: any) => {
           const dl = dispatched.get(k(it.order_id, it.design_no));
           return {
             orderId: it.order_id,
@@ -1285,8 +1300,12 @@ Deno.serve(async (request: Request) => {
     if (action === "getDispatch") {
       const orderId = clean(body.orderId);
       if (!orderId) throw new Error("ORDER_ID_REQUIRED");
+      // Line-level scoping: when a category filter is active the detail returns ONLY
+      // that prefix's lines, so a salesperson cannot see or dispatch another dept's.
+      const category = ["MR", "KT", "NRK", "MU", "BS"].includes(clean(body.category)) ? clean(body.category) : null;
       const { data, error } = await db.rpc("admin_dispatch_detail", {
         p_order_id: orderId,
+        p_category: category,
       });
       if (error) throw error;
       if (!data) throw new Error("ORDER_NOT_FOUND");
@@ -1304,8 +1323,13 @@ Deno.serve(async (request: Request) => {
         p_actor_id: admin.id,
       });
       if (error) throw error;
+      // Re-fetch the detail scoped to the same category so the view stays filtered
+      // after a save. admin_save_dispatch touched only the designs in p_lines, so a
+      // filtered save never altered the other category's dispatch_lines.
+      const category = ["MR", "KT", "NRK", "MU", "BS"].includes(clean(body.category)) ? clean(body.category) : null;
       const { data: detail, error: dErr } = await db.rpc("admin_dispatch_detail", {
         p_order_id: orderId,
+        p_category: category,
       });
       if (dErr) throw dErr;
       return jsonResponse(request, { ok: true, data: { result: data, detail } });
