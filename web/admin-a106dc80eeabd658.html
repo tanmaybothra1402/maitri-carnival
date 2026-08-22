@@ -4826,14 +4826,31 @@ function crmLev(a, b) {
   return prev[n];
 }
 const CRM_PICK_ROW = "display:block;width:100%;text-align:left;padding:9px 11px;border:0;border-bottom:1px solid var(--border);background:#fff;color:var(--deep);font-size:13px;font-weight:700;cursor:pointer";
+// Token contains-matching (NOT prefix, and not one whole-query substring). Split the typed
+// text on whitespace, canonicalise each token with the same rule as the DB, and keep a
+// candidate only if EVERY token appears somewhere in its canonical form. So "tradelink"
+// finds all 4 …TRADELINK names, "raghani link" finds RAGHANI TRADELINK (partial + reversed
+// words — which a single .includes(canon) misses because RAGHANILINK isn't a substring of
+// RAGHANITRADELINK), "textiles manesh" finds V. MANESH TEXTILES. Ranking (crmPickRank) is
+// what keeps contains-matching usable at 140 rows — one letter matches dozens, so the
+// obvious answer must not sink. The full-query canonical T still drives the exact/starts-with
+// tiers, the "+ Add" suppression, and (unchanged) the near-miss guard in crmPickerAdd.
+function crmPickRank(x, T, tokens) {
+  if (T && x.c === T) return 0;                                            // exact canonical equality
+  if (T && x.c.startsWith(T)) return 1;                                    // canonical starts-with the full query
+  if (tokens.some((t) => x.words.some((w) => w.startsWith(t)))) return 2;  // a token starts a word in the name
+  return 3;                                                                // plain substring anywhere
+}
 function crmPickerRender(kind) {
   const cfg = CRM_PICKERS[kind]; const inp = $(cfg.input); const box = $(cfg.results);
   if (!inp || !box) return;
   const q = inp.value; const T = crmCanon(q);
   if (!q.trim()) { box.classList.add("hidden"); box.innerHTML = ""; crmPickerHi[kind] = -1; return; }
-  const scored = cfg.source().map((a) => ({ a, c: crmCanon(a.name) }))
-    .filter((x) => x.c.includes(T))
-    .sort((x, y) => ((x.c === T ? 0 : x.c.startsWith(T) ? 1 : 2) - (y.c === T ? 0 : y.c.startsWith(T) ? 1 : 2)) || x.a.name.localeCompare(y.a.name));
+  const tokens = q.trim().split(/\s+/).map(crmCanon).filter(Boolean);
+  const scored = cfg.source().map((a) => ({ a, c: crmCanon(a.name), words: String(a.name || "").trim().split(/\s+/).map(crmCanon).filter(Boolean) }))
+    .filter((x) => tokens.every((t) => x.c.includes(t)))
+    .map((x) => { x.rank = crmPickRank(x, T, tokens); return x; })
+    .sort((x, y) => (x.rank - y.rank) || x.a.name.localeCompare(y.a.name));
   const exact = scored.some((x) => x.c === T);
   const shown = scored.slice(0, 10); const overflow = scored.length - shown.length;
   crmPickerHi[kind] = 0;
