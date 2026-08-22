@@ -1210,7 +1210,7 @@ Deno.serve(async (request: Request) => {
         p_filters: {
           exhibitionId: ex.id,
           firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
-          dispatchStatus: ["Pending", "Partial", "Completed"].includes(statusFilter) ? statusFilter : null,
+          dispatchStatus: ["Pending", "Partial", "Completed", "Closed"].includes(statusFilter) ? statusFilter : null,
           category,
           search: q || null,
           limit: 300,
