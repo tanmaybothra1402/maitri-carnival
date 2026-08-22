@@ -725,11 +725,7 @@ main.page{padding-bottom:calc(var(--nav-h) + 48px + env(safe-area-inset-bottom))
   <label>Category (department)</label>
   <div class="chip-row" id="dispatch-category-chips">
     <button class="chip active" data-category="">All</button>
-    <button class="chip" data-category="MR">MR</button>
-    <button class="chip" data-category="KT">KT</button>
-    <button class="chip" data-category="NRK">NRK</button>
-    <button class="chip" data-category="MU">MU</button>
-    <button class="chip" data-category="BS">BS</button>
+    <!-- department chips render here from st.dispatch.categories (data-driven, per exhibition) -->
   </div>
   <div class="crm-hint" style="margin-top:6px">Shows only your department's lines inside each order. Remembered on this device.</div>
   <button class="btn" type="button" id="dispatch-filter-done" style="width:100%;margin-top:14px">Show results</button>
@@ -5350,6 +5346,18 @@ async function loadDispatch(append) {
       withLines: byProduct,
       offset: st.dispatch.offset,
     });
+    // Data-driven category vocabulary (exhibition-scoped, filter-independent).
+    st.dispatch.categories = (res && !Array.isArray(res) && Array.isArray(res.categories)) ? res.categories : (st.dispatch.categories || []);
+    // Stale persisted chip: the selected prefix is no longer present in this exhibition's
+    // order lines (e.g. carried over from a prior event). Clear it and reload UNFILTERED
+    // rather than strand the user on an empty screen they never chose. One recovery, not
+    // a loop — category is "" on the reload.
+    if (!append && st.dispatch.category && !(st.dispatch.categories || []).includes(st.dispatch.category)) {
+      st.dispatch.category = "";
+      try { localStorage.removeItem("maitri.dispatch.category"); } catch { /* private mode */ }
+      return loadDispatch(false);
+    }
+    dispatchRenderCategoryChips();
     if (byProduct) {
       const orders = (res && res.orders) || [];
       const lines = (res && res.lines) || [];
@@ -5556,7 +5564,7 @@ function renderDispatchList() {
           },
         )
         .join("") + more
-    : (banner + '<div class="empty">No orders match these filters.</div>');
+    : (banner + `<div class="empty">${st.dispatch.category ? "No orders for " + esc(st.dispatch.category) + " in this exhibition." : "No orders match these filters."}</div>`);
 }
 
 $("dispatch-search").oninput = debounceDispatch();
@@ -5593,14 +5601,19 @@ $("dispatch-category-chips").onclick = (e) => {
   if (!b) return;
   st.dispatch.category = b.dataset.category;
   try { if (st.dispatch.category) localStorage.setItem("maitri.dispatch.category", st.dispatch.category); else localStorage.removeItem("maitri.dispatch.category"); } catch { /* private mode */ }
-  dispatchSyncCategoryChips();
+  dispatchRenderCategoryChips();
   loadDispatch();
 };
-// Reflect st.dispatch.category (which may have been restored from localStorage) onto
-// the static chips — the active chip isn't always "All" on load.
-function dispatchSyncCategoryChips() {
+// The category chips are DATA-DRIVEN: "All" plus one chip per design-number prefix
+// actually present in this exhibition's ORDER LINES (st.dispatch.categories, returned
+// by listDispatch, exhibition-scoped and filter-independent). No hardcoded list — a new
+// department at the next exhibition appears automatically instead of breaking the filter.
+function dispatchRenderCategoryChips() {
   const row = $("dispatch-category-chips"); if (!row) return;
-  [...row.children].forEach((c) => c.classList.toggle("active", (c.dataset.category || "") === (st.dispatch.category || "")));
+  const cats = st.dispatch.categories || [];
+  const sel = st.dispatch.category || "";
+  row.innerHTML = `<button class="chip ${sel ? "" : "active"}" data-category="">All</button>`
+    + cats.map((c) => `<button class="chip ${sel === c ? "active" : ""}" data-category="${esc(c)}">${esc(c)}</button>`).join("");
 }
 // A filter sheet must be a direct child of <body>. A .page's enter-animation leaves a
 // PERSISTENT transform on the page element, which makes that page the containing block
@@ -5616,7 +5629,7 @@ function dispatchSyncCategoryChips() {
 $("dispatch-filter-open").onclick = () => openModal("dispatch-filter-sheet");
 $("dispatch-filter-done").onclick = () => closeModal("dispatch-filter-sheet");
 function dispatchUpdateFilterBadge() {
-  dispatchSyncCategoryChips();
+  dispatchRenderCategoryChips();
   const n = (st.dispatch.firm ? 1 : 0) + (st.dispatch.status ? 1 : 0) + (st.dispatch.category ? 1 : 0);
   const b = $("dispatch-filter-count"); b.textContent = String(n); b.classList.toggle("hidden", n === 0);
 }
@@ -6404,7 +6417,10 @@ function selectExhibition(id) {
   // Category filter is remembered PER DEVICE (localStorage) — a convenience so a
   // salesperson doesn't re-pick their department each visit, not a permission.
   const _dcat = (() => { try { return localStorage.getItem("maitri.dispatch.category") || ""; } catch { return ""; } })();
-  st.dispatch = { rows: [], detail: null, firm: "", status: "", category: ["MR", "KT", "NRK", "MU", "BS"].includes(_dcat) ? _dcat : "", mode: "order", product: null, offset: 0, total: null };
+  // Restore the persisted category as-is (no hardcoded whitelist here either — that was
+  // the third C3 site). If the prefix is no longer present, loadDispatch's stale-heal
+  // clears it against the live vocabulary and falls back to unfiltered.
+  st.dispatch = { rows: [], detail: null, firm: "", status: "", category: _dcat || "", categories: [], mode: "order", product: null, offset: 0, total: null };
   st.sale.customer = null;
   st.sale.carts = { Maitri: [], Niharika: [] };
   st.sale.deleted = { Maitri: new Set(), Niharika: new Set() };

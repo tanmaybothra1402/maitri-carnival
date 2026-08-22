@@ -1203,9 +1203,10 @@ Deno.serve(async (request: Request) => {
       // admin_dispatch_orders RPC. The search now joins in SQL (no separate
       // <=300-row customer id lookup, so it is no longer capped).
       const off = Math.max(0, Number(body.offset) || 0);
-      // Category = design-number prefix (MR/KT/NRK/MU/BS), scoped in SQL before the
-      // limit. Same 5 the CRM uses; anything else is treated as no filter.
-      const category = ["MR", "KT", "NRK", "MU", "BS"].includes(clean(body.category)) ? clean(body.category) : null;
+      // Category = design-number prefix, scoped in SQL before the limit. NO hardcoded
+      // whitelist — the vocabulary is data-driven (returned as `categories` below); the
+      // RPC uppercases and fails CLOSED on an unknown prefix (0 orders + a UI reason).
+      const category = clean(body.category).toUpperCase() || null;
       const { data, error } = await db.rpc("admin_dispatch_orders", {
         p_filters: {
           exhibitionId: ex.id,
@@ -1226,6 +1227,9 @@ Deno.serve(async (request: Request) => {
       const paged = data && typeof data === "object" && !Array.isArray(data) && Array.isArray((data as any).orders);
       const rawRows: any[] = paged ? (data as any).orders : (((data as any[]) ?? []));
       const total: number | null = paged ? (Number((data as any).total) || rawRows.length) : null;
+      // Data-driven category vocabulary (exhibition-scoped, filter-independent). Empty
+      // from an older RPC that doesn't return it — the client shows only "All" then.
+      const categories: string[] = paged && Array.isArray((data as any).categories) ? (data as any).categories : [];
       const orders = rawRows.map((o: any) => ({
         orderId: o.orderId ?? o.id,
         customerId: o.customerId ?? o.customer_id,
@@ -1259,7 +1263,7 @@ Deno.serve(async (request: Request) => {
       // By-order view: a bare array when total is unknown (old RPC) so the current
       // client is unaffected; { orders, total } once the RPC provides a total, so the
       // client can page past the 300 cap with Load more. The client reads both.
-      if (!body.withLines) return jsonResponse(request, { ok: true, data: total === null ? orders : { orders, total } });
+      if (!body.withLines) return jsonResponse(request, { ok: true, data: total === null ? orders : { orders, total, categories } });
       // By-product pick-list: also return every design line for these orders so the
       // client can roll up "remaining to ship" per design. No images — quantities only.
       const orderIds = orders.map((o) => o.orderId);
@@ -1294,7 +1298,7 @@ Deno.serve(async (request: Request) => {
           };
         });
       }
-      return jsonResponse(request, { ok: true, data: { orders, lines, total: total ?? orders.length } });
+      return jsonResponse(request, { ok: true, data: { orders, lines, total: total ?? orders.length, categories } });
     }
 
     // Full-resolution images here by design: dispatch staff must be able to
