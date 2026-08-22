@@ -4704,6 +4704,9 @@ function renderCrmList() {
     badges.push(c.buyerType ? crmB(c.buyerType, c.buyerType === "new" ? "New buyer" : "Regular buyer") : crmB("on_hold", "Unscreened"));
     if (c.assignedName) badges.push(crmB("assigned", "→ " + c.assignedName));
     if (c.agentName) badges.push(`<span class="crm-b" style="background:#F1F5F9;color:#475569" title="Trade agent">◆ ${esc(c.agentName)}</span>`);
+    // No linked agent: a QUIET muted label, no pill/colour (normal for >half the book).
+    // "No agent" = buyer answered (their reply meant none); "Not asked" = never filled.
+    else badges.push(`<span style="align-self:center;color:var(--muted);font-size:10px;font-weight:600" title="Trade agent">${c.agentAnswered ? "No agent" : "Not asked"}</span>`);
     const stPill = crmStandingPill(c.referenceStanding);
     if (stPill) badges.push(stPill);
     if (c.refPending) badges.push(`<span class="crm-b" style="background:#FEF9C3;color:#854D0E" title="Reference call pending">Ref pending</span>`);
@@ -4952,7 +4955,7 @@ function renderCrmDetail() {
   // References/agent/terms fold — routed through the shared crmFold mechanism. The
   // collapsed header carries the signal (agent badge + standing pill); the body is the
   // full evidence + terms editor. Kept below the action controls, as before.
-  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : ""}${crmStandingPill(d.referenceStanding)}`;
+  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}${crmStandingPill(d.referenceStanding)}`;
   // Agent + reference-company fields are real JS-filtered pickers (crmPicker*), NOT
   // <datalist> — datalist type-to-filter is unreliable/absent on iOS Safari. Each is a
   // plain input + an on-demand results list rendered beneath it. Selecting an existing
