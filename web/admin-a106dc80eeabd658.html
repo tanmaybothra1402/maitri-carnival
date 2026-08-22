@@ -5525,7 +5525,11 @@ function renderDispatchList() {
     : (total != null && rows.length ? `<div style="text-align:center;color:var(--muted);font-size:11px;font-weight:700;margin-top:10px">All ${total} shown</div>` : "");
   // Unmistakable "a filter is active" banner: while a category is on, every count and
   // status on these cards is for that department's lines only — never the whole order.
-  const cat = st.dispatch.category;
+  // Driven by the SERVER confirming the filter (o.categoryFilter), not client state, so
+  // if the HTML is ever live against an older Edge that ignores category, the banner
+  // does NOT appear and counts stay whole-order — degrade, never mislead (same
+  // deploy-order-independence as the shape-tolerant list mapper).
+  const cat = rows.some((o) => o.categoryFilter) ? st.dispatch.category : "";
   const banner = cat
     ? `<div style="margin-bottom:10px;padding:8px 11px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11.5px;font-weight:800">Showing ${esc(cat)} lines only — designs · sets · pieces and the status pill are for ${esc(cat)}, not the whole order.</div>`
     : "";
