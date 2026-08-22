@@ -275,7 +275,16 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .empty{min-height:132px;padding:24px;border:1px dashed #BCD0CB;border-radius:var(--r-lg);background:#F8FBFA;color:var(--muted);font-size:12px}
 .toast{top:72px;padding:10px 16px;border-radius:var(--r-pill);background:var(--ink);box-shadow:var(--sh-pop);animation:toast-in 200ms var(--ease) both}.toast.success{background:var(--success)}.toast.error{background:var(--error)}
 .loading{background:rgba(20,30,28,.5)}.loader{border-radius:var(--r-lg);box-shadow:var(--sh-pop)}
-.modal{background:rgba(20,30,28,.5);backdrop-filter:blur(2px)}.sheet{max-height:92vh;padding:20px 18px calc(20px + env(safe-area-inset-bottom));border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--sh-pop);animation:sheet-in 260ms var(--ease) both}.sheet-handle{width:36px;height:4px;margin:-8px auto 16px;border-radius:var(--r-pill);background:var(--line)}.sheet-head{gap:12px}
+.modal{background:rgba(20,30,28,.5);backdrop-filter:blur(2px)}.sheet{max-height:92vh;padding:20px 18px calc(20px + env(safe-area-inset-bottom));border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--sh-pop);animation:sheet-in 260ms var(--ease) both}
+/* Scroll containment. Every modal scroll surface stops the scroll chain at its
+   own bounds so a card/sheet/inner list never scrolls the page behind it (and a
+   nested list never scrolls the sheet it sits in). overscroll-behavior handles
+   iOS 16+; the position:fixed body lock (.modal-locked, applied while ANY modal
+   is open) is the reliable stop on older iOS Safari where overflow:hidden leaks.
+   .customer-results and .entry-scroll already declare contain inline. */
+.sheet,.scan-sheet,.grid-wrap,.dispatch-lines,.dispatch-history,.map-suggest,.map-batch-list,.map-import-rows,.mc-matrix-wrap,.entry-list-scroll{overscroll-behavior:contain}
+.modal-locked{position:fixed;left:0;right:0;width:100%}
+.sheet-handle{width:36px;height:4px;margin:-8px auto 16px;border-radius:var(--r-pill);background:var(--line)}.sheet-head{gap:12px}
 nav.bottom-nav{height:calc(var(--nav-h) + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid var(--line);box-shadow:0 -8px 22px rgba(20,40,38,.10)}.nav-item{min-width:44px;color:var(--muted);font-size:10px}.nav-item.active{color:var(--teal-deep)}.nav-item.active:not(.center)::before{background:var(--orange)}.center .fab{background:var(--teal-deep);box-shadow:0 8px 22px rgba(34,94,99,.24)}.center.active .fab{background:var(--orange)}
 /* Reception */
 .entry-board{gap:12px}.entry-section{border-radius:var(--r-lg)}.entry-card{padding:12px;border:1px solid var(--line);border-radius:var(--r);background:#fff}.entry-card.current{border-color:var(--teal);box-shadow:0 0 0 2px rgba(43,115,121,.18);background:var(--foam)}.entry-card-title b{color:var(--ink);font-size:14px}.entry-primary{color:var(--body);font-size:12px;font-weight:700}.entry-secondary{color:var(--muted);font-size:11px}.entry-tag-row{gap:4px}.entry-actions{gap:8px}.entry-list-scroll{max-height:430px;overflow:auto;padding-right:4px}
@@ -5538,6 +5547,7 @@ $("dispatch-lines").onclick = (e) => {
   $("lightbox-img").src = ik(img.dataset.zoom, "w-1400,q-92");
   $("lightbox-caption").textContent = img.dataset.zoomLabel || "";
   $("dispatch-lightbox").classList.add("open");
+  syncBodyScrollLock();
 };
 
 $("lightbox-close").onclick = () => closeLightbox();
@@ -5547,6 +5557,7 @@ $("dispatch-lightbox").onclick = (e) => {
 function closeLightbox() {
   $("dispatch-lightbox").classList.remove("open");
   $("lightbox-img").removeAttribute("src");
+  syncBodyScrollLock();
 }
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && $("dispatch-lightbox").classList.contains("open")) {
@@ -6892,11 +6903,33 @@ async function openOrder(customerId, firm) {
     loading(false);
   }
 }
+// Body scroll lock while any modal is open. Derived from the DOM (not a counter)
+// so it cannot leak if a modal opens/closes twice or off the choke point: after
+// every open-state change we ask "is any modal still open?" and lock/unlock to
+// match. overflow:hidden on body does NOT hold on iOS Safari — pin the body with
+// position:fixed at the negative of the current scrollY, then restore that exact
+// scrollY on release so a long list (CRM 875 rows, dispatch ~486) never jumps.
+let __modalLockY = 0;
+function syncBodyScrollLock() {
+  const anyOpen = !!document.querySelector(".modal.open, .scan-modal.open, .lightbox.open");
+  const locked = document.body.classList.contains("modal-locked");
+  if (anyOpen && !locked) {
+    __modalLockY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = `-${__modalLockY}px`;
+    document.body.classList.add("modal-locked");
+  } else if (!anyOpen && locked) {
+    document.body.classList.remove("modal-locked");
+    document.body.style.top = "";
+    window.scrollTo(0, __modalLockY);
+  }
+}
 function openModal(id) {
   $(id).classList.add("open");
+  syncBodyScrollLock();
 }
 function closeModal(id) {
   $(id).classList.remove("open");
+  syncBodyScrollLock();
   // The in-scanner sheets (single #scan-sheet, multi #scan-sheet-mc) resume through
   // their own close paths (scanSheetClose / mcSheetClose). This only covers the
   // multi sheet dismissed from its page-modal home while a camera happens to be up.
