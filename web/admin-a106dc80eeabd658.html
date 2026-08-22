@@ -4788,6 +4788,94 @@ function crmFold(key, headerHtml, innerHtml) {
       <div data-fold-body="${key}" class="${open ? "" : "hidden"}" style="margin-top:10px">${innerHtml}</div>
     </div>`;
 }
+// ── Self-growing pickers (trade agent + reference company) ───────────────────
+// Real JS-filtered type-ahead replacing <input list=datalist> (datalist filtering is
+// unreliable/absent on iOS Safari — nothing renders as you type). Canonical match =
+// upper + strip non-alphanumerics, mirroring the DB's
+// regexp_replace(upper(x),'[^A-Z0-9]','','g'), so "vmanesh"/"V. Manesh"/"v manesh" all
+// find V. MANESH TEXTILES. Selecting sends the stored canonical name (1:1 with the id
+// via the unique name_key). Creating needs a deliberate "+ Add" tap, guarded by a
+// near-miss check so a typo cannot silently start a 141st agent. Snappy at a few hundred.
+const CRM_PICKERS = {
+  agent: { input: "crm-d-agent", results: "crm-agent-results",
+    source: () => st.crm.agents || [],
+    commit: (name) => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: name }), toast: "Agent saved" },
+  refco: { input: "crm-d-refinput", results: "crm-refco-results",
+    source: () => st.crm.refCompanies || [],
+    commit: (name) => admin("crmAddReference", { customerId: st.crm.currentId, referenceText: name }), toast: "Reference added" },
+};
+let crmPickerHi = {};
+function crmCanon(s) { return String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+function crmLev(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[n];
+}
+const CRM_PICK_ROW = "display:block;width:100%;text-align:left;padding:9px 11px;border:0;border-bottom:1px solid var(--border);background:#fff;color:var(--deep);font-size:13px;font-weight:700;cursor:pointer";
+function crmPickerRender(kind) {
+  const cfg = CRM_PICKERS[kind]; const inp = $(cfg.input); const box = $(cfg.results);
+  if (!inp || !box) return;
+  const q = inp.value; const T = crmCanon(q);
+  if (!q.trim()) { box.classList.add("hidden"); box.innerHTML = ""; crmPickerHi[kind] = -1; return; }
+  const scored = cfg.source().map((a) => ({ a, c: crmCanon(a.name) }))
+    .filter((x) => x.c.includes(T))
+    .sort((x, y) => ((x.c === T ? 0 : x.c.startsWith(T) ? 1 : 2) - (y.c === T ? 0 : y.c.startsWith(T) ? 1 : 2)) || x.a.name.localeCompare(y.a.name));
+  const exact = scored.some((x) => x.c === T);
+  const shown = scored.slice(0, 10); const overflow = scored.length - shown.length;
+  crmPickerHi[kind] = 0;
+  let html = shown.map((x) => `<button type="button" data-pick-kind="${kind}" data-pick-id="${esc(x.a.id)}" data-pick-name="${esc(x.a.name)}" style="${CRM_PICK_ROW}">${esc(x.a.name)}</button>`).join("");
+  if (overflow > 0) html += `<div class="crm-hint" style="margin:0;padding:7px 11px">+${overflow} more — keep typing to narrow</div>`;
+  if (!exact) html += `<button type="button" data-pick-kind="${kind}" data-pick-add style="${CRM_PICK_ROW};color:var(--teal-deep);border-bottom:0">+ Add “${esc(q.trim())}”</button>`;
+  box.innerHTML = html; box.classList.remove("hidden");
+  crmPickerHiApply(kind);
+}
+function crmPickerHiApply(kind, rows) {
+  const box = $(CRM_PICKERS[kind].results); if (!box) return;
+  rows = rows || [...box.querySelectorAll("[data-pick-name]")];
+  rows.forEach((r, i) => { r.style.background = i === (crmPickerHi[kind] || 0) ? "var(--foam)" : "#fff"; });
+}
+async function crmPickerCommit(kind, name) {
+  const cfg = CRM_PICKERS[kind]; const box = $(cfg.results); if (box) box.classList.add("hidden");
+  await crmDo(() => cfg.commit(name), cfg.toast);
+  // A create may have grown the shared list — refresh lookups for the next open.
+  st.crm.lookupsLoaded = false; crmEnsureLookups(true);
+}
+// "+ Add" — before creating, look for a near miss (a typo of an existing canonical
+// name) and warn instead of fragmenting. Near = edit distance <= max(2, 15% of the
+// longer name), OR one canonical is a prefix of the other (both >= 4 chars). WARNING,
+// never a block: the operator can still create. Canonical match alone can't catch this
+// because a typo yields a DIFFERENT canonical key and passes the unique index cleanly.
+function crmPickerAdd(kind) {
+  const cfg = CRM_PICKERS[kind]; const q = ($(cfg.input).value || "").trim(); if (!q) return;
+  const T = crmCanon(q); let best = null, bestD = Infinity;
+  for (const a of cfg.source()) {
+    const C = crmCanon(a.name); if (!C) continue;
+    if (C === T) { best = { a, exact: true }; break; }
+    const d = crmLev(T, C);
+    const thr = Math.max(2, Math.floor(0.15 * Math.max(T.length, C.length)));
+    const prefix = Math.min(T.length, C.length) >= 4 && (T.startsWith(C) || C.startsWith(T));
+    if ((d <= thr || prefix) && d < bestD) { bestD = d; best = { a, exact: false }; }
+  }
+  if (best && best.exact) { crmPickerCommit(kind, best.a.name); return; }   // same canonical already exists
+  if (best) { crmPickerNearMiss(kind, q, best.a); return; }                  // near miss — ask first
+  crmPickerCommit(kind, q);                                                  // genuinely new — create now
+}
+function crmPickerNearMiss(kind, typed, existing) {
+  const box = $(CRM_PICKERS[kind].results); if (!box) return;
+  box.innerHTML = `<div style="padding:11px">
+      <div class="crm-hint" style="margin:0 0 8px">Close to one you already have — pick one:</div>
+      <button type="button" class="btn small" data-pick-kind="${kind}" data-pick-id="${esc(existing.id)}" data-pick-name="${esc(existing.name)}" style="width:100%;margin-bottom:6px">Use “${esc(existing.name)}”</button>
+      <button type="button" class="btn small secondary" data-pick-kind="${kind}" data-pick-create="${esc(typed)}" style="width:100%">Create “${esc(typed)}” as new</button>
+    </div>`;
+  box.classList.remove("hidden");
+  const use = box.querySelector("[data-pick-name]"); if (use) use.focus();   // default focus = existing
+}
 function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
   const canAssign = has("crm.assign");
@@ -4842,38 +4930,72 @@ function renderCrmDetail() {
   // collapsed header carries the signal (agent badge + standing pill); the body is the
   // full evidence + terms editor. Kept below the action controls, as before.
   const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : ""}${crmStandingPill(d.referenceStanding)}`;
+  // Agent + reference-company fields are real JS-filtered pickers (crmPicker*), NOT
+  // <datalist> — datalist type-to-filter is unreliable/absent on iOS Safari. Each is a
+  // plain input + an on-demand results list rendered beneath it. Selecting an existing
+  // row sends that row's stored canonical name (resolves 1:1 to its id via the unique
+  // agents.name_key — cannot fragment); creating needs a deliberate "+ Add" tap with a
+  // near-miss guard. Token amount now lives here, next to payment terms (moved out of
+  // the bottom Details block); amount stays disabled until the checkbox is ticked (D3).
   const refsInner = `<div class="crm-sub">Trade agent</div>
-        <div class="crm-addrow"><input id="crm-d-agent" list="crm-agent-list" value="${esc(d.agentName || "")}" maxlength="120" placeholder="Type or pick an agent"/><button class="btn small" type="button" id="crm-d-agent-save">Save</button></div>
-        <datalist id="crm-agent-list"></datalist>
+        <div style="position:relative">
+          <input id="crm-d-agent" autocomplete="off" value="${esc(d.agentName || "")}" maxlength="120" placeholder="Type to search or add an agent" style="width:100%"/>
+          <div id="crm-agent-results" class="hidden" style="margin-top:6px;max-height:240px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:10px;background:#fff"></div>
+        </div>
+        ${d.agentName ? `<button type="button" class="btn small secondary" id="crm-d-agent-clear" style="margin-top:6px">Clear agent</button>` : ""}
+        <div class="crm-hint">Pick an existing agent, or tap “+ Add” to create one. One consolidated list — don't re-type a spelling variant.</div>
         <div class="crm-sub">Reference standing</div>
         ${crmSeg("refstanding", d.referenceStanding || "", [["", "Unset"], ["approved", "Approved"], ["watch", "Watch"], ["rejected", "Rejected"]])}
         <div class="crm-hint">Your overall call. Evidence below; you decide. Shown on dispatch — never blocks a shipment.</div>
         <div class="crm-sub">References the buyer named</div>
-        <div class="crm-addrow"><input id="crm-d-refinput" list="crm-refco-list" maxlength="200" placeholder="Company the buyer named"/><button class="btn small" type="button" id="crm-d-refadd">Add</button></div>
-        <datalist id="crm-refco-list"></datalist>
+        <div style="position:relative">
+          <input id="crm-d-refinput" autocomplete="off" maxlength="200" placeholder="Type a company to search or add" style="width:100%"/>
+          <div id="crm-refco-results" class="hidden" style="margin-top:6px;max-height:240px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--border);border-radius:10px;background:#fff"></div>
+        </div>
         <div class="crm-refs" style="margin-top:8px">${refs}</div>
         <div class="crm-sub">Payment terms</div>
         ${crmSeg("paymethod", d.payMethod || "", [["", "—"], ["cash", "Cash"], ["cheque", "Cheque"]])}
         <div class="crm-addrow" style="margin-top:6px"><input id="crm-d-creditdays" type="number" min="0" max="3650" inputmode="numeric" placeholder="Credit days" value="${d.creditDays != null ? d.creditDays : ""}"/><span class="crm-hint" style="margin:0;align-self:center">days</span></div>
         <textarea id="crm-d-paynotes" rows="2" maxlength="2000" placeholder="Payment notes" style="margin-top:6px">${esc(d.payNotes || "")}</textarea>
-        <button class="btn small" type="button" id="crm-d-pay-save" style="margin-top:6px">Save payment terms</button>`;
-  // Order: contact → action controls (Attributes, Status & assignment) → folds
-  // (call log, references). The action controls sit above every fold so they are on
-  // screen without scrolling; the call log and references collapse below them.
+        <button class="btn small" type="button" id="crm-d-pay-save" style="margin-top:6px">Save payment terms</button>
+        <div class="crm-sub">Token</div>
+        <label class="crm-check"><input type="checkbox" id="crm-d-token" ${d.tokenAgreed ? "checked" : ""}/> <span>Token amount agreed</span></label>
+        <div class="crm-token-amt"><input id="crm-d-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div>`;
+  // Order: contact → the triage pair (salesperson + status, one compact row) →
+  // "+ Log a call" → fold Calls → fold References/agents/terms → Details block at the
+  // END (city/state/GSTIN/buyer type/tier/category). Only the triage pair and
+  // "+ Log a call" must sit above the first fold; buyer type/tier live in the bottom
+  // block by design. Status is a compact <select> here (not a 4-button segment) so it
+  // fits the row beside the salesperson picker.
+  const statusOpts = ["pending", "on_hold", "agreed", "rejected"].map((v) => `<option value="${v}"${d.crmStatus === v ? " selected" : ""}>${esc(CRM_STATUS[v] || v)}</option>`).join("");
   $("crm-d-body").innerHTML = `
     ${contact}
-    <div class="crm-field"><label>Status &amp; assignment</label>
-      ${crmSeg("status", d.crmStatus, [["pending", "Pending"], ["on_hold", "On hold"], ["agreed", "Agreed"], ["rejected", "Rejected"]])}
+    <div class="crm-field">
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;min-width:0">
+          <label style="margin:0 0 5px">Salesperson</label>
+          <select id="crm-d-assign" ${canAssign ? "" : "disabled"} style="width:100%">${staffOpts}</select>
+        </div>
+        <div style="flex:1;min-width:0">
+          <label style="margin:0 0 5px">Status</label>
+          <select id="crm-d-status-sel" style="width:100%">${statusOpts}</select>
+        </div>
+      </div>
+      ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}
       <div id="crm-d-reasonwrap" class="${rejected ? "" : "hidden"}" style="margin-top:8px">
         <textarea id="crm-d-reason" rows="2" maxlength="2000" placeholder="Reason for rejection (required) — reception shows this">${esc(d.statusReason || "")}</textarea>
         <button class="btn small" type="button" id="crm-d-savereject" style="margin-top:6px" ${d.statusReason ? "" : "disabled"}>Save rejection</button>
         <div class="crm-hint">Rejected buyers are flagged at reception — never blocked. Reception sees this reason.</div>
       </div>
       <div id="crm-d-agreedwarn" class="crm-hint hidden" style="margin-top:8px;color:#B45309;font-weight:700">New buyer marked agreed with no token — intended? The business rule is to ask new buyers for a token.</div>
-      <div class="crm-sub">Assigned salesperson</div>
-      <select id="crm-d-assign" ${canAssign ? "" : "disabled"}>${staffOpts}</select>
-      ${canAssign ? "" : '<div class="crm-hint">Only a manager or admin can reassign.</div>'}</div>
-    <div class="crm-field"><label>Attributes</label>
+    </div>
+    ${callLogBlock}
+    ${crmFold("refs", refsHeader, refsInner)}
+    <div class="crm-field"><label>Details</label>
+      <div class="crm-sub" style="margin-top:0">Location</div>
+      <div style="font-size:12.5px;color:var(--deep);font-weight:700;overflow-wrap:anywhere">${[d.city, d.state].filter(Boolean).map(esc).join(", ") || '<span class="crm-hint" style="margin:0">Not on file</span>'}</div>
+      <div class="crm-sub">GSTIN</div>
+      <div style="font-size:12.5px;color:var(--deep);font-weight:700;overflow-wrap:anywhere">${d.gstin ? esc(d.gstin) : '<span class="crm-hint" style="margin:0">Not on file</span>'}</div>
       <div class="crm-sub">Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</div>
       ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["regular", "Regular buyer"]])}
       <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div>
@@ -4886,14 +5008,8 @@ function renderCrmDetail() {
         ${["MR", "KT", "NRK", "MU", "BS"].map((cat) => { const f = detailCats.find((x) => x.c === cat); const state = !f ? "add" : (f.m ? "man" : "auto"); return `<button type="button" class="chip ${f ? "active" : ""}" data-crm-cat="${cat}" data-cat-state="${state}"${state === "auto" ? ' disabled title="From orders — cannot remove"' : ""}>${state === "add" ? "+ " : ""}${cat}</button>`; }).join("")}
       </div>
       <div class="crm-hint">Auto from orders. Tap +MR etc. to add a category the buyer asked about but never ordered; tap a dashed manual chip to remove.</div>
-      <div class="crm-sub">Token</div>
-      <label class="crm-check"><input type="checkbox" id="crm-d-token" ${d.tokenAgreed ? "checked" : ""}/> <span>Token amount agreed</span></label>
-      <div class="crm-token-amt"><input id="crm-d-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Token amount ₹" value="${d.tokenAmount != null ? d.tokenAmount : ""}" ${d.tokenAgreed ? "" : "disabled"}/></div></div>
-    ${callLogBlock}
-    ${crmFold("refs", refsHeader, refsInner)}`;
-  // Native type-ahead options for the self-growing agent + reference-company pickers.
-  if ($("crm-agent-list")) $("crm-agent-list").innerHTML = (st.crm.agents || []).map((a) => `<option value="${esc(a.name)}"></option>`).join("");
-  if ($("crm-refco-list")) $("crm-refco-list").innerHTML = (st.crm.refCompanies || []).map((a) => `<option value="${esc(a.name)}"></option>`).join("");
+    </div>`;
+  // Pickers render on demand (no datalist to populate — see crmPicker* below).
 }
 async function crmRefresh() {
   st.crm.detail = await admin("crmCustomerDetail", { customerId: st.crm.currentId });
@@ -5064,24 +5180,17 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     if (kind === "tier") { await crmDo(() => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }), "Tier saved"); return; }
     if (kind === "refstanding") { await crmDo(() => admin("crmSetReferenceStanding", { customerId: st.crm.currentId, standing: val }), "Reference standing saved"); return; }
     if (kind === "paymethod") { seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg)); return; }
-    if (kind === "status") {
-      if (val === "rejected") {
-        // Do not write yet — reveal the reason field and require it (input-time).
-        seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg));
-        $("crm-d-reasonwrap").classList.remove("hidden");
-        $("crm-d-savereject").disabled = !$("crm-d-reason").value.trim();
-        $("crm-d-reason").focus();
-      } else {
-        // Soft, non-blocking warning: new buyer set to 'agreed' without a token.
-        if (val === "agreed" && st.crm.detail && st.crm.detail.buyerType === "new" && !st.crm.detail.tokenAgreed) {
-          $("crm-d-agreedwarn").classList.remove("hidden");
-          if (!confirm("New buyer marked agreed with no token — intended? New buyers are normally asked for a token.")) return;
-        }
-        await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }), "Status saved");
-      }
-      return;
-    }
+    // status is a <select> now (crm-d-status-sel) — handled in the change listener.
   }
+  // Picker: tapping an existing row commits that entry's stored name (resolves 1:1
+  // to its id via the unique name_key). "+ Add" runs the near-miss guard; the
+  // "Create as new" button inside a near-miss prompt carries data-pick-create.
+  const pickRow = e.target.closest("[data-pick-name]");
+  if (pickRow) { crmPickerCommit(pickRow.dataset.pickKind, pickRow.dataset.pickName); return; }
+  const pickCreate = e.target.closest("[data-pick-create]");
+  if (pickCreate) { crmPickerCommit(pickCreate.dataset.pickKind, pickCreate.dataset.pickCreate); return; }
+  const pickAdd = e.target.closest("[data-pick-add]");
+  if (pickAdd) { crmPickerAdd(pickAdd.dataset.pickKind); return; }
   if (e.target.id === "crm-d-savereject") {
     const reason = $("crm-d-reason").value.trim();
     if (!reason) { toast("A rejection needs a reason", "error"); return; }
@@ -5090,7 +5199,6 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   }
   const delref = e.target.closest("[data-crm-delref]");
   if (delref) { await crmDo(() => admin("crmDeleteReference", { referenceId: delref.dataset.crmDelref }), "Reference removed"); return; }
-  if (e.target.id === "crm-d-refadd") { const v = $("crm-d-refinput").value.trim(); if (!v) { toast("Enter a reference", "error"); return; } await crmDo(() => admin("crmAddReference", { customerId: st.crm.currentId, referenceText: v }), "Reference added"); return; }
   if (e.target.id === "crm-c-save") { await crmSaveCall(); return; }
   // Reveal the Add-call form (button-gated so it isn't rendered on every card).
   if (e.target.id === "crm-addcall-reveal") { const f = $("crm-addcall-form"); if (f) f.classList.toggle("hidden"); return; }
@@ -5107,7 +5215,7 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   }
   const lc = e.target.closest("[data-crm-logcheck]");
   if (lc) { crmOpenLogCheck(lc.dataset.crmLogcheck); return; }
-  if (e.target.id === "crm-d-agent-save") { await crmDo(() => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: $("crm-d-agent").value.trim() }), "Agent saved"); st.crm.lookupsLoaded = false; crmEnsureLookups(true); return; }
+  if (e.target.id === "crm-d-agent-clear") { await crmDo(() => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: "" }), "Agent cleared"); st.crm.lookupsLoaded = false; crmEnsureLookups(true); return; }
   if (e.target.id === "crm-d-pay-save") {
     const pm = document.querySelector('[data-fold-body="refs"] [data-crm-seg="paymethod"] button.active');
     await crmDo(() => admin("crmSetPayment", { customerId: st.crm.currentId, method: pm ? pm.dataset.val : "", creditDays: $("crm-d-creditdays").value.trim(), notes: $("crm-d-paynotes").value.trim() }), "Payment terms saved");
@@ -5124,6 +5232,24 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
 });
 $("crm-detail-modal").addEventListener("change", async (e) => {
   if (e.target.id === "crm-d-assign") { await crmDo(() => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: e.target.value || "" }), "Assignment updated"); return; }
+  if (e.target.id === "crm-d-status-sel") {
+    const val = e.target.value;
+    if (val === "rejected") {
+      // Reveal the reason field and require it — do not write until the reason is saved.
+      $("crm-d-reasonwrap").classList.remove("hidden");
+      $("crm-d-savereject").disabled = !$("crm-d-reason").value.trim();
+      $("crm-d-reason").focus();
+      return;
+    }
+    $("crm-d-reasonwrap").classList.add("hidden");
+    // Soft, non-blocking warning: new buyer set to 'agreed' without a token.
+    if (val === "agreed" && st.crm.detail && st.crm.detail.buyerType === "new" && !st.crm.detail.tokenAgreed) {
+      $("crm-d-agreedwarn").classList.remove("hidden");
+      if (!confirm("New buyer marked agreed with no token — intended? New buyers are normally asked for a token.")) { e.target.value = st.crm.detail.crmStatus; return; }
+    }
+    await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }), "Status saved");
+    return;
+  }
   if (e.target.id === "crm-d-token") {
     const on = e.target.checked;
     $("crm-d-amount").disabled = !on;
@@ -5143,6 +5269,34 @@ $("crm-detail-modal").addEventListener("change", async (e) => {
 $("crm-detail-modal").addEventListener("input", (e) => {
   if (e.target.id === "crm-d-amount" && e.target.value !== "" && Number(e.target.value) < 0) e.target.value = "";
   if (e.target.id === "crm-d-reason" && $("crm-d-savereject")) $("crm-d-savereject").disabled = !e.target.value.trim();
+  if (e.target.id === "crm-d-agent") { crmPickerRender("agent"); return; }
+  if (e.target.id === "crm-d-refinput") { crmPickerRender("refco"); return; }
+});
+// Picker keyboard: Escape closes the list; ↑/↓ move the highlight among EXISTING
+// rows only; Enter picks the highlighted existing row. Enter never creates — creating
+// is a deliberate tap on the "+ Add" row (or the near-miss "Create as new" button).
+$("crm-detail-modal").addEventListener("keydown", (e) => {
+  const kind = e.target.id === "crm-d-agent" ? "agent" : e.target.id === "crm-d-refinput" ? "refco" : null;
+  if (!kind) return;
+  const box = $(CRM_PICKERS[kind].results);
+  if (!box || box.classList.contains("hidden")) return;
+  const rows = [...box.querySelectorAll("[data-pick-name]")];
+  if (e.key === "Escape") { box.classList.add("hidden"); e.preventDefault(); return; }
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (!rows.length) return;
+    crmPickerHi[kind] = Math.max(0, Math.min(rows.length - 1, (crmPickerHi[kind] || 0) + (e.key === "ArrowDown" ? 1 : -1)));
+    crmPickerHiApply(kind, rows); e.preventDefault(); return;
+  }
+  if (e.key === "Enter") { e.preventDefault(); const r = rows[crmPickerHi[kind] || 0]; if (r) crmPickerCommit(kind, r.dataset.pickName); return; }
+});
+// Blur closes the list and creates NOTHING. Delay so a tap on a row/button inside the
+// list registers first; keep it open if focus moved into the list (near-miss buttons).
+$("crm-detail-modal").addEventListener("focusout", (e) => {
+  const kind = e.target.id === "crm-d-agent" ? "agent" : e.target.id === "crm-d-refinput" ? "refco" : null;
+  if (!kind) return;
+  const box = $(CRM_PICKERS[kind].results);
+  if (!box) return;
+  setTimeout(() => { if (box && !box.contains(document.activeElement)) box.classList.add("hidden"); }, 150);
 });
 
 async function loadDispatch(append) {
