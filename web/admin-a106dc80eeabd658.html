@@ -5117,13 +5117,19 @@ function crmRenderRefsHeader() { const btn = document.querySelector('#crm-d-body
 function crmRenderAgentClear() { const el = $("crm-d-agent-clearwrap"); if (el) el.innerHTML = crmAgentClearHtml(st.crm.detail); }
 function crmRenderTitleTier() { const el = $("crm-d-title"); if (el && st.crm.detail) el.innerHTML = `<span class="mc-nametier"><span>${esc(st.crm.detail.companyName || "Customer")}</span>${tierBadge(st.crm.detail.tier)}</span>`; }
 async function crmSaveCall() {
+  // Explicit in-flight guard: a logged call is UNRECOVERABLE (no delete-call path in the UI),
+  // and a disabled button alone relies on the browser not firing clicks on it. A double-tap
+  // must fire exactly one write. Form is cleared ONLY on success (crmRefresh re-renders an
+  // empty form); on failure it is kept intact so nothing typed is lost.
+  if (st.crm._savingCall) return;
   const outcome = $("crm-c-outcome").value;
   const followupRaw = $("crm-c-followup").value;
   // Validate at input time: a callback must carry a date.
   if (outcome === "callback" && !followupRaw) { toast("Pick a call-back date", "error"); return; }
   const btn = $("crm-c-save");
+  st.crm._savingCall = true;
+  if (btn) { btn.disabled = true; btn.classList.add("crm-saving"); }
   try {
-    btn.disabled = true;
     await admin("crmLogCall", {
       customerId: st.crm.currentId,
       outcome,
@@ -5133,7 +5139,10 @@ async function crmSaveCall() {
     });
     await crmRefresh();
     toast("Call logged", "success");
-  } catch (e) { toast(e.message, "error"); if ($("crm-c-save")) $("crm-c-save").disabled = false; }
+  } catch (e) {
+    toast(e.message, "error");
+    const b = $("crm-c-save"); if (b) { b.disabled = false; b.classList.remove("crm-saving"); }
+  } finally { st.crm._savingCall = false; }
 }
 // Shared self-growing lists for the pickers (agents + reference companies). Loaded once.
 async function crmEnsureLookups(force) {
@@ -5650,23 +5659,32 @@ function dpSetNow(di, bi, val) {
 // the designs sent are touched). Nothing writes until this is tapped and the summary
 // accepted — never on expand or edit.
 async function dpConfirmProduct(di) {
+  // In-flight guard — money is at stake. The loading overlay blocks taps DURING the writes,
+  // but loading(false) fires before loadDispatch() finishes, leaving the old Confirm button
+  // live during the refetch; a tap there re-ran this with the same still-pending local state.
+  // admin_save_dispatch is merge-safe so no double-count resulted, but the guard makes a
+  // second write impossible rather than merely harmless. Held until loadDispatch completes.
+  if (st.dispatch._confirming) return;
   const pend = dpProductPending(di);
   if (!pend.length) { toast("Tick a buyer to dispatch first", "error"); return; }
   const summary = "Confirm dispatch:\n\n" +
     pend.map((p) => `• ${p.company} · ${p.designNo} · ${p.summary}`).join("\n") +
     "\n\nThis locks those lines from customer edits. Proceed?";
-  if (!confirm(summary)) return;
-  const byOrder = {};
-  pend.forEach((p) => (byOrder[p.orderId] ||= []).push({ designNo: p.designNo, dispatchedSets: p.dispatchedSets }));
-  let okN = 0; const fails = [];
-  loading(true, "Dispatching…");
-  for (const [orderId, lines] of Object.entries(byOrder)) {
-    try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", category: st.dispatch.category, lines }); okN++; }
-    catch (e) { fails.push(mcFriendlyError ? mcFriendlyError(e.message) : e.message); }
-  }
-  loading(false);
-  await loadDispatch(); // re-fetch → fresh remaining/dispatched, edit state reset
-  toast(fails.length ? `${okN} order${okN === 1 ? "" : "s"} saved · ${fails.length} failed: ${fails[0]}` : `Dispatch saved across ${okN} order${okN === 1 ? "" : "s"}`, fails.length ? "error" : "success");
+  st.dispatch._confirming = true;
+  try {
+    if (!confirm(summary)) return;
+    const byOrder = {};
+    pend.forEach((p) => (byOrder[p.orderId] ||= []).push({ designNo: p.designNo, dispatchedSets: p.dispatchedSets }));
+    let okN = 0; const fails = [];
+    loading(true, "Dispatching…");
+    for (const [orderId, lines] of Object.entries(byOrder)) {
+      try { await admin("saveDispatch", { orderId, note: "Dispatched from product view", category: st.dispatch.category, lines }); okN++; }
+      catch (e) { fails.push(mcFriendlyError ? mcFriendlyError(e.message) : e.message); }
+    }
+    loading(false);
+    await loadDispatch(); // re-fetch → fresh remaining/dispatched, edit state reset
+    toast(fails.length ? `${okN} order${okN === 1 ? "" : "s"} saved · ${fails.length} failed: ${fails[0]}` : `Dispatch saved across ${okN} order${okN === 1 ? "" : "s"}`, fails.length ? "error" : "success");
+  } finally { st.dispatch._confirming = false; }
 }
 
 function renderDispatchList() {
