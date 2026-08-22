@@ -509,6 +509,9 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-panel{margin-top:14px;padding:13px 13px 15px;border:1px solid var(--line);border-radius:12px;background:#F8FAFA}
 .crm-foldrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--foam);cursor:pointer;text-align:left}
 .crm-fold-chev{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--deep);font-weight:800;font-size:11px}
+.crm-saving{position:relative;opacity:.55;pointer-events:none;transition:opacity .12s}
+.crm-saving::after{content:"";position:absolute;top:50%;right:9px;width:14px;height:14px;margin-top:-7px;border:2px solid rgba(43,115,121,.25);border-top-color:var(--deep);border-radius:50%;animation:crmspin .6s linear infinite;pointer-events:none}
+@keyframes crmspin{to{transform:rotate(360deg)}}
 /* Shared customer-tier badge (neutral — buyers may glimpse staff screens). One helper. */
 .crm-tier{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:900;flex:0 0 auto;vertical-align:middle;line-height:1}
 .crm-tier-A{background:var(--deep);color:#fff}
@@ -4867,8 +4870,21 @@ function crmPickerHiApply(kind, rows) {
 }
 async function crmPickerCommit(kind, name) {
   const cfg = CRM_PICKERS[kind]; const box = $(cfg.results); if (box) box.classList.add("hidden");
-  await crmDo(() => cfg.commit(name), cfg.toast);
-  // A create may have grown the shared list — refresh lookups for the next open.
+  const inp = $(cfg.input);
+  if (kind === "agent") {
+    const prev = st.crm.detail.agentName || "";
+    await crmWrite({ key: "agent", el: inp && inp.parentElement,
+      optimistic: () => { st.crm.detail.agentName = name; if (inp) inp.value = name; },
+      write: () => cfg.commit(name),
+      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; }, msg: cfg.toast });
+  } else {
+    // Adding a reference: the server assigns the row id and resolves the company, so learn
+    // the truth once and repaint JUST the refs list — not the whole card (no lost scroll).
+    await crmWrite({ key: "refco-add", el: inp && inp.parentElement,
+      write: async () => { await cfg.commit(name); st.crm.detail = await admin("crmCustomerDetail", { customerId: st.crm.currentId }); crmRenderRefs(); if (inp) inp.value = ""; },
+      msg: cfg.toast });
+  }
+  // A create may have grown the shared list — refresh lookups for the next open (background).
   st.crm.lookupsLoaded = false; crmEnsureLookups(true);
 }
 // "+ Add" — before creating, look for a near miss (a typo of an existing canonical
@@ -4900,6 +4916,21 @@ function crmPickerNearMiss(kind, typed, existing) {
     </div>`;
   box.classList.remove("hidden");
   const use = box.querySelector("[data-pick-name]"); if (use) use.focus();   // default focus = existing
+}
+// The reference list and the category chips are the two card sections whose STRUCTURE
+// changes on a write (a row appears/disappears, a chip flips add/manual). They render
+// through these helpers so a write can repaint JUST that section — no full-card re-render,
+// no lost scroll — while renderCrmDetail() uses the same helpers for the first paint.
+function crmRefsListHtml(d) {
+  return (d.references || []).map((r) => `<div class="crm-ref" data-crm-refrow="${esc(r.id)}"><span style="min-width:0">${esc(r.companyName || r.text || "")}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:8px;flex-shrink:0;align-items:center"><label class="crm-check" style="margin:0;white-space:nowrap"><input type="checkbox" data-crm-spoken="${esc(r.id)}" ${r.spokenTo ? "checked" : ""}/> <span>Spoken to</span></label><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
+}
+function crmCatBody(d) {
+  const detailCats = Array.isArray(d.categories) ? d.categories
+    : [...(d.categoriesAuto || []).map((x) => ({ c: x, m: false })), ...(d.categoriesManual || []).filter((x) => !(d.categoriesAuto || []).includes(x)).map((x) => ({ c: x, m: true }))];
+  return `<div>${crmCatChips(detailCats) || '<span class="crm-hint" style="margin:0">None yet</span>'}</div>
+      <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
+        ${["MR", "KT", "NRK", "MU", "BS"].map((cat) => { const f = detailCats.find((x) => x.c === cat); const state = !f ? "add" : (f.m ? "man" : "auto"); return `<button type="button" class="chip ${f ? "active" : ""}" data-crm-cat="${cat}" data-cat-state="${state}"${state === "auto" ? ' disabled title="From orders — cannot remove"' : ""}>${state === "add" ? "+ " : ""}${cat}</button>`; }).join("")}
+      </div>`;
 }
 function renderCrmDetail() {
   const d = st.crm.detail; if (!d) return;
@@ -4936,9 +4967,7 @@ function renderCrmDetail() {
   // One "Spoken to" checkbox per reference (checked = we called that company). Replaces
   // the retired approved/watch/rejected verdict + the Log-check sheet. POC + note are kept
   // and shown when present; the checkbox preserves them.
-  const refs = (d.references || []).map((r) => `<div class="crm-ref"><span style="min-width:0">${esc(r.companyName || r.text || "")}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:8px;flex-shrink:0;align-items:center"><label class="crm-check" style="margin:0;white-space:nowrap"><input type="checkbox" data-crm-spoken="${esc(r.id)}" ${r.spokenTo ? "checked" : ""}/> <span>Spoken to</span></label><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
-  const detailCats = Array.isArray(d.categories) ? d.categories
-    : [...(d.categoriesAuto || []).map((x) => ({ c: x, m: false })), ...(d.categoriesManual || []).filter((x) => !(d.categoriesAuto || []).includes(x)).map((x) => ({ c: x, m: true }))];
+  const refs = crmRefsListHtml(d);
   const rejected = d.crmStatus === "rejected";
   // Contact-first header. phone_e164 is stored WITHOUT a plus. tel: needs the plus
   // prepended; wa.me takes the bare digits (a plus makes wa.me reject it). Two
@@ -5031,10 +5060,7 @@ function renderCrmDetail() {
       ${crmSeg("tier", d.tier || "", [["", "Unranked"], ["A", "A"], ["B", "B"], ["C", "C"]])}
       <div class="crm-hint">Pins this buyer to the top of staff lists. Tap again to clear.</div>
       <div class="crm-sub">Category interest</div>
-      <div>${crmCatChips(detailCats) || '<span class="crm-hint" style="margin:0">None yet</span>'}</div>
-      <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
-        ${["MR", "KT", "NRK", "MU", "BS"].map((cat) => { const f = detailCats.find((x) => x.c === cat); const state = !f ? "add" : (f.m ? "man" : "auto"); return `<button type="button" class="chip ${f ? "active" : ""}" data-crm-cat="${cat}" data-cat-state="${state}"${state === "auto" ? ' disabled title="From orders — cannot remove"' : ""}>${state === "add" ? "+ " : ""}${cat}</button>`; }).join("")}
-      </div>
+      <div id="crm-d-catwrap">${crmCatBody(d)}</div>
       <div class="crm-hint">Auto from orders. Tap +MR to add one they asked about; tap a dashed chip to remove.</div>
     </div>`;
   // Pickers render on demand (no datalist to populate — see crmPicker* below).
@@ -5045,6 +5071,36 @@ async function crmRefresh() {
   loadCrm();
 }
 async function crmDo(fn, msg) { try { await fn(); await crmRefresh(); toast(msg, "success"); } catch (e) { toast(e.message, "error"); } }
+// One card control saved, done right — replaces the crmDo(write→refetch→full re-render)
+// pattern that flickered and fired duplicate writes. On tap: (1) optimistic() mutates the
+// LOCAL card state so any paint shows the NEW value — the visual never goes backwards; the
+// caller also leaves the native widget on its new value or repaints just its own row. (2)
+// The control is marked .crm-saving (dim + spinner) so "saving" is distinct from "saved".
+// (3) A same-key write already in flight makes a repeat tap a no-op — never queued, never
+// duplicated. (4) On failure rollback() reverts BOTH state and the on-screen control and
+// says why. No refetch, no full re-render (that cost two round trips and the scroll
+// position); the list behind is reconciled once on modal close via st.crm.dirty.
+const crmInflight = new Set();
+async function crmWrite({ key, el, optimistic, write, rollback, msg }) {
+  if (key && crmInflight.has(key)) return;
+  if (key) crmInflight.add(key);
+  if (optimistic) { try { optimistic(); } catch (_) {} }
+  if (el) { el.classList.add("crm-saving"); el.setAttribute("aria-busy", "true"); }
+  try {
+    await write();
+    st.crm.dirty = true;
+    if (msg) toast(msg, "success");
+  } catch (e) {
+    if (rollback) { try { rollback(); } catch (_) {} }
+    toast((e && e.message) || "Couldn't save — check the connection and tap again", "error");
+  } finally {
+    if (key) crmInflight.delete(key);
+    if (el) { el.classList.remove("crm-saving"); el.removeAttribute("aria-busy"); }
+  }
+}
+function crmSegPaint(grp, val) { if (grp) grp.querySelectorAll("button").forEach((b) => { b.className = b.dataset.val === val ? ("active " + b.dataset.val) : ""; }); }
+function crmRenderRefs() { const el = document.querySelector("#crm-d-body .crm-refs"); if (el) el.innerHTML = crmRefsListHtml(st.crm.detail); }
+function crmRenderCats() { const el = $("crm-d-catwrap"); if (el) el.innerHTML = crmCatBody(st.crm.detail); }
 async function crmSaveCall() {
   const outcome = $("crm-c-outcome").value;
   const followupRaw = $("crm-c-followup").value;
@@ -5177,8 +5233,22 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   const seg = e.target.closest("[data-crm-seg] [data-val]");
   if (seg) {
     const kind = seg.closest("[data-crm-seg]").dataset.crmSeg, val = seg.dataset.val;
-    if (kind === "buyerType") { await crmDo(() => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }), "Buyer type saved"); return; }
-    if (kind === "tier") { await crmDo(() => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }), "Tier saved"); return; }
+    if (kind === "buyerType") {
+      const grp = seg.closest("[data-crm-seg]"), prev = st.crm.detail.buyerType || "";
+      crmWrite({ key: "buyerType", el: grp,
+        optimistic: () => { st.crm.detail.buyerType = val; crmSegPaint(grp, val); },
+        write: () => admin("crmSetBuyerType", { customerId: st.crm.currentId, buyerType: val }),
+        rollback: () => { st.crm.detail.buyerType = prev; crmSegPaint(grp, prev); }, msg: "Buyer type saved" });
+      return;
+    }
+    if (kind === "tier") {
+      const grp = seg.closest("[data-crm-seg]"), prev = st.crm.detail.tier || "";
+      crmWrite({ key: "tier", el: grp,
+        optimistic: () => { st.crm.detail.tier = val; crmSegPaint(grp, val); },
+        write: () => admin("crmSetTier", { customerId: st.crm.currentId, tier: val }),
+        rollback: () => { st.crm.detail.tier = prev; crmSegPaint(grp, prev); }, msg: "Tier saved" });
+      return;
+    }
     if (kind === "paymethod") { seg.closest("[data-crm-seg]").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === seg)); return; }
     // status is a <select> now (crm-d-status-sel) — handled in the change listener.
   }
@@ -5194,11 +5264,24 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
   if (e.target.id === "crm-d-savereject") {
     const reason = $("crm-d-reason").value.trim();
     if (!reason) { toast("A rejection needs a reason", "error"); return; }
-    await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: "rejected", reason }), "Rejection saved");
+    const prevS = st.crm.detail.crmStatus, prevR = st.crm.detail.statusReason || "";
+    crmWrite({ key: "status", el: e.target,
+      optimistic: () => { st.crm.detail.crmStatus = "rejected"; st.crm.detail.statusReason = reason; },
+      write: () => admin("crmSetStatus", { customerId: st.crm.currentId, status: "rejected", reason }),
+      rollback: () => { st.crm.detail.crmStatus = prevS; st.crm.detail.statusReason = prevR; }, msg: "Rejection saved" });
     return;
   }
   const delref = e.target.closest("[data-crm-delref]");
-  if (delref) { await crmDo(() => admin("crmDeleteReference", { referenceId: delref.dataset.crmDelref }), "Reference removed"); return; }
+  if (delref) {
+    const id = delref.dataset.crmDelref, arr = (st.crm.detail && st.crm.detail.references) || [];
+    const idx = arr.findIndex((x) => x.id === id); if (idx < 0) return;
+    const removed = arr[idx];
+    crmWrite({ key: "delref:" + id,
+      optimistic: () => { arr.splice(idx, 1); crmRenderRefs(); },
+      write: () => admin("crmDeleteReference", { referenceId: id }),
+      rollback: () => { arr.splice(idx, 0, removed); crmRenderRefs(); }, msg: "Reference removed" });
+    return;
+  }
   if (e.target.id === "crm-c-save") { await crmSaveCall(); return; }
   // Reveal the Add-call form (button-gated so it isn't rendered on every card).
   if (e.target.id === "crm-addcall-reveal") { const f = $("crm-addcall-form"); if (f) f.classList.toggle("hidden"); return; }
@@ -5213,29 +5296,60 @@ $("crm-detail-modal").addEventListener("click", async (e) => {
     if (chev) chev.textContent = st.crm.folds[k] ? "▾" : "▸";
     return;
   }
-  if (e.target.id === "crm-d-agent-clear") { await crmDo(() => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: "" }), "Agent cleared"); st.crm.lookupsLoaded = false; crmEnsureLookups(true); return; }
+  if (e.target.id === "crm-d-agent-clear") {
+    const prev = st.crm.detail.agentName || "", inp = $("crm-d-agent");
+    crmWrite({ key: "agent", el: e.target,
+      optimistic: () => { st.crm.detail.agentName = ""; if (inp) inp.value = ""; },
+      write: () => admin("crmSetAgent", { customerId: st.crm.currentId, agentName: "" }),
+      rollback: () => { st.crm.detail.agentName = prev; if (inp) inp.value = prev; }, msg: "Agent cleared" });
+    return;
+  }
   if (e.target.id === "crm-d-pay-save") {
     const pm = document.querySelector('[data-fold-body="refs"] [data-crm-seg="paymethod"] button.active');
-    await crmDo(() => admin("crmSetPayment", { customerId: st.crm.currentId, method: pm ? pm.dataset.val : "", creditDays: $("crm-d-creditdays").value.trim(), notes: $("crm-d-paynotes").value.trim() }), "Payment terms saved");
+    const method = pm ? pm.dataset.val : "", days = $("crm-d-creditdays").value.trim(), notes = $("crm-d-paynotes").value.trim();
+    const prev = { m: st.crm.detail.payMethod, c: st.crm.detail.creditDays, n: st.crm.detail.payNotes };
+    crmWrite({ key: "pay", el: e.target,
+      optimistic: () => { st.crm.detail.payMethod = method; st.crm.detail.creditDays = days === "" ? null : Number(days); st.crm.detail.payNotes = notes; },
+      write: () => admin("crmSetPayment", { customerId: st.crm.currentId, method, creditDays: days, notes }),
+      rollback: () => { st.crm.detail.payMethod = prev.m; st.crm.detail.creditDays = prev.c; st.crm.detail.payNotes = prev.n; }, msg: "Payment terms saved" });
     return;
   }
   const catBtn = e.target.closest("[data-crm-cat]");
   if (catBtn) {
     const cat = catBtn.dataset.crmCat, state = catBtn.dataset.catState;
     if (state === "auto") { toast("From orders — can't remove", "error"); return; }
-    if (state === "man") await crmDo(() => admin("crmRemoveCategory", { customerId: st.crm.currentId, category: cat }), "Category removed");
-    else await crmDo(() => admin("crmAddCategory", { customerId: st.crm.currentId, category: cat }), "Category added");
+    const d = st.crm.detail, wrap = $("crm-d-catwrap"), remove = state === "man";
+    const snap = { cats: d.categories ? d.categories.slice() : null, man: (d.categoriesManual || []).slice() };
+    const setManual = (add) => {
+      if (Array.isArray(d.categories)) d.categories = add ? [...d.categories, { c: cat, m: true }] : d.categories.filter((x) => !(x.c === cat && x.m));
+      else d.categoriesManual = add ? [...new Set([...(d.categoriesManual || []), cat])] : (d.categoriesManual || []).filter((x) => x !== cat);
+    };
+    crmWrite({ key: "cat:" + cat, el: wrap,
+      optimistic: () => { setManual(!remove); crmRenderCats(); },
+      write: () => admin(remove ? "crmRemoveCategory" : "crmAddCategory", { customerId: st.crm.currentId, category: cat }),
+      rollback: () => { if (snap.cats) d.categories = snap.cats; d.categoriesManual = snap.man; crmRenderCats(); }, msg: remove ? "Category removed" : "Category added" });
     return;
   }
 });
 $("crm-detail-modal").addEventListener("change", async (e) => {
-  if (e.target.id === "crm-d-assign") { await crmDo(() => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: e.target.value || "" }), "Assignment updated"); return; }
+  if (e.target.id === "crm-d-assign") {
+    const sel = e.target, prev = st.crm.detail.assignedTo || "", val = sel.value || "";
+    crmWrite({ key: "assign", el: sel.parentElement,
+      optimistic: () => { st.crm.detail.assignedTo = val; },
+      write: () => admin("crmAssign", { customerId: st.crm.currentId, assignedTo: val }),
+      rollback: () => { st.crm.detail.assignedTo = prev; sel.value = prev; }, msg: "Assignment updated" });
+    return;
+  }
   // Per-reference "Spoken to" checkbox. Preserve the reference's existing POC/note
   // (crm_set_reference_spoken overwrites them) by resending the current values.
   const sp = e.target.closest("[data-crm-spoken]");
   if (sp) {
-    const ref = ((st.crm.detail && st.crm.detail.references) || []).find((x) => x.id === sp.dataset.crmSpoken) || {};
-    await crmDo(() => admin("crmSetReferenceSpoken", { referenceId: sp.dataset.crmSpoken, spoken: e.target.checked, pocName: ref.pocName || "", notes: ref.notes || "" }), e.target.checked ? "Marked spoken to" : "Marked not spoken");
+    const id = sp.dataset.crmSpoken, want = sp.checked, row = sp.closest(".crm-ref");
+    const ref = ((st.crm.detail && st.crm.detail.references) || []).find((x) => x.id === id) || {};
+    crmWrite({ key: "spoken:" + id, el: row,
+      optimistic: () => { ref.spokenTo = want; },
+      write: () => admin("crmSetReferenceSpoken", { referenceId: id, spoken: want, pocName: ref.pocName || "", notes: ref.notes || "" }),
+      rollback: () => { ref.spokenTo = !want; if (sp.isConnected) sp.checked = !want; }, msg: want ? "Marked spoken to" : "Marked not spoken" });
     return;
   }
   if (e.target.id === "crm-d-status-sel") {
@@ -5253,21 +5367,33 @@ $("crm-detail-modal").addEventListener("change", async (e) => {
       $("crm-d-agreedwarn").classList.remove("hidden");
       if (!confirm("New buyer marked agreed with no token — intended? New buyers are normally asked for a token.")) { e.target.value = st.crm.detail.crmStatus; return; }
     }
-    await crmDo(() => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }), "Status saved");
+    const selEl = e.target, prevStatus = st.crm.detail.crmStatus;
+    crmWrite({ key: "status", el: selEl.parentElement,
+      optimistic: () => { st.crm.detail.crmStatus = val; },
+      write: () => admin("crmSetStatus", { customerId: st.crm.currentId, status: val, reason: "" }),
+      rollback: () => { st.crm.detail.crmStatus = prevStatus; selEl.value = prevStatus; }, msg: "Status saved" });
     return;
   }
   if (e.target.id === "crm-d-token") {
-    const on = e.target.checked;
-    $("crm-d-amount").disabled = !on;
-    if (!on) $("crm-d-amount").value = "";
-    await crmDo(() => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: on, tokenAmount: on ? $("crm-d-amount").value.trim() : "" }), "Token saved");
+    const on = e.target.checked, cb = e.target, amt = $("crm-d-amount");
+    const prevAgreed = st.crm.detail.tokenAgreed, prevAmt = st.crm.detail.tokenAmount;
+    amt.disabled = !on;
+    if (!on) amt.value = "";
+    crmWrite({ key: "token", el: cb.closest(".crm-check"),
+      optimistic: () => { st.crm.detail.tokenAgreed = on; if (!on) st.crm.detail.tokenAmount = null; },
+      write: () => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: on, tokenAmount: on ? amt.value.trim() : "" }),
+      rollback: () => { st.crm.detail.tokenAgreed = prevAgreed; st.crm.detail.tokenAmount = prevAmt; cb.checked = prevAgreed; amt.disabled = !prevAgreed; }, msg: "Token saved" });
     return;
   }
   if (e.target.id === "crm-d-amount") {
     if (!$("crm-d-token").checked) return;
     const raw = e.target.value.trim();
     if (raw !== "" && !(Number(raw) >= 0)) { toast("Enter a valid token amount", "error"); return; }
-    await crmDo(() => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: true, tokenAmount: raw }), "Token amount saved");
+    const prevAmt = st.crm.detail.tokenAmount;
+    crmWrite({ key: "token", el: e.target.closest(".crm-token-amt"),
+      optimistic: () => { st.crm.detail.tokenAmount = raw === "" ? null : Number(raw); },
+      write: () => admin("crmSetToken", { customerId: st.crm.currentId, tokenAgreed: true, tokenAmount: raw }),
+      rollback: () => { st.crm.detail.tokenAmount = prevAmt; }, msg: "Token amount saved" });
     return;
   }
   if (e.target.id === "crm-c-outcome") { $("crm-c-followwrap").classList.toggle("hidden", e.target.value !== "callback"); return; }
@@ -7212,6 +7338,8 @@ function openModal(id) {
 function closeModal(id) {
   $(id).classList.remove("open");
   syncBodyScrollLock();
+  // Card writes are optimistic and don't refetch the list per-tap; reconcile it once here.
+  if (id === "crm-detail-modal" && st.crm && st.crm.dirty) { st.crm.dirty = false; loadCrm(); }
   // The in-scanner sheets (single #scan-sheet, multi #scan-sheet-mc) resume through
   // their own close paths (scanSheetClose / mcSheetClose). This only covers the
   // multi sheet dismissed from its page-modal home while a camera happens to be up.
