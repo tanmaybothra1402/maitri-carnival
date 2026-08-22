@@ -12,3 +12,4 @@ apps-script/SHEET_SYNC_SECRET.txt
 barcodes/
 backup-*.sql
 .mcp.json
+.env.maitri
