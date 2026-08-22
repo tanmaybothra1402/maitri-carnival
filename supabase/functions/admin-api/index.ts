@@ -282,6 +282,8 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   recentOrders: ["sale.previous", "sale.write"],
   getCustomerOrders: ["dashboard.view", "sale.previous", "sale.write"],
   listDispatch: ["dispatch.view"],
+  listDispatchProducts: ["dispatch.view"],
+  dispatchProductBuyers: ["dispatch.view"],
   getDispatch: ["dispatch.view"],
   saveDispatch: ["dispatch.write"],
   squareOffLine: ["dispatch.write"],
@@ -1301,6 +1303,54 @@ Deno.serve(async (request: Request) => {
         });
       }
       return jsonResponse(request, { ok: true, data: { orders, lines, total: total ?? orders.length, categories } });
+    }
+
+    // By-product pick-list, DESIGN as the unit. Paginates on designs (not orders), so there
+    // is no 300-order cap — all filtering (exhibition/firm/search/category/line-level status)
+    // happens in admin_dispatch_products before the LIMIT. Returns { products, total, categories }.
+    if (action === "listDispatchProducts") {
+      const q = clean(body.query);
+      const firm = clean(body.firm);
+      const statusFilter = clean(body.dispatchStatus);
+      const category = clean(body.category).toUpperCase() || null;
+      const ex = await resolveExhibition(db, body);
+      const { data, error } = await db.rpc("admin_dispatch_products", {
+        p_filters: {
+          exhibitionId: ex.id,
+          firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
+          dispatchStatus: ["Pending", "Partial", "Completed", "Closed"].includes(statusFilter) ? statusFilter : null,
+          category,
+          search: q || null,
+          limit: Math.max(1, Math.min(Number(body.limit) || 100, 500)),
+          offset: Math.max(0, Number(body.offset) || 0),
+        },
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    // The buyer rows for ONE design, fetched on expand. Uncapped — a single design's buyer
+    // list is small. Same filters as the list, so the buyer count matches what the row shows.
+    if (action === "dispatchProductBuyers") {
+      const designNo = clean(body.designNo);
+      if (!designNo) throw new Error("DESIGN_NO_REQUIRED");
+      const q = clean(body.query);
+      const firm = clean(body.firm);
+      const statusFilter = clean(body.dispatchStatus);
+      const category = clean(body.category).toUpperCase() || null;
+      const ex = await resolveExhibition(db, body);
+      const { data, error } = await db.rpc("admin_dispatch_product_buyers", {
+        p_design_no: designNo,
+        p_filters: {
+          exhibitionId: ex.id,
+          firm: (firm === "Maitri" || firm === "Niharika") ? firm : null,
+          dispatchStatus: ["Pending", "Partial", "Completed", "Closed"].includes(statusFilter) ? statusFilter : null,
+          category,
+          search: q || null,
+        },
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
     }
 
     // Full-resolution images here by design: dispatch staff must be able to
