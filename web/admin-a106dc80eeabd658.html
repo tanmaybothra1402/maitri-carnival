@@ -5543,6 +5543,10 @@ function aggregateDispatchByDesign(orders, lines) {
       orderId: l.orderId,
       company: o.companyName || o.contactName || "Unnamed party",
       tier: o.tier || null,
+      // Same derived approval signal the by-order card shows (none|unscreened|warn|reject).
+      // It rides on the order row from the withLines payload; carry it onto the buyer so the
+      // pick-list row can render it via the SAME dispatchFlagPill helper (C3).
+      dispatchFlag: o.dispatchFlag || "none",
       city: [o.city, o.state].filter(Boolean).join(", "),
       firm: o.firm || "",
       dispatchedAt: l.dispatchedAt || "", // real per-line ship date for the destructive-removal confirmation (NOT o.updatedAt, which later dispatches/edits bump)
@@ -5587,7 +5591,7 @@ function renderDispatchProduct() {
                 ? `<button class="dp-undo" data-dp-remove data-di="${di}" data-bi="${bi}">${b.remove ? "Keep the dispatch" : `Remove ${b.already} dispatched`}</button>` : "";
               const warn = b.warn ? `<div class="dp-warn">${esc(b.warn)}</div>` : "";
               return `<div class="dp-buyer-line${b.remove ? " dp-undoing" : ""}">
-                <div class="dispatch-line-body"><span class="mc-nametier"><b>${esc(b.company)}</b>${tierBadge(b.tier)}</span><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${warn}${undoBtn}${removeBtn}</div>
+                <div class="dispatch-line-body"><span class="mc-nametier"><b>${esc(b.company)}</b>${tierBadge(b.tier)}${dispatchFlagPill(b.dispatchFlag)}</span><div class="dispatch-line-meta">${b.city ? esc(b.city) + "<br>" : ""}${b.ordered} ordered · ${b.already} dispatched · ${rem} remaining</div>${warn}${undoBtn}${removeBtn}</div>
                 <div class="dispatch-qty">
                   <input class="dispatch-check" type="checkbox" data-di="${di}" data-bi="${bi}" data-dp-check ${checked ? "checked" : ""} ${disabled ? "disabled" : ""} aria-label="Dispatch all remaining ${esc(d.designNo)} for ${esc(b.company)}"/>
                   <input class="dispatch-sets" type="number" min="0" max="${rem}" value="${b.remove ? 0 : Number(b.now) || 0}" data-di="${di}" data-bi="${bi}" data-dp-now ${disabled ? "disabled" : ""} aria-label="Sets to dispatch now for ${esc(b.company)}"/>
@@ -5599,7 +5603,7 @@ function renderDispatchProduct() {
         return `<div class="dispatch-card dp-row${d._open ? " dp-open" : ""}">
           <button class="dp-toggle" data-dp-toggle="${di}" type="button" aria-expanded="${d._open}">
             ${d.imageUrl ? `<img class="dispatch-thumb" src="${esc(ik(d.imageUrl, "w-160,h-210,c-at_max,q-70"))}" alt="${esc(d.designNo)}" loading="lazy"/>` : '<div class="dispatch-thumb"></div>'}
-            <div class="dispatch-line-body"><b>${esc(d.designNo)}</b><div class="dispatch-line-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} · ${d.remaining} set${d.remaining === 1 ? "" : "s"} remaining</div></div>
+            <div class="dispatch-line-body"><b>${esc(d.designNo)}</b><div class="dispatch-line-meta">${d.buyers.length} ${d.buyers.length === 1 ? "buyer" : "buyers"} · ${d.remaining} set${d.remaining === 1 ? "" : "s"} remaining${(() => { const n = d.buyers.filter((b) => b.dispatchFlag === "warn" || b.dispatchFlag === "reject").length; return n ? `<span style="color:#B45309;font-weight:800"> · ${n} need${n === 1 ? "s" : ""} check</span>` : ""; })()}</div></div>
             <span class="dp-chevron">${d._open ? "▾" : "▸"}</span>
           </button>
           ${d._open ? `<div class="dp-buyers">${buyers}</div>${dpConfirmBtnHtml(di, writable)}` : ""}
