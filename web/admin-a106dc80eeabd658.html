@@ -462,7 +462,7 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 .crm-row-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;color:var(--muted);font-size:9px;white-space:nowrap}
 .crm-dupe-hint{margin-bottom:12px;padding:9px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:11px;font-weight:700}
 .crm-field{margin-top:14px}
-.crm-field>label{display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--slate);letter-spacing:.03em;text-transform:uppercase}
+.crm-field>label{display:block;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:.02em;text-transform:uppercase}
 .crm-seg{display:flex;gap:6px;flex-wrap:wrap}
 .crm-seg button{min-height:38px;padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;background:#fff;color:var(--slate);font-size:12px;font-weight:800;cursor:pointer}
 .crm-seg button.active{background:var(--deep);color:#fff;border-color:var(--deep)}
@@ -498,12 +498,17 @@ td.mx-cell.mx-remove{color:var(--error);font-weight:800}
 /* Contact-first header of the CRM detail card */
 .crm-contact{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:var(--foam)}
 .crm-contact-actions{display:flex;gap:8px}
-.crm-contact .btn{min-height:44px;text-decoration:none}
+.crm-contact .btn{min-height:38px;padding:0 12px;font-size:12px;text-decoration:none}
 .crm-call-btn{background:var(--deep)}
 .crm-wa-btn{background:#25D366;color:#fff}
 .crm-contact-num{font-size:14px;font-weight:800;color:var(--deep);font-variant-numeric:tabular-nums}
-.crm-sub{margin:13px 0 6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--slate)}
+.crm-sub{margin:13px 0 5px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .crm-sub:first-child{margin-top:0}
+.crm-triage{padding:13px;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:0 5px 13px rgba(34,94,99,.06)}
+.crm-triage>label,.crm-triage-lbl{color:var(--ink);font-size:11px}
+.crm-panel{margin-top:14px;padding:13px 13px 15px;border:1px solid var(--line);border-radius:12px;background:#F8FAFA}
+.crm-foldrow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:11px 13px;border:1px solid var(--border);border-radius:11px;background:var(--foam);cursor:pointer;text-align:left}
+.crm-fold-chev{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--deep);font-weight:800;font-size:11px}
 /* Shared customer-tier badge (neutral — buyers may glimpse staff screens). One helper. */
 .crm-tier{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:900;flex:0 0 auto;vertical-align:middle;line-height:1}
 .crm-tier-A{background:var(--deep);color:#fff}
@@ -4764,7 +4769,8 @@ async function openCrmDetail(id) {
   st.crm.showAllCalls = false; // reset the call-log "show all" per customer
   const c = st.crm.customers.find((x) => x.id === id) || {};
   $("crm-d-title").innerHTML = `<span class="mc-nametier"><span>${esc(c.companyName || "Customer")}</span>${tierBadge(c.tier)}</span>`;
-  $("crm-d-sub").textContent = [c.contactName, c.phone ? ("+" + c.phone) : "", [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
+  // Phone deliberately omitted here — it renders once, in the contact block's action row.
+  $("crm-d-sub").textContent = [c.contactName, [c.city, c.state].filter(Boolean).join(", ")].filter(Boolean).join(" · ");
   const dup = $("crm-d-dupe");
   if (c.dupName || c.dupPhone) { dup.classList.remove("hidden"); dup.textContent = `Possible duplicate — shares ${[c.dupName ? "company name" : "", c.dupPhone ? "phone" : ""].filter(Boolean).join(" and ")} with another active customer. Verify before screening; never merge here.`; }
   else dup.classList.add("hidden");
@@ -4783,9 +4789,9 @@ function crmSeg(name, current, opts) {
 function crmFold(key, headerHtml, innerHtml) {
   const open = !!(st.crm.folds && st.crm.folds[key]);
   return `<div class="crm-field">
-      <button type="button" data-fold="${key}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:none;border:0;padding:0;cursor:pointer;text-align:left">
-        <span style="display:flex;align-items:baseline;gap:6px;min-width:0;flex-wrap:wrap">${headerHtml}</span>
-        <span data-fold-chev="${key}" style="color:var(--muted);font-weight:800;flex-shrink:0;align-self:center">${open ? "▾" : "▸"}</span>
+      <button type="button" data-fold="${key}" class="crm-foldrow">
+        <span style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap">${headerHtml}</span>
+        <span data-fold-chev="${key}" class="crm-fold-chev">${open ? "▾" : "▸"}</span>
       </button>
       <div data-fold-body="${key}" class="${open ? "" : "hidden"}" style="margin-top:10px">${innerHtml}</div>
     </div>`;
@@ -4899,7 +4905,7 @@ function renderCrmDetail() {
         <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_CALL_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
         <div id="crm-c-followwrap" class="hidden" style="margin-top:8px"><label style="text-transform:none;font-weight:700;color:var(--slate)">Call back on (required)</label><input id="crm-c-followup" type="datetime-local"/></div>
         <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>`;
-  const addCallSection = `<button type="button" class="btn small secondary" id="crm-addcall-reveal" style="width:100%">+ Log a call</button><div id="crm-addcall-form" class="crm-addcall hidden" style="margin-top:8px">${addCallForm}</div>`;
+  const addCallSection = `<button type="button" class="btn" id="crm-addcall-reveal" style="width:100%">+ Log a call</button><div id="crm-addcall-form" class="crm-addcall hidden" style="margin-top:8px">${addCallForm}</div>`;
   // "+ Log a call" renders in the SAME position for every customer — outside and
   // ABOVE the history fold — so the control never relocates on cards that already
   // have calls. Its wrapper is deliberately NOT a .crm-field (matches the 14px
@@ -4933,7 +4939,12 @@ function renderCrmDetail() {
   // References/agent/terms fold — routed through the shared crmFold mechanism. The
   // collapsed header carries the signal (agent badge + standing pill); the body is the
   // full evidence + terms editor. Kept below the action controls, as before.
-  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}`;
+  // Collapsed header signal: agent badge + a reference tally so the fold advertises its
+  // contents (chose "N refs · M spoken"; omit the spoken clause at zero to stay terse).
+  const refCount = (d.references || []).length;
+  const refSpoken = (d.references || []).filter((r) => r.spokenTo).length;
+  const refSummary = refCount ? `${refCount} ref${refCount > 1 ? "s" : ""}${refSpoken ? ` · ${refSpoken} spoken` : ""}` : "";
+  const refsHeader = `<label style="margin:0;cursor:pointer">References, agent &amp; terms</label>${d.agentName ? `<span class="crm-b" style="background:#F1F5F9;color:#475569">◆ ${esc(d.agentName)}</span>` : `<span style="color:var(--muted);font-weight:600;font-size:11px" title="Trade agent">${d.agentAnswered ? "No agent" : "Not asked"}</span>`}${refSummary ? `<span style="color:var(--muted);font-weight:600;font-size:11px">${esc(refSummary)}</span>` : ""}`;
   // Agent + reference-company fields are real JS-filtered pickers (crmPicker*), NOT
   // <datalist> — datalist type-to-filter is unreliable/absent on iOS Safari. Each is a
   // plain input + an on-demand results list rendered beneath it. Selecting an existing
@@ -4971,14 +4982,14 @@ function renderCrmDetail() {
   const statusOpts = ["pending", "on_hold", "agreed", "rejected"].map((v) => `<option value="${v}"${d.crmStatus === v ? " selected" : ""}>${esc(CRM_STATUS[v] || v)}</option>`).join("");
   $("crm-d-body").innerHTML = `
     ${contact}
-    <div class="crm-field">
+    <div class="crm-field crm-triage">
       <div style="display:flex;gap:8px">
         <div style="flex:1;min-width:0">
-          <label style="margin:0 0 5px">Salesperson</label>
+          <label class="crm-triage-lbl" style="margin:0 0 5px">Salesperson</label>
           <select id="crm-d-assign" ${canAssign ? "" : "disabled"} style="width:100%">${staffOpts}</select>
         </div>
         <div style="flex:1;min-width:0">
-          <label style="margin:0 0 5px">Status</label>
+          <label class="crm-triage-lbl" style="margin:0 0 5px">Status</label>
           <select id="crm-d-status-sel" style="width:100%">${statusOpts}</select>
         </div>
       </div>
@@ -4992,23 +5003,22 @@ function renderCrmDetail() {
     </div>
     ${callLogBlock}
     ${crmFold("refs", refsHeader, refsInner)}
-    <div class="crm-field"><label>Details</label>
+    <div class="crm-field crm-panel"><label>Details</label>
       <div class="crm-sub" style="margin-top:0">Location</div>
       <div style="font-size:12.5px;color:var(--deep);font-weight:700;overflow-wrap:anywhere">${[d.city, d.state].filter(Boolean).map(esc).join(", ") || '<span class="crm-hint" style="margin:0">Not on file</span>'}</div>
       <div class="crm-sub">GSTIN</div>
       <div style="font-size:12.5px;color:var(--deep);font-weight:700;overflow-wrap:anywhere">${d.gstin ? esc(d.gstin) : '<span class="crm-hint" style="margin:0">Not on file</span>'}</div>
       <div class="crm-sub">Buyer type ${d.hasDispatchHistory ? '<span style="text-transform:none;font-weight:600;color:var(--muted)">· has dispatch history here</span>' : ""}</div>
       ${crmSeg("buyerType", d.buyerType || "", [["", "Unscreened"], ["new", "New buyer"], ["regular", "Regular buyer"]])}
-      <div class="crm-hint">Lifetime, set by hand. Not derived from dispatch — the ERP is the source of truth.</div>
       <div class="crm-sub">Tier</div>
       ${crmSeg("tier", d.tier || "", [["", "Unranked"], ["A", "A"], ["B", "B"], ["C", "C"]])}
-      <div class="crm-hint">Ranking sorts this buyer to the top of every staff list. Tap the active tier again to clear.</div>
+      <div class="crm-hint">Pins this buyer to the top of staff lists. Tap again to clear.</div>
       <div class="crm-sub">Category interest</div>
       <div>${crmCatChips(detailCats) || '<span class="crm-hint" style="margin:0">None yet</span>'}</div>
       <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">
         ${["MR", "KT", "NRK", "MU", "BS"].map((cat) => { const f = detailCats.find((x) => x.c === cat); const state = !f ? "add" : (f.m ? "man" : "auto"); return `<button type="button" class="chip ${f ? "active" : ""}" data-crm-cat="${cat}" data-cat-state="${state}"${state === "auto" ? ' disabled title="From orders — cannot remove"' : ""}>${state === "add" ? "+ " : ""}${cat}</button>`; }).join("")}
       </div>
-      <div class="crm-hint">Auto from orders. Tap +MR etc. to add a category the buyer asked about but never ordered; tap a dashed manual chip to remove.</div>
+      <div class="crm-hint">Auto from orders. Tap +MR to add one they asked about; tap a dashed chip to remove.</div>
     </div>`;
   // Pickers render on demand (no datalist to populate — see crmPicker* below).
 }
