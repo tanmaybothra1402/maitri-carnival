@@ -284,6 +284,8 @@ const ACTION_PERMISSIONS: Record<string, string[]> = {
   listDispatch: ["dispatch.view"],
   getDispatch: ["dispatch.view"],
   saveDispatch: ["dispatch.write"],
+  squareOffLine: ["dispatch.write"],
+  unsquareLine: ["dispatch.write"],
   // CRM. view lists/reads; write logs calls, sets buyer type / status, edits
   // references; assign (manager/admin) reassigns a buyer to a salesperson. Every
   // action is listed — an action absent from this map has alternatives.length 0
@@ -1333,6 +1335,32 @@ Deno.serve(async (request: Request) => {
       });
       if (dErr) throw dErr;
       return jsonResponse(request, { ok: true, data: { result: data, detail } });
+    }
+
+    // Square off a line (remove it from the pending queue without shipping) / reverse it.
+    // Both gated on dispatch.write (ACTION_PERMISSIONS above). Reason is required and the
+    // RPC rejects an empty/whitespace one; both write a dispatch_events row. The updated
+    // squared-off line state rides back to the client through admin_dispatch_detail
+    // (getDispatch is pass-through), so the caller re-opens the order to see the change.
+    if (action === "squareOffLine") {
+      const { data, error } = await db.rpc("admin_square_off_line", {
+        p_order_id: clean(body.orderId),
+        p_design_no: clean(body.designNo),
+        p_reason: clean(body.reason),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
+    }
+
+    if (action === "unsquareLine") {
+      const { data, error } = await db.rpc("admin_unsquare_line", {
+        p_order_id: clean(body.orderId),
+        p_design_no: clean(body.designNo),
+        p_actor: admin.id,
+      });
+      if (error) throw error;
+      return jsonResponse(request, { ok: true, data });
     }
 
     // ── CRM ────────────────────────────────────────────────────────────────

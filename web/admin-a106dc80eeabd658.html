@@ -153,6 +153,7 @@ table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px
 .status-pill.pending{background:#FEF3C7;color:#92400E}
 .status-pill.partial{background:#DBEAFE;color:#1E40AF}
 .status-pill.completed{background:#DCFCE7;color:#166534}
+.status-pill.closed{background:#F3F4F6;color:#4B5563}
 .dispatch-card-actions{display:flex;gap:7px;margin-top:10px}
 .dispatch-sheet{max-width:660px}
 .dispatch-toolbar{display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-top:12px}
@@ -160,6 +161,11 @@ table.pgrid td.pg-img{width:72px;text-align:center;position:relative;padding:2px
 .dispatch-lines{margin-top:11px;display:grid;gap:9px;max-height:52vh;overflow-y:auto}
 .dispatch-line{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:11px;align-items:start;padding:10px;border:1px solid var(--border);border-radius:12px;background:#fff}
 .dispatch-line.done{background:#F2FBF5;border-color:#BBF7D0}
+.dispatch-line.squared{background:#FAFAFA;border-color:#E5E7EB}
+.dispatch-line.squared .dispatch-line-body>b{text-decoration:line-through;color:var(--muted)}
+.dispatch-squared-note{margin-top:6px;padding:6px 8px;border-radius:8px;background:#FEF2F2;color:#991B1B;font-size:10px;font-weight:700;line-height:1.4}
+.dispatch-squared-form{margin-top:8px}
+.dispatch-squared-reason{width:100%;min-height:44px;padding:8px;font-size:16px;line-height:1.35;border:1px solid var(--border);border-radius:8px;resize:vertical}
 .dispatch-thumb{width:56px;height:74px;border-radius:9px;object-fit:cover;background:#EEF2F0;cursor:zoom-in;border:1px solid var(--border)}
 .dispatch-line-body{min-width:0}
 .dispatch-line-body b{font-size:12.5px;color:var(--teal-deep);overflow-wrap:anywhere}
@@ -4550,7 +4556,9 @@ function renderMappings() {
 
 function dispatchStatusPill(status) {
   const s = String(status || "Pending");
-  const cls = s === "Completed" ? "completed" : s === "Partial" ? "partial" : "pending";
+  // 'Closed' = every line squared off (left the queue, nothing shipped) — a quiet grey,
+  // distinct from Completed's green so it never reads as "shipped".
+  const cls = s === "Completed" ? "completed" : s === "Partial" ? "partial" : s === "Closed" ? "closed" : "pending";
   const label = s === "Partial" ? "Partially completed" : s;
   return `<span class="status-pill ${cls}">${esc(label)}</span>`;
 }
@@ -5707,15 +5715,22 @@ function renderDispatchDetail() {
           const ordered = Number(l.qty) || 0;
           const sent = Number(l.dispatchedSets) || 0;
           const full = sent >= ordered && sent > 0;
+          const sq = !!l.squaredOff;
           const meta = [l.category, l.style, l.fabric].filter(Boolean).join(" · ");
-          return `<div class="dispatch-line${full ? " done" : ""}" data-line="${i}">
-            ${l.imageUrl ? `<img class="dispatch-thumb" src="${esc(ik(l.imageUrl, "w-160,h-210,c-at_max,q-70"))}" alt="${esc(l.designNo)}" loading="lazy" data-zoom="${esc(l.imageUrl)}" data-zoom-label="${esc(l.designNo)}"/>` : '<div class="dispatch-thumb"></div>'}
-            <div class="dispatch-line-body"><b>${esc(l.designNo)}</b><div class="dispatch-line-meta">${esc(meta)}${meta ? "<br>" : ""}${ordered} sets ordered · ${Number(l.pcsPerSet) || 1} pcs/set</div>${l.note ? `<div class="dispatch-line-note">${esc(l.note)}</div>` : ""}</div>
-            <div class="dispatch-qty">
-              <input class="dispatch-check" type="checkbox" data-check="${i}" ${full ? "checked" : ""} ${writable ? "" : "disabled"} aria-label="Dispatch all ${esc(l.designNo)}"/>
+          // Three visual states — pending (default), done (green), squared-off (struck
+          // through). A squared-off line is out of the queue: no dispatch input, just an
+          // Un-square. A pending line gets a "Square off" button revealing a required
+          // reason field (D3 — the Confirm button stays disabled until the reason is typed).
+          const qty = sq
+            ? (writable ? `<button class="btn small secondary" type="button" data-unsquare="${i}">Un-square</button>` : `<span class="dispatch-ordered">squared off</span>`)
+            : `<input class="dispatch-check" type="checkbox" data-check="${i}" ${full ? "checked" : ""} ${writable ? "" : "disabled"} aria-label="Dispatch all ${esc(l.designNo)}"/>
               <input class="dispatch-sets" type="number" min="0" max="${ordered}" value="${sent}" data-sets="${i}" ${writable ? "" : "disabled"} aria-label="Sets dispatched for ${esc(l.designNo)}"/>
               <span class="dispatch-ordered">of ${ordered}</span>
-            </div>
+              ${writable ? `<button class="btn small ghost" type="button" data-squareoff="${i}">Square off</button>` : ""}`;
+          return `<div class="dispatch-line${sq ? " squared" : (full ? " done" : "")}" data-line="${i}">
+            ${l.imageUrl ? `<img class="dispatch-thumb" src="${esc(ik(l.imageUrl, "w-160,h-210,c-at_max,q-70"))}" alt="${esc(l.designNo)}" loading="lazy" data-zoom="${esc(l.imageUrl)}" data-zoom-label="${esc(l.designNo)}"/>` : '<div class="dispatch-thumb"></div>'}
+            <div class="dispatch-line-body"><b>${esc(l.designNo)}</b><div class="dispatch-line-meta">${esc(meta)}${meta ? "<br>" : ""}${ordered} sets ordered · ${Number(l.pcsPerSet) || 1} pcs/set</div>${l.note ? `<div class="dispatch-line-note">${esc(l.note)}</div>` : ""}${sq ? `<div class="dispatch-squared-note">✕ Squared off${l.squaredByName ? " by " + esc(l.squaredByName) : ""}${l.squaredAt ? " · " + esc(fmt(l.squaredAt)) : ""}${l.squaredReason ? "<br>" + esc(l.squaredReason) : ""}</div>` : ""}${writable && !sq ? `<div class="dispatch-squared-form hidden" data-sqform="${i}"><textarea class="dispatch-squared-reason" data-sqreason="${i}" rows="2" maxlength="500" placeholder="Reason (required) — why this line is not shipping"></textarea><button class="btn small" type="button" data-sqconfirm="${i}" style="margin-top:6px" disabled>Confirm square-off</button></div>` : ""}</div>
+            <div class="dispatch-qty">${qty}</div>
           </div>`;
         })
         .join("")
@@ -5762,7 +5777,33 @@ $("dispatch-lines").onchange = (e) => {
   }
 };
 
+// Reason gate (D3): the Confirm-square-off button is disabled until a reason is typed.
+$("dispatch-lines").oninput = (e) => {
+  const r = e.target.closest("[data-sqreason]");
+  if (r) { const btn = $("dispatch-lines").querySelector(`[data-sqconfirm="${r.dataset.sqreason}"]`); if (btn) btn.disabled = !r.value.trim(); }
+};
+async function dispatchSquare(designNo, reason, square) {
+  const d = st.dispatch.detail; if (!d) return;
+  try {
+    loading(true, square ? "Squaring off…" : "Restoring…");
+    if (square) await admin("squareOffLine", { orderId: d.id, designNo, reason });
+    else await admin("unsquareLine", { orderId: d.id, designNo });
+    // Re-fetch scoped to the active category so the view stays filtered.
+    st.dispatch.detail = await admin("getDispatch", { orderId: d.id, category: st.dispatch.category });
+    renderDispatchDetail();
+    await loadDispatch();
+    toast(square ? "Line squared off — removed from the pending queue" : "Line restored to the queue", "success");
+  } catch (e) { toast(e.message, "error"); }
+  finally { loading(false); }
+}
 $("dispatch-lines").onclick = (e) => {
+  const d = st.dispatch.detail; if (!d) return;
+  const off = e.target.closest("[data-squareoff]");
+  if (off) { const f = $("dispatch-lines").querySelector(`[data-sqform="${off.dataset.squareoff}"]`); if (f) { f.classList.toggle("hidden"); const ta = f.querySelector("[data-sqreason]"); if (ta && !f.classList.contains("hidden")) ta.focus(); } return; }
+  const conf = e.target.closest("[data-sqconfirm]");
+  if (conf) { const line = d.lines[Number(conf.dataset.sqconfirm)]; const ta = $("dispatch-lines").querySelector(`[data-sqreason="${conf.dataset.sqconfirm}"]`); const reason = ta ? ta.value.trim() : ""; if (!reason) { toast("A reason is required to square off", "error"); return; } if (line) dispatchSquare(line.designNo, reason, true); return; }
+  const un = e.target.closest("[data-unsquare]");
+  if (un) { const line = d.lines[Number(un.dataset.unsquare)]; if (line) dispatchSquare(line.designNo, null, false); return; }
   const img = e.target.closest("[data-zoom]");
   if (!img) return;
   $("lightbox-img").src = ik(img.dataset.zoom, "w-1400,q-92");
@@ -5789,12 +5830,14 @@ document.addEventListener("keydown", (e) => {
 $("dispatch-all").onclick = () => {
   const d = st.dispatch.detail;
   if (!d) return;
-  // If everything is already ticked, this untick-all becomes the fast path
+  // Squared-off lines are out of the queue — Tick all ignores them entirely.
+  // If every ACTIVE line is already ticked, this untick-all becomes the fast path
   // for correcting a mistaken full dispatch.
-  const allDone = (d.lines || []).every(
+  const active = (d.lines || []).filter((l) => !l.squaredOff);
+  const allDone = active.length > 0 && active.every(
     (l) => Number(l.dispatchedSets) >= Number(l.qty) && Number(l.qty) > 0,
   );
-  (d.lines || []).forEach((l) => {
+  active.forEach((l) => {
     l.dispatchedSets = allDone ? 0 : Number(l.qty) || 0;
   });
   renderDispatchDetail();
@@ -5834,7 +5877,9 @@ $("dispatch-save").onclick = async () => {
       orderId: d.id,
       note: $("dispatch-note").value,
       category: st.dispatch.category,
-      lines: (d.lines || []).map((l) => ({
+      // Squared-off lines are excluded from the dispatch payload — they are not
+      // shippable and admin_save_dispatch would otherwise treat them as a normal line.
+      lines: (d.lines || []).filter((l) => !l.squaredOff).map((l) => ({
         designNo: l.designNo,
         dispatchedSets: Number(l.dispatchedSets) || 0,
       })),
