@@ -4800,10 +4800,17 @@ function renderCrmDetail() {
         <select id="crm-c-status"><option value="">Keep status (${esc(CRM_STATUS[d.crmStatus] || d.crmStatus)})</option>${Object.entries(CRM_CALL_STATUS).map(([v, l]) => `<option value="${v}">Set: ${l}</option>`).join("")}</select>
         <div id="crm-c-followwrap" class="hidden" style="margin-top:8px"><label style="text-transform:none;font-weight:700;color:var(--slate)">Call back on (required)</label><input id="crm-c-followup" type="datetime-local"/></div>
         <button class="btn" type="button" id="crm-c-save" style="width:100%;margin-top:10px">Save call</button>`;
-  const addCallSection = `<button type="button" class="btn small secondary" id="crm-addcall-reveal" style="width:100%;margin-top:8px">+ Log a call</button><div id="crm-addcall-form" class="crm-addcall hidden" style="margin-top:8px">${addCallForm}</div>`;
-  const callLogBlock = callN === 0
-    ? `<div class="crm-field"><label style="margin:0">Calls (0) <span style="text-transform:none;font-weight:600;color:var(--muted)">— none yet</span></label>${addCallSection}</div>`
-    : crmFold("calls", callSignal, `<div class="crm-calls">${callsHtml}</div>${showAllBtn}${addCallSection}`);
+  const addCallSection = `<button type="button" class="btn small secondary" id="crm-addcall-reveal" style="width:100%">+ Log a call</button><div id="crm-addcall-form" class="crm-addcall hidden" style="margin-top:8px">${addCallForm}</div>`;
+  // "+ Log a call" renders in the SAME position for every customer — outside and
+  // ABOVE the history fold — so the control never relocates on cards that already
+  // have calls. Its wrapper is deliberately NOT a .crm-field (matches the 14px
+  // rhythm via inline margin) so it stays out of the block-order field list. The
+  // history sits below: a fold when calls exist, a static line at zero. Revealing
+  // the form does NOT expand the history; the history fold opens independently.
+  const historyBlock = callN === 0
+    ? `<div class="crm-field"><label style="margin:0">Calls (0) <span style="text-transform:none;font-weight:600;color:var(--muted)">— none yet</span></label></div>`
+    : crmFold("calls", callSignal, `<div class="crm-calls">${callsHtml}</div>${showAllBtn}`);
+  const callLogBlock = `<div style="margin-top:14px">${addCallSection}</div>${historyBlock}`;
   const refVerdict = (v) => v === "approved" ? crmB("agreed", "✓ approved") : v === "rejected" ? crmB("rejected", "✕ rejected") : crmB("on_hold", "pending");
   const refs = (d.references || []).map((r) => `<div class="crm-ref"><span style="min-width:0">${esc(r.companyName || r.text || "")} ${refVerdict(r.verdict)}${r.pocName ? ` <small style="color:var(--muted)">· ${esc(r.pocName)}</small>` : ""}${r.notes ? `<br><small style="color:var(--muted)">${esc(r.notes)}</small>` : ""}</span><span style="display:flex;gap:4px;flex-shrink:0"><button type="button" class="btn small secondary" data-crm-logcheck="${esc(r.id)}">Log check</button><button type="button" data-crm-delref="${esc(r.id)}" aria-label="Remove">✕</button></span></div>`).join("") || '<div class="crm-hint">No references yet.</div>';
   const detailCats = Array.isArray(d.categories) ? d.categories
